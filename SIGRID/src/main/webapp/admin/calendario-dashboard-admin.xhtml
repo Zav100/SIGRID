@@ -1,0 +1,223 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:h="jakarta.faces.html"
+                xmlns:f="jakarta.faces.core"
+                xmlns:p="jakarta.faces.passthrough"
+                xmlns:ui="jakarta.faces.facelets"
+                template="/templates/admin-dashboard.xhtml">
+
+    <ui:define name="titulo">
+        Calendario | Panel de administración
+    </ui:define>
+
+    <ui:define name="head">
+        <h:outputStylesheet library="css" name="calendario.css"/>
+    </ui:define>
+
+    <ui:define name="content">
+
+        <!-- ============ ENCABEZADO ============ -->
+        <header class="adm-page-head">
+            <div>
+                <h1 class="adm-page-title">Calendario de reservas</h1>
+            </div>
+            <p class="adm-date">
+                <span class="icon" aria-hidden="true">calendar_today</span>
+                #{adminCalendarioBean.fechaLarga}
+            </p>
+        </header>
+
+        <div class="adm-layout">
+
+            <!-- ============ COLUMNA PRINCIPAL ============ -->
+            <div class="adm-col">
+
+                <!-- Contadores del mes que se está mirando (cambian con las flechas del calendario) -->
+                <h:panelGroup id="perks" layout="block" styleClass="cal-perks">
+                    <article class="cal-perk">
+                        <span class="cal-perk-icon is-ok"><span class="icon" aria-hidden="true">event_available</span></span>
+                        <p class="cal-perk-value">#{adminCalendarioBean.confirmadasMes}</p>
+                        <h2 class="cal-perk-label">Confirmadas</h2>
+                        <p class="cal-perk-sub">por venir en #{adminCalendarioBean.nombreMes}</p>
+                    </article>
+                    <article class="cal-perk">
+                        <span class="cal-perk-icon"><span class="icon" aria-hidden="true">check_circle</span></span>
+                        <p class="cal-perk-value">#{adminCalendarioBean.completadasMes}</p>
+                        <h2 class="cal-perk-label">Completadas</h2>
+                        <p class="cal-perk-sub">ya realizadas en #{adminCalendarioBean.nombreMes}</p>
+                    </article>
+                    <article class="cal-perk">
+                        <span class="cal-perk-icon is-warn"><span class="icon" aria-hidden="true">pending_actions</span></span>
+                        <p class="cal-perk-value">#{adminCalendarioBean.pendientesMes}</p>
+                        <h2 class="cal-perk-label">Por confirmar</h2>
+                        <p class="cal-perk-sub">en #{adminCalendarioBean.nombreMes}</p>
+                    </article>
+                    <article class="cal-perk">
+                        <span class="cal-perk-icon is-off"><span class="icon" aria-hidden="true">event_busy</span></span>
+                        <p class="cal-perk-value">#{adminCalendarioBean.canceladasMes}</p>
+                        <h2 class="cal-perk-label">Canceladas</h2>
+                        <p class="cal-perk-sub">en #{adminCalendarioBean.nombreMes}</p>
+                    </article>
+                </h:panelGroup>
+
+                <!-- Calendario del mes: cada día muestra sus reservas; elegir un día muestra el detalle a la derecha.
+                     Los días que ya pasaron quedan en gris (historial). -->
+                <h:form id="calForm" styleClass="adm-card cal-big">
+                    <header class="adm-cal-head">
+                        <h2 class="adm-card-title">#{adminCalendarioBean.tituloMes}</h2>
+                        <div class="adm-cal-nav">
+                            <h:commandLink rendered="#{not adminCalendarioBean.enHoy}"
+                                           action="#{adminCalendarioBean.irAHoy}" styleClass="adm-pill-btn">
+                                <f:ajax execute="@this" render="@form :detalle :perks"/>
+                                Hoy
+                            </h:commandLink>
+                            <h:commandLink action="#{adminCalendarioBean.mesAnterior}" styleClass="adm-icon-btn"
+                                           title="Mes anterior" p:aria-label="Mes anterior">
+                                <f:ajax execute="@this" render="@form :perks"/>
+                                <span class="icon" aria-hidden="true">chevron_left</span>
+                            </h:commandLink>
+                            <h:commandLink action="#{adminCalendarioBean.mesSiguiente}" styleClass="adm-icon-btn"
+                                           title="Mes siguiente" p:aria-label="Mes siguiente">
+                                <f:ajax execute="@this" render="@form :perks"/>
+                                <span class="icon" aria-hidden="true">chevron_right</span>
+                            </h:commandLink>
+                        </div>
+                    </header>
+
+                    <div class="cal-big-week" aria-hidden="true">
+                        <span>Lun</span><span>Mar</span><span>Mié</span><span>Jue</span><span>Vie</span><span>Sáb</span><span>Dom</span>
+                    </div>
+                    <div class="cal-big-grid">
+                        <ui:repeat var="dia" value="#{adminCalendarioBean.dias}">
+                            <h:commandLink styleClass="cal-day #{dia.delMes ? '' : 'is-out'} #{dia.pasado ? 'is-past' : ''} #{dia.hoy ? 'is-hoy' : ''} #{dia.seleccionado ? 'is-sel' : ''}"
+                                           action="#{adminCalendarioBean.seleccionarDia(dia.fecha)}"
+                                           title="#{dia.etiqueta}" p:aria-label="#{dia.etiqueta}">
+                                <f:ajax execute="@this" render="@form :detalle :perks"/>
+                                <span class="cal-day-num">#{dia.numero}</span>
+                                <span class="cal-evs" aria-hidden="true">
+                                    <ui:repeat var="r" value="#{dia.visibles}">
+                                        <span class="cal-ev cal-ev-#{r.estadoClase}"><b>#{r.desde}</b> #{r.instalacionCorta}</span>
+                                    </ui:repeat>
+                                    <ui:fragment rendered="#{dia.ocultas gt 0}">
+                                        <span class="cal-more">+#{dia.ocultas} más</span>
+                                    </ui:fragment>
+                                </span>
+                                <!-- en el celular no entran las etiquetas: quedan los puntitos -->
+                                <span class="adm-dots cal-dots" aria-hidden="true">
+                                    <ui:repeat var="clase" value="#{dia.puntos}">
+                                        <i class="adm-dot adm-dot-#{clase}"></i>
+                                    </ui:repeat>
+                                </span>
+                            </h:commandLink>
+                        </ui:repeat>
+                    </div>
+
+                    <ul class="adm-cal-legend">
+                        <li><i class="adm-dot adm-dot-ok"></i>Confirmada</li>
+                        <li><i class="adm-dot adm-dot-warn"></i>Pendiente</li>
+                        <li><i class="adm-dot adm-dot-off"></i>Cancelada</li>
+                        <li><i class="adm-dot adm-dot-muted"></i>Ya pasó</li>
+                    </ul>
+                </h:form>
+            </div>
+
+            <!-- ============ COLUMNA LATERAL ============ -->
+            <div class="adm-col adm-col-side">
+
+                <!-- Detalle del día elegido en el calendario (hoy por defecto) -->
+                <h:panelGroup id="detalle" layout="block" styleClass="adm-card">
+                    <header class="adm-card-head">
+                        <h2 class="adm-card-title">
+                            #{adminCalendarioBean.tituloDia}
+                            <span class="adm-count">#{adminCalendarioBean.delDia.size()}</span>
+                        </h2>
+                    </header>
+
+                    <ui:fragment rendered="#{empty adminCalendarioBean.delDia}">
+                        <div class="adm-empty">
+                            <span class="icon" aria-hidden="true">event_busy</span>
+                            <p>No hay reservas este día.</p>
+                        </div>
+                    </ui:fragment>
+
+                    <ul class="cal-res-list">
+                        <ui:repeat var="r" value="#{adminCalendarioBean.delDia}">
+                            <li class="cal-res js-buscable is-#{r.estadoClase}">
+                                <span class="adm-item-icon"><span class="icon" aria-hidden="true">#{r.icono}</span></span>
+                                <div class="cal-res-body">
+                                    <span class="adm-cell-main">#{r.instalacion}</span>
+                                    <span class="adm-cell-sub">#{r.disciplina}</span>
+                                    <span class="cal-res-time">#{r.horario}</span>
+                                    <span class="cal-res-socio">#{r.socio}</span>
+                                    <span class="adm-cell-sub">#{r.nota}</span>
+                                </div>
+                                <div class="cal-res-side">
+                                    <span class="adm-chip adm-chip-#{r.estadoClase}">#{r.estadoTexto}</span>
+                                    <ui:fragment rendered="#{not empty r.monto}">
+                                        <span class="adm-cell-sub">#{r.monto}</span>
+                                    </ui:fragment>
+                                </div>
+                            </li>
+                        </ui:repeat>
+                    </ul>
+                </h:panelGroup>
+
+                <!-- Historial: las reservas de hoy en adelante en color, las que ya pasaron en gris.
+                     Tocar una lleva el calendario a su día. -->
+                <section class="adm-card" aria-labelledby="tHistorial">
+                    <header class="adm-card-head">
+                        <h2 class="adm-card-title" id="tHistorial">
+                            Historial de reservas
+                            <span class="adm-count">#{adminCalendarioBean.totalHistorial}</span>
+                        </h2>
+                    </header>
+
+                    <ui:fragment rendered="#{adminCalendarioBean.totalHistorial eq 0}">
+                        <div class="adm-empty">
+                            <span class="icon" aria-hidden="true">event_busy</span>
+                            <p>Todavía no hay reservas.</p>
+                        </div>
+                    </ui:fragment>
+
+                    <h:form id="histForm" styleClass="cal-hist" rendered="#{adminCalendarioBean.totalHistorial gt 0}">
+                        <ui:fragment rendered="#{not empty adminCalendarioBean.proximas}">
+                            <p class="cal-hist-title">Próximas</p>
+                            <ui:repeat var="r" value="#{adminCalendarioBean.proximas}">
+                                <h:commandLink styleClass="cal-hist-item js-buscable is-#{r.estadoClase}"
+                                               action="#{adminCalendarioBean.seleccionarDia(r.fecha)}"
+                                               title="Ver el día en el calendario">
+                                    <f:ajax execute="@this" render=":calForm :detalle :perks"/>
+                                    <span class="adm-item-icon"><span class="icon" aria-hidden="true">#{r.icono}</span></span>
+                                    <span class="adm-item-main">
+                                        <span class="adm-cell-main">#{r.instalacion}</span>
+                                        <span class="adm-cell-sub">#{r.cuando} · #{r.horario} · #{r.socio}</span>
+                                    </span>
+                                    <span class="adm-chip adm-chip-#{r.estadoClase}">#{r.estadoTexto}</span>
+                                </h:commandLink>
+                            </ui:repeat>
+                        </ui:fragment>
+
+                        <ui:fragment rendered="#{not empty adminCalendarioBean.anteriores}">
+                            <p class="cal-hist-title">Anteriores</p>
+                            <ui:repeat var="r" value="#{adminCalendarioBean.anteriores}">
+                                <h:commandLink styleClass="cal-hist-item js-buscable is-#{r.estadoClase}"
+                                               action="#{adminCalendarioBean.seleccionarDia(r.fecha)}"
+                                               title="Ver el día en el calendario">
+                                    <f:ajax execute="@this" render=":calForm :detalle :perks"/>
+                                    <span class="adm-item-icon"><span class="icon" aria-hidden="true">#{r.icono}</span></span>
+                                    <span class="adm-item-main">
+                                        <span class="adm-cell-main">#{r.instalacion}</span>
+                                        <span class="adm-cell-sub">#{r.cuando} · #{r.horario} · #{r.socio}</span>
+                                    </span>
+                                    <span class="adm-chip adm-chip-#{r.estadoClase}">#{r.estadoTexto}</span>
+                                </h:commandLink>
+                            </ui:repeat>
+                        </ui:fragment>
+                    </h:form>
+                </section>
+            </div>
+        </div>
+
+    </ui:define>
+
+</ui:composition>

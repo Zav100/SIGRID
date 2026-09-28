@@ -1,0 +1,272 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:h="jakarta.faces.html"
+                xmlns:f="jakarta.faces.core"
+                xmlns:p="jakarta.faces.passthrough"
+                xmlns:ui="jakarta.faces.facelets"
+                template="/templates/admin-dashboard.xhtml">
+
+    <ui:define name="titulo">
+        Valoraciones | Panel de administración
+    </ui:define>
+
+    <ui:define name="head">
+        <h:outputStylesheet library="css" name="socios.css"/>
+        <h:outputStylesheet library="css" name="membresias.css"/>
+        <h:outputStylesheet library="css" name="reservas.css"/>
+        <h:outputStylesheet library="css" name="valoraciones.css"/>
+    </ui:define>
+
+    <ui:define name="content">
+
+        <!-- ============ ENCABEZADO ============ -->
+        <header class="adm-page-head">
+            <div>
+                <h1 class="adm-page-title">Valoraciones</h1>
+            </div>
+        </header>
+
+        <!-- Indicadores: siempre sobre todas las valoraciones -->
+        <div class="adm-kpis soc-kpis">
+            <article class="adm-kpi">
+                <div class="adm-kpi-head">
+                    <span class="adm-kpi-icon"><span class="icon" aria-hidden="true">star</span></span>
+                    <h2 class="adm-kpi-label">Promedio general</h2>
+                </div>
+                <p class="adm-kpi-value">#{adminValoracionesBean.promedioTexto}</p>
+                <p class="adm-kpi-sub">
+                    <span class="val-stars" aria-hidden="true">
+                        <ui:repeat var="n" value="#{adminValoracionesBean.escala}">
+                            <span class="icon val-star #{n le adminValoracionesBean.estrellasPromedio ? 'is-on' : ''}">star</span>
+                        </ui:repeat>
+                    </span>
+                    sobre 5
+                </p>
+            </article>
+            <article class="adm-kpi">
+                <div class="adm-kpi-head">
+                    <span class="adm-kpi-icon"><span class="icon" aria-hidden="true">receipt_long</span></span>
+                    <h2 class="adm-kpi-label">Valoraciones</h2>
+                </div>
+                <p class="adm-kpi-value">#{adminValoracionesBean.total}</p>
+                <p class="adm-kpi-sub">#{adminValoracionesBean.conComentario} con comentario</p>
+            </article>
+            <article class="adm-kpi">
+                <div class="adm-kpi-head">
+                    <span class="adm-kpi-icon"><span class="icon" aria-hidden="true">check_circle</span></span>
+                    <h2 class="adm-kpi-label">Satisfechos</h2>
+                </div>
+                <p class="adm-kpi-value">#{adminValoracionesBean.porcentajeSatisfechos}%</p>
+                <p class="adm-kpi-sub">dieron 4 o 5 estrellas</p>
+            </article>
+            <article class="adm-kpi">
+                <div class="adm-kpi-head">
+                    <span class="adm-kpi-icon #{adminValoracionesBean.paraRevisar gt 0 ? 'is-alert' : ''}">
+                        <span class="icon" aria-hidden="true">warning</span>
+                    </span>
+                    <h2 class="adm-kpi-label">Para revisar</h2>
+                </div>
+                <p class="adm-kpi-value">#{adminValoracionesBean.paraRevisar}</p>
+                <p class="adm-kpi-sub">dieron 1 o 2 estrellas</p>
+            </article>
+        </div>
+
+        <div class="res-duo">
+            <section class="adm-card" aria-labelledby="tDistribucion">
+                <header class="adm-card-head">
+                    <h2 class="adm-card-title" id="tDistribucion">Cómo se reparten</h2>
+                </header>
+                <ui:fragment rendered="#{adminValoracionesBean.total eq 0}">
+                    <div class="adm-empty">
+                        <span class="icon" aria-hidden="true">star</span>
+                        <p>Todavía no hay valoraciones.</p>
+                    </div>
+                </ui:fragment>
+                <ui:fragment rendered="#{adminValoracionesBean.total gt 0}">
+                    <div class="val-dist">
+                        <!-- dona: un tramo por puntaje; en el centro, el promedio -->
+                        <div class="val-donut" style="background: #{adminValoracionesBean.gradiente}" role="img"
+                             aria-label="Promedio #{adminValoracionesBean.promedioTexto} sobre 5, de #{adminValoracionesBean.total} valoraciones">
+                            <div class="val-donut-center">
+                                <strong>#{adminValoracionesBean.promedioTexto}</strong>
+                                <span>de 5</span>
+                            </div>
+                        </div>
+                        <ul class="val-legend">
+                            <ui:repeat var="d" value="#{adminValoracionesBean.distribucion}">
+                                <li>
+                                    <span class="val-dot val-#{d.icono}"></span>
+                                    <span class="val-legend-name">#{d.etiqueta}</span>
+                                    <span class="val-legend-num">#{d.cantidad}</span>
+                                    <span class="val-legend-pct">#{d.porcentaje}%</span>
+                                </li>
+                            </ui:repeat>
+                        </ul>
+                    </div>
+                </ui:fragment>
+            </section>
+
+            <section class="adm-card" aria-labelledby="tPromedios">
+                <header class="adm-card-head">
+                    <h2 class="adm-card-title" id="tPromedios">Promedio por instalación</h2>
+                    <span class="adm-cell-sub">las peor valoradas primero</span>
+                </header>
+                <ul class="val-insts">
+                    <ui:repeat var="i" value="#{adminValoracionesBean.promedios}">
+                        <li class="val-inst val-n-#{i.nivel}">
+                            <span class="res-inst-icon"><span class="icon" aria-hidden="true">#{i.icono}</span></span>
+                            <div class="val-inst-body">
+                                <div class="val-inst-top">
+                                    <div class="val-inst-who">
+                                        <span class="val-inst-name">#{i.nombre}</span>
+                                        <span class="val-inst-sub">#{i.conDatos ? i.cantidad : 'Sin'} #{i.cantidad eq 1 ? 'valoración' : 'valoraciones'}</span>
+                                    </div>
+                                    <div class="val-score">
+                                        <span class="icon" aria-hidden="true">star</span>
+                                        <strong>#{i.promedioTexto}</strong>
+                                    </div>
+                                </div>
+                                <div class="val-track"><span style="width: #{i.porcentaje}%"></span></div>
+                                <ui:fragment rendered="#{i.paraRevisar or not empty i.tendencia}">
+                                    <div class="val-chips">
+                                        <ui:fragment rendered="#{i.paraRevisar}">
+                                            <span class="adm-chip adm-chip-off"><span class="icon" aria-hidden="true">warning</span>Para revisar</span>
+                                        </ui:fragment>
+                                        <ui:fragment rendered="#{not empty i.tendencia}">
+                                            <span class="adm-chip adm-chip-#{i.tendenciaClase}">
+                                                <span class="icon" aria-hidden="true">#{i.tendenciaClase eq 'ok' ? 'trending_up' : i.tendenciaClase eq 'off' ? 'trending_down' : 'trending_flat'}</span>#{i.tendencia}
+                                            </span>
+                                        </ui:fragment>
+                                    </div>
+                                </ui:fragment>
+                            </div>
+                        </li>
+                    </ui:repeat>
+                </ul>
+                <p class="val-key">
+                    <span><i class="val-dot val-k-alto"></i>4 o más: muy bien</span>
+                    <span><i class="val-dot val-k-medio"></i>3,5 a 4: aceptable</span>
+                    <span><i class="val-dot val-k-bajo"></i>menos de 3,5: para revisar</span>
+                </p>
+            </section>
+        </div>
+
+        <section class="adm-card soc-card" aria-labelledby="tValoraciones">
+            <header class="adm-card-head">
+                <h2 class="adm-card-title" id="tValoraciones">Todas las valoraciones</h2>
+            </header>
+
+            <!-- Filtros: recortan la tabla de abajo por AJAX -->
+            <h:form id="filtros" styleClass="soc-toolbar">
+                <h:selectOneMenu value="#{adminValoracionesBean.instalacion}" styleClass="soc-select"
+                                 p:aria-label="Filtrar por instalación">
+                    <f:selectItem itemValue="" itemLabel="Todas las instalaciones"/>
+                    <f:selectItems value="#{adminValoracionesBean.instalaciones}"/>
+                    <f:ajax listener="#{adminValoracionesBean.filtrar}" render=":tabla"/>
+                </h:selectOneMenu>
+
+                <h:selectOneMenu value="#{adminValoracionesBean.puntaje}" styleClass="soc-select"
+                                 p:aria-label="Filtrar por puntaje">
+                    <f:selectItem itemValue="" itemLabel="Cualquier puntaje"/>
+                    <f:selectItem itemValue="BAJAS" itemLabel="1 y 2 estrellas (para revisar)"/>
+                    <f:selectItem itemValue="5" itemLabel="5 estrellas"/>
+                    <f:selectItem itemValue="4" itemLabel="4 estrellas"/>
+                    <f:selectItem itemValue="3" itemLabel="3 estrellas"/>
+                    <f:selectItem itemValue="2" itemLabel="2 estrellas"/>
+                    <f:selectItem itemValue="1" itemLabel="1 estrella"/>
+                    <f:ajax listener="#{adminValoracionesBean.filtrar}" render=":tabla"/>
+                </h:selectOneMenu>
+
+                <h:selectOneMenu value="#{adminValoracionesBean.comentario}" styleClass="soc-select"
+                                 p:aria-label="Filtrar por comentario">
+                    <f:selectItem itemValue="" itemLabel="Con o sin comentario"/>
+                    <f:selectItem itemValue="CON" itemLabel="Solo con comentario"/>
+                    <f:ajax listener="#{adminValoracionesBean.filtrar}" render=":tabla"/>
+                </h:selectOneMenu>
+
+                <h:commandLink styleClass="soc-btn"
+                               action="#{adminValoracionesBean.limpiar}" title="Quitar todos los filtros">
+                    <f:ajax execute="@this" render=":filtros :tabla"/>
+                    <span class="icon" aria-hidden="true">close</span>Limpiar
+                </h:commandLink>
+
+                <h:commandLink styleClass="soc-btn" action="#{adminValoracionesBean.mostrarTodo}"
+                               title="Guardar la lista completa como PDF (se abre el cuadro de impresión: elegí «Guardar como PDF»)">
+                    <f:ajax execute="@this" render=":tabla" onevent="sigridImprimir"/>
+                    <span class="icon" aria-hidden="true">download</span>Exportar PDF
+                </h:commandLink>
+            </h:form>
+
+            <h:panelGroup id="tabla" layout="block">
+                <ui:fragment rendered="#{empty adminValoracionesBean.visibles}">
+                    <div class="adm-empty">
+                        <span class="icon" aria-hidden="true">star</span>
+                        <p>#{adminValoracionesBean.total eq 0 ? 'Todavía no hay valoraciones.' : 'Ninguna valoración coincide con los filtros.'}</p>
+                    </div>
+                </ui:fragment>
+
+                <ui:fragment rendered="#{not empty adminValoracionesBean.visibles}">
+                    <div class="adm-table-wrap">
+                        <table class="adm-table">
+                            <thead>
+                                <tr>
+                                    <th scope="col">Fecha</th>
+                                    <th scope="col">Instalación</th>
+                                    <th scope="col">Socio</th>
+                                    <th scope="col">Puntaje</th>
+                                    <th scope="col">Comentario</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <ui:repeat var="v" value="#{adminValoracionesBean.visibles}">
+                                    <tr>
+                                        <td class="adm-nowrap">
+                                            <span class="adm-cell-main">#{v.fechaTexto}</span>
+                                            <span class="adm-cell-sub">turno #{v.turno}</span>
+                                        </td>
+                                        <td>
+                                            <div class="soc-who">
+                                                <span class="res-inst-icon"><span class="icon" aria-hidden="true">#{v.icono}</span></span>
+                                                <span>
+                                                    <span class="adm-cell-main">#{v.instalacion}</span>
+                                                    <span class="adm-cell-sub">#{v.disciplina}</span>
+                                                </span>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <span class="adm-cell-main">#{v.socio}</span>
+                                            <span class="adm-cell-sub">#{v.categoria}</span>
+                                        </td>
+                                        <td class="adm-nowrap">
+                                            <span class="val-stars" title="#{v.puntaje} de 5">
+                                                <ui:repeat var="n" value="#{adminValoracionesBean.escala}">
+                                                    <span class="icon val-star #{n le v.puntaje ? 'is-on' : ''}" aria-hidden="true">star</span>
+                                                </ui:repeat>
+                                            </span>
+                                            <span class="val-sr">#{v.puntaje} de 5 estrellas</span>
+                                        </td>
+                                        <td class="val-comentario">
+                                            <ui:fragment rendered="#{v.conComentario}">#{v.comentario}</ui:fragment>
+                                            <ui:fragment rendered="#{not v.conComentario}"><span class="adm-cell-sub">Sin comentario</span></ui:fragment>
+                                        </td>
+                                    </tr>
+                                </ui:repeat>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <h:form id="pie" styleClass="res-foot">
+                        <span>Mostrando #{adminValoracionesBean.visibles.size()} de #{adminValoracionesBean.totalFiltradas}</span>
+                        <h:commandLink styleClass="soc-btn" rendered="#{adminValoracionesBean.hayMas}"
+                                       action="#{adminValoracionesBean.verMas}">
+                            <f:ajax execute="@this" render=":tabla"/>
+                            Ver más
+                        </h:commandLink>
+                    </h:form>
+                </ui:fragment>
+            </h:panelGroup>
+        </section>
+
+    </ui:define>
+
+</ui:composition>

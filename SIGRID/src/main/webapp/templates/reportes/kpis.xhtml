@@ -1,0 +1,22 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!-- Cifras con su variación. Parámetro: kpis (List<ReporteKpi>) -->
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:ui="jakarta.faces.facelets">
+    <div class="adm-kpis rep-kpis">
+        <ui:repeat var="k" value="#{kpis}">
+            <article class="adm-kpi">
+                <div class="adm-kpi-head">
+                    <span class="adm-kpi-icon #{k.alerta ? 'is-alert' : ''}"><span class="icon" aria-hidden="true">#{k.icono}</span></span>
+                    <h2 class="adm-kpi-label">#{k.etiqueta}</h2>
+                </div>
+                <p class="adm-kpi-value">#{k.valor}</p>
+                <p class="adm-kpi-sub">#{k.sub}</p>
+                <ui:fragment rendered="#{k.conVariacion}">
+                    <span class="adm-chip adm-chip-#{k.variacionClase} rep-var">
+                        <span class="icon" aria-hidden="true">#{k.variacionClase eq 'ok' ? 'trending_up' : k.variacionClase eq 'off' ? 'trending_down' : 'trending_flat'}</span>#{k.variacion}
+                    </span>
+                </ui:fragment>
+            </article>
+        </ui:repeat>
+    </div>
+</ui:composition>

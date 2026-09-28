@@ -1,0 +1,42 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!-- Carnet digital del socio. Parámetros: iniciales, nombre, numero, desde ("03/2024"); opcionales: plano (true: sin
+     inclinación ni escala, para verlo dentro de una ficha), congelado (true: membresía vencida). -->
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:h="jakarta.faces.html"
+                xmlns:ui="jakarta.faces.facelets">
+    <div class="id-card #{plano ? 'id-card-plano' : ''} #{congelado ? 'is-congelado' : ''}">
+        <span class="id-card-watermark">
+            <h:graphicImage value="/assets/unse-shield.png" alt=""/>
+        </span>
+
+        <div class="id-card-top">
+            <div class="id-card-brand">
+                <h:graphicImage value="/assets/unse-shield.png" alt="" styleClass="id-card-logo"/>
+                <div class="id-card-brand-text">
+                    <span>Polideportivo</span>
+                    <strong>UNSE</strong>
+                </div>
+            </div>
+            <span class="id-card-badge">#{congelado ? 'Congelado' : 'Socio'}</span>
+        </div>
+
+        <div class="id-card-body">
+            <div class="id-card-avatar">#{iniciales}</div>
+            <div class="id-card-fields">
+                <div>
+                    <span class="id-label">Nombre y apellido</span>
+                    <span class="id-value">#{nombre}</span>
+                </div>
+                <div>
+                    <span class="id-label">N.° de socio</span>
+                    <span class="id-value">#{numero}</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="id-card-footer">
+            <span class="id-card-since">Socio desde #{desde}</span>
+            <span class="id-card-dots"><i></i><i></i><i></i><i></i><i></i><i></i></span>
+        </div>
+    </div>
+</ui:composition>

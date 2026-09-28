@@ -1,0 +1,107 @@
+/* =====================================================================
+   SIGRID · Estilos del listado de reservas del administrador (prefijo .res-)
+   Se carga DESPUÉS de admin.css y socios.css (la barra de filtros, el select y el botón son .soc-*).
+   ===================================================================== */
+
+.adm-kpis.soc-kpis {
+  margin-bottom: 20px;
+}
+
+/* card de lo recaudado hoy (los estilos base son .mem-*, de membresias.css): siete barras en vez de seis */
+.res-hero {
+  margin-bottom: 20px;
+}
+
+.res-hero .mem-bars {
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+}
+
+.res-hero-count {
+  margin-top: 10px;
+}
+
+/* dos rankings lado a lado */
+.res-duo {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 20px;
+  margin-bottom: 20px;
+}
+
+.res-rank {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.res-rank li {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.res-rank-icon,
+.res-inst-icon {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  background: var(--adm-soft);
+  color: var(--adm-ink-2);
+}
+
+.res-rank-icon .icon,
+.res-inst-icon .icon {
+  font-size: 19px;
+}
+
+.res-rank-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.res-rank-line {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: .84rem;
+}
+
+.res-rank-name {
+  overflow: hidden;
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.res-rank-num {
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: var(--adm-ink-2);
+}
+
+.res-rank .adm-meter {
+  margin: 6px 0 0;
+}
+
+/* pie de la tabla: cuántas se ven y "Ver más" */
+.res-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 14px;
+  font-size: .78rem;
+  color: var(--adm-ink-3);
+}
+
+@media (max-width: 900px) {
+  .res-duo {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

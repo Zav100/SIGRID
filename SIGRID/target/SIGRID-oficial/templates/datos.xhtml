@@ -1,0 +1,16 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!-- Lista de datos "etiqueta: valor" de una ficha. Parámetro: datos (List<Dato>) -->
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:ui="jakarta.faces.facelets">
+    <dl class="soc-dl">
+        <ui:repeat var="d" value="#{datos}">
+            <div>
+                <dt>#{d.etiqueta}</dt>
+                <dd>
+                    <ui:fragment rendered="#{d.chip}"><span class="adm-chip adm-chip-#{d.chipClase}">#{d.valor}</span></ui:fragment>
+                    <ui:fragment rendered="#{not d.chip}">#{d.valor}</ui:fragment>
+                </dd>
+            </div>
+        </ui:repeat>
+    </dl>
+</ui:composition>

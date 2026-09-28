@@ -1,0 +1,162 @@
+/* =====================================================================
+   SIGRID · Estilos de cancelaciones y reprogramaciones del administrador (prefijo .cam-)
+   Se carga DESPUÉS de admin.css, socios.css, membresias.css (pestañas .mem-tab) y solicitudes.css
+   (las cards de pedidos son .sol-*, el ícono de instalación .res-inst-icon).
+   ===================================================================== */
+
+/* pestañas: una debajo de la barra de búsqueda */
+.mem-tabs {
+  margin-bottom: 16px;
+}
+
+/* aclaración de cada pestaña */
+.cam-nota {
+  margin: 0 0 14px;
+  font-size: .8rem;
+  color: var(--adm-ink-3);
+}
+
+/* un dato que ocupa las dos columnas de la card */
+.sol-datos .cam-full {
+  grid-column: 1 / -1;
+}
+
+.cam-arrow {
+  display: inline-grid;
+  vertical-align: middle;
+  margin: 0 6px;
+  color: var(--adm-ink-3);
+}
+
+.cam-arrow .icon,
+.cam-inline {
+  font-size: 17px;
+}
+
+.cam-inline {
+  margin-right: 6px;
+  vertical-align: middle;
+  color: var(--adm-ink-3);
+}
+
+.cam-plazo {
+  color: var(--adm-ink-2);
+}
+
+.cam-motivo {
+  max-width: 280px;
+  color: var(--adm-ink-2);
+}
+
+/* ============ INDICADORES: cuatro en una fila y más compactos ============ */
+.adm-kpis.soc-kpis {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.soc-kpis .adm-kpi {
+  padding: 14px 16px;
+}
+
+.soc-kpis .adm-kpi-icon {
+  width: 30px;
+  height: 30px;
+  border-radius: 9px;
+}
+
+.soc-kpis .adm-kpi-icon .icon {
+  font-size: 18px;
+}
+
+.soc-kpis .adm-kpi-value {
+  margin: 8px 0 2px;
+  font-size: 1.7rem;
+}
+
+/* ============ TURNO ACTUAL Y TURNO NUEVO ============ */
+.cam-cambio {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.cam-turno {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 9px 12px;
+  border-radius: 12px;
+  font-size: .84rem;
+}
+
+.cam-turno strong {
+  font-weight: 700;
+}
+
+.cam-turno-label {
+  font-size: .68rem;
+  font-weight: 600;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+}
+
+/* el turno que se deja: gris apagado y tachado (el verde queda solo para los botones de aceptar) */
+.cam-turno-viejo {
+  background: var(--adm-soft);
+  color: var(--adm-ink-3);
+}
+
+.cam-turno-viejo strong {
+  font-weight: 600;
+  text-decoration: line-through;
+}
+
+/* el turno que se pide: gris oscuro con letra blanca, es lo que hay que mirar antes de aprobar */
+.cam-turno-nuevo {
+  background: #4A4544;
+  color: #FEFDFB;
+}
+
+.cam-turno-nuevo .cam-turno-label {
+  color: #D5CFCB;
+}
+
+.cam-turno-nuevo strong {
+  font-size: .95rem;
+}
+
+/* lo que pasa si se aprueba una cancelación: nota neutra con una barra gris oscura al costado */
+.cam-turno-credito {
+  border-left: 3px solid #8B8582;
+  border-radius: 4px 12px 12px 4px;
+  background: var(--adm-soft);
+  color: var(--adm-ink-2);
+}
+
+.cam-chip-repro {
+  background: #4A4544;
+  color: #FEFDFB;
+}
+
+.cam-flecha {
+  display: grid;
+  place-items: center;
+  color: var(--adm-ink-3);
+  transform: rotate(90deg);
+}
+
+.cam-flecha .icon {
+  font-size: 18px;
+}
+
+@media (max-width: 1100px) {
+  .adm-kpis.soc-kpis {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 480px) {
+  .adm-kpis.soc-kpis {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

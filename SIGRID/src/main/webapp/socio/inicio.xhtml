@@ -1,0 +1,229 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:h="jakarta.faces.html"
+                xmlns:f="jakarta.faces.core"
+                xmlns:ui="jakarta.faces.facelets"
+                template="/templates/socio.xhtml">
+
+    <ui:define name="titulo">
+        Inicio | Polideportivo UNSE
+    </ui:define>
+
+    <ui:define name="content">
+        <div class="so-grid">
+
+            <!-- ============ COLUMNA PRINCIPAL ============ -->
+            <div class="so-col">
+
+                <!-- Valoración pendiente -->
+                <ui:fragment rendered="#{socioBean.cantidadPorValorar gt 0}">
+                    <article class="so-card so-empty-cta so-cta-warn">
+                        <span class="so-ico so-ico-lg so-ico-warn"><span class="icon" aria-hidden="true">star</span></span>
+                        <div>
+                            <h2>Valoración pendiente</h2>
+                            <p>Contanos cómo estuvo tu último turno. Sin valorar no podés hacer nuevas reservas.</p>
+                        </div>
+                        <h:link outcome="/socio/mis-reservas" styleClass="so-btn so-btn-sm">Valorar ahora</h:link>
+                    </article>
+                </ui:fragment>
+
+                <!-- Números de un vistazo -->
+                <section class="so-stats" aria-label="Resumen de tus reservas">
+                    <article class="so-stat">
+                        <span class="so-ico"><span class="icon" aria-hidden="true">event_available</span></span>
+                        <div>
+                            <p class="so-stat-num">#{socioBean.cantidadProximas}</p>
+                            <p class="so-stat-label">Reservas próximas</p>
+                        </div>
+                    </article>
+                    <article class="so-stat">
+                        <span class="so-ico so-ico-soft"><span class="icon" aria-hidden="true">task_alt</span></span>
+                        <div>
+                            <p class="so-stat-num">#{socioBean.cantidadRealizadas}</p>
+                            <p class="so-stat-label">Reservas realizadas</p>
+                        </div>
+                    </article>
+                    <article class="so-stat #{socioBean.cantidadPorPagar gt 0 ? 'is-alert' : ''}">
+                        <span class="so-ico #{socioBean.cantidadPorPagar gt 0 ? 'so-ico-warn' : 'so-ico-soft'}"><span class="icon" aria-hidden="true">receipt_long</span></span>
+                        <div>
+                            <p class="so-stat-num">#{socioBean.cantidadPorPagar}</p>
+                            <p class="so-stat-label">Falta subir el comprobante</p>
+                        </div>
+                    </article>
+                </section>
+
+                <!-- Carnet + membresía -->
+                <div class="so-card-row">
+                    <div class="so-carnet">
+                        <ui:include src="/templates/carnet.xhtml">
+                            <ui:param name="iniciales" value="#{socioBean.perfil.iniciales}"/>
+                            <ui:param name="nombre" value="#{socioBean.perfil.nombre}"/>
+                            <ui:param name="numero" value="#{socioBean.perfil.numero}"/>
+                            <ui:param name="desde" value="#{socioBean.perfil.desde}"/>
+                            <ui:param name="plano" value="#{true}"/>
+                            <ui:param name="congelado" value="#{not socioBean.perfil.vigente}"/>
+                        </ui:include>
+                        <p class="so-carnet-note">
+                            <span class="icon" aria-hidden="true">#{socioBean.perfil.vigente ? 'verified' : 'lock'}</span>
+                            #{socioBean.perfil.vigente ? 'Carnet digital activo' : 'Carnet congelado: renová tu membresía para reactivarlo'}
+                        </p>
+                    </div>
+
+                    <article class="so-card so-mem #{not socioBean.perfil.vigente ? 'is-off' : socioBean.perfil.vence ne null and socioBean.perfil.diasRestantes le 7 ? 'is-warn' : ''}">
+                        <header class="so-mem-head">
+                            <span class="so-ico"><span class="icon" aria-hidden="true">card_membership</span></span>
+                            <h2>Tu membresía</h2>
+                        </header>
+
+                        <ui:fragment rendered="#{socioBean.perfil.vigente and socioBean.perfil.vence ne null}">
+                            <p class="so-mem-lead">Tu membresía vence en</p>
+                            <p class="so-mem-num">#{socioBean.perfil.diasRestantes}
+                                <span>#{socioBean.perfil.diasRestantes eq 1 ? 'día' : 'días'}</span></p>
+                            <div class="so-bar" role="progressbar" aria-valuemin="0" aria-valuemax="100"
+                                 aria-valuenow="#{socioBean.perfil.progreso}" aria-label="Tiempo transcurrido de tu membresía">
+                                <span style="width: #{socioBean.perfil.progreso}%"></span>
+                            </div>
+                            <p class="so-mem-foot">Vence el #{socioBean.perfil.vence}</p>
+                            <ui:fragment rendered="#{socioBean.perfil.diasRestantes le 7}">
+                                <p class="so-mem-callout"><span class="icon" aria-hidden="true">hourglass_top</span>Renovala a tiempo para no perder tu carnet ni tus reservas.</p>
+                            </ui:fragment>
+                        </ui:fragment>
+
+                        <ui:fragment rendered="#{socioBean.perfil.vigente and socioBean.perfil.vence eq null}">
+                            <p class="so-mem-lead">Estado</p>
+                            <p class="so-mem-num so-mem-text">Vigente</p>
+                        </ui:fragment>
+
+                        <ui:fragment rendered="#{not socioBean.perfil.vigente}">
+                            <p class="so-mem-lead">Estado</p>
+                            <p class="so-mem-num so-mem-text">Vencida</p>
+                            <p class="so-mem-foot">
+                                <ui:fragment rendered="#{socioBean.perfil.vence eq null}">Todavía no tenés una membresía vigente.</ui:fragment>
+                                <ui:fragment rendered="#{socioBean.perfil.vence ne null}">Venció el #{socioBean.perfil.vence}</ui:fragment>
+                            </p>
+                            <p class="so-mem-callout"><span class="icon" aria-hidden="true">info</span>Renovala para volver a reservar y descongelar tu carnet.</p>
+                        </ui:fragment>
+                    </article>
+                </div>
+
+                <!-- Próxima reserva -->
+                <ui:fragment rendered="#{socioBean.proxima ne null}">
+                    <article class="so-next">
+                        <span class="so-next-mark icon" aria-hidden="true">#{socioBean.proxima.icono}</span>
+                        <p class="so-eyebrow">Tu próxima reserva</p>
+                        <p class="so-next-when">#{socioBean.proxima.cuando}</p>
+                        <p class="so-next-line"><span class="icon" aria-hidden="true">schedule</span>#{socioBean.proxima.horario}</p>
+                        <p class="so-next-line"><span class="icon" aria-hidden="true">#{socioBean.proxima.icono}</span>#{socioBean.proxima.instalacion}</p>
+                        <div class="so-next-foot">
+                            <span class="so-chip so-chip-glass">#{socioBean.proxima.estadoTexto}</span>
+                            <h:link outcome="/socio/mis-reservas" styleClass="so-next-link">
+                                Ver mis reservas<span class="icon" aria-hidden="true">arrow_forward</span>
+                            </h:link>
+                        </div>
+                    </article>
+                </ui:fragment>
+                <ui:fragment rendered="#{socioBean.proxima eq null}">
+                    <article class="so-card so-empty-cta">
+                        <span class="so-ico so-ico-lg"><span class="icon" aria-hidden="true">event_available</span></span>
+                        <div>
+                            <h2>Todavía no tenés reservas próximas</h2>
+                            <p>Elegí una cancha, el SUM o un quincho y reservá tu turno en un minuto.</p>
+                        </div>
+                        <h:link outcome="/socio/nueva-reserva" styleClass="so-btn so-btn-sm">
+                            <span class="icon" aria-hidden="true">add</span>Reservar
+                        </h:link>
+                    </article>
+                </ui:fragment>
+
+                <!-- Próximos 7 días -->
+                <section class="so-card" aria-labelledby="tSemana">
+                    <header class="so-card-head">
+                        <h2 id="tSemana"><span class="icon" aria-hidden="true">calendar_today</span>Tus próximos 7 días</h2>
+                    </header>
+                    <div class="so-week">
+                        <ui:repeat var="d" value="#{socioBean.proximosDias}">
+                            <div class="so-day #{d.hoy ? 'is-hoy' : ''} #{d.reservas gt 0 ? 'has' : ''}">
+                                <span class="so-day-w">#{d.dia}</span>
+                                <span class="so-day-n">#{d.numero}</span>
+                                <span class="so-day-tag">#{d.reservas gt 0 ? d.reservas : ''}</span>
+                            </div>
+                        </ui:repeat>
+                    </div>
+                </section>
+
+                <!-- Avisos -->
+                <section class="so-card" aria-labelledby="tAvisos">
+                    <header class="so-card-head">
+                        <h2 id="tAvisos"><span class="icon" aria-hidden="true">notifications</span>Avisos recientes</h2>
+                        <h:link outcome="/socio/avisos" styleClass="so-more">Ver todos<span class="icon" aria-hidden="true">chevron_right</span></h:link>
+                    </header>
+                    <ui:fragment rendered="#{empty socioBean.avisosRecientes}">
+                        <div class="so-empty">
+                            <span class="icon" aria-hidden="true">task_alt</span>
+                            <p>No tenés avisos por ahora.</p>
+                        </div>
+                    </ui:fragment>
+                    <ui:repeat var="a" value="#{socioBean.avisosRecientes}">
+                        <div class="so-aviso so-aviso-#{a.clase}">
+                            <span class="so-aviso-ico"><span class="icon" aria-hidden="true">#{a.icono}</span></span>
+                            <div class="so-aviso-body">
+                                <p class="so-aviso-title">#{a.titulo}</p>
+                                <p class="so-aviso-text">#{a.texto}</p>
+                            </div>
+                            <span class="so-aviso-when">#{a.cuando}</span>
+                        </div>
+                    </ui:repeat>
+                </section>
+            </div>
+
+            <!-- ============ COLUMNA LATERAL ============ -->
+            <aside class="so-col">
+                <h:link outcome="/socio/nueva-reserva" styleClass="so-cta">
+                    <span class="so-cta-ico"><span class="icon" aria-hidden="true">add</span></span>
+                    <span class="so-cta-text"><strong>Nueva reserva</strong><span>Canchas, SUM y quinchos</span></span>
+                    <span class="icon so-cta-go" aria-hidden="true">arrow_forward</span>
+                </h:link>
+
+                <section class="so-card" aria-labelledby="tTarifas">
+                    <header class="so-card-head">
+                        <h2 id="tTarifas"><span class="icon" aria-hidden="true">sell</span>Tarifas vigentes</h2>
+                        <span class="so-chip so-chip-muted">#{socioBean.perfil.categoria}</span>
+                    </header>
+                    <ul class="so-tarifas">
+                        <ui:fragment rendered="#{socioBean.cuota ne null}">
+                            <li class="so-tarifa-cuota">
+                                <span class="so-ico"><span class="icon" aria-hidden="true">card_membership</span></span>
+                                <div class="so-hist-text"><span class="so-hist-main">Membresía</span><span class="so-hist-sub">Cuota mensual</span></div>
+                                <strong>#{socioBean.cuota}</strong>
+                            </li>
+                        </ui:fragment>
+                        <ui:repeat var="t" value="#{socioBean.tarifas}">
+                            <li>
+                                <span class="so-ico so-ico-soft"><span class="icon" aria-hidden="true">#{t.icono}</span></span>
+                                <div class="so-hist-text"><span class="so-hist-main">#{t.nombre}</span><span class="so-hist-sub">Por turno</span></div>
+                                <strong>#{empty t.precio ? '—' : t.precio}</strong>
+                            </li>
+                        </ui:repeat>
+                    </ul>
+                </section>
+
+                <section class="so-card so-tips" aria-labelledby="tTips">
+                    <header class="so-card-head">
+                        <h2 id="tTips"><span class="icon" aria-hidden="true">info</span>Tené en cuenta</h2>
+                    </header>
+                    <ul>
+                        <li><span class="icon" aria-hidden="true">payments</span>Pagás por transferencia y tenés 60 minutos para subir el comprobante.</li>
+                        <li><span class="icon" aria-hidden="true">hourglass_top</span>La reserva no es automática: el administrador la confirma en hasta 24 h.</li>
+                        <li><span class="icon" aria-hidden="true">block</span>No hay devoluciones de dinero: si cancelás, te queda un crédito para reprogramar.</li>
+                        <li><span class="icon" aria-hidden="true">event_repeat</span>Podés pedir cancelar una reserva confirmada hasta 48 h antes.</li>
+                        <li><span class="icon" aria-hidden="true">cleaning_services</span>Dejá las instalaciones limpias y en orden al terminar.</li>
+                        <li><span class="icon" aria-hidden="true">luggage</span>El Polideportivo UNSE no se hace cargo de objetos perdidos.</li>
+                        <li><span class="icon" aria-hidden="true">verified</span>Llevá tu carnet digital cada vez que vengas.</li>
+                        <li><span class="icon" aria-hidden="true">pool</span>La pileta no se reserva: entrás en su horario de apertura.</li>
+                    </ul>
+                </section>
+            </aside>
+        </div>
+    </ui:define>
+
+</ui:composition>

@@ -1,0 +1,169 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:h="jakarta.faces.html"
+                xmlns:f="jakarta.faces.core"
+                xmlns:p="jakarta.faces.passthrough"
+                xmlns:ui="jakarta.faces.facelets"
+                template="/templates/public-home.xhtml">
+
+    <ui:define name="titulo">
+        Crear cuenta | Polideportivo UNSE
+    </ui:define>
+
+    <ui:define name="head">
+        <h:outputStylesheet library="css" name="register.css"/>
+        <h:outputScript library="scripts" name="register.js" target="body"/>
+    </ui:define>
+
+    <ui:define name="content">
+        <section class="register-section">
+            <div class="container">
+                <div class="register-wrap #{registroBean.pasoUnoCompletado ? 'register-wrap-paso2' : ''}" id="registroWrap">
+
+                    <div class="register-visual" id="registroVisual">
+                        <h:graphicImage value="/assets/unse-shield.png" alt="" styleClass="register-visual-logo"/>
+                        <p class="register-visual-brand">POLIDEPORTIVO <strong>UNSE</strong></p>
+                        <p class="register-visual-sub">Universidad Nacional Santiago del Estero</p>
+                    </div>
+
+                    <!-- ============ PASO 2 (queda a la izquierda, tapado por el panel visual hasta terminar el paso 1) ============ -->
+                    <div class="register-slot register-slot-left">
+                        <h:form id="pasoDosForm" styleClass="register-form">
+                            <h:graphicImage value="/assets/unse-shield.png" alt="" styleClass="register-watermark"/>
+                            <div class="register-form-inner">
+                                <h1 class="register-title">Continuar registro</h1>
+                                <p class="register-sub">Contanos un poco más sobre vos.</p>
+
+                                <ui:fragment rendered="#{not empty registroBean.errorPasoDos}">
+                                    <p class="auth-error" role="alert">#{registroBean.errorPasoDos}</p>
+                                </ui:fragment>
+
+                                <div class="register-row">
+                                    <div class="auth-field">
+                                        <h:outputLabel for="nombre" value="Nombre"/>
+                                        <h:inputText id="nombre" value="#{registroBean.datos.nombre}" maxlength="100"
+                                                     p:autocomplete="given-name"/>
+                                    </div>
+                                    <div class="auth-field">
+                                        <h:outputLabel for="apellido" value="Apellido"/>
+                                        <h:inputText id="apellido" value="#{registroBean.datos.apellido}" maxlength="100"
+                                                     p:autocomplete="family-name"/>
+                                    </div>
+                                </div>
+
+                                <div class="register-row">
+                                    <div class="auth-field">
+                                        <h:outputLabel for="dni" value="DNI"/>
+                                        <h:inputText id="dni" value="#{registroBean.datos.dni}" maxlength="15" p:inputmode="numeric"/>
+                                    </div>
+                                    <div class="auth-field">
+                                        <h:outputLabel for="nacimientoVisible" value="Fecha de nacimiento"/>
+                                        <div class="mini-calendar-wrap">
+                                            <input type="text" id="nacimientoVisible" placeholder="dd/mm/aaaa"
+                                                   readonly="readonly" autocomplete="off"/>
+                                            <span class="icon mini-calendar-icon" aria-hidden="true">calendar_month</span>
+                                            <h:inputHidden id="nacimientoIso" value="#{registroBean.datos.fechaNacimiento}"/>
+
+                                            <div class="mini-calendar" id="miniCalendario" hidden="hidden">
+                                                <div class="mini-calendar-head">
+                                                    <button type="button" class="mini-calendar-nav" id="miniCalPrev" aria-label="Mes anterior">
+                                                        <span class="icon mini-calendar-prev-icon" aria-hidden="true">arrow_forward</span>
+                                                    </button>
+                                                    <div class="mini-calendar-selects">
+                                                        <select id="miniCalMes" aria-label="Mes"></select>
+                                                        <select id="miniCalAnio" aria-label="Año"></select>
+                                                    </div>
+                                                    <button type="button" class="mini-calendar-nav" id="miniCalNext" aria-label="Mes siguiente">
+                                                        <span class="icon" aria-hidden="true">arrow_forward</span>
+                                                    </button>
+                                                </div>
+                                                <div class="mini-calendar-semanas">
+                                                    <span>Lu</span><span>Ma</span><span>Mi</span><span>Ju</span><span>Vi</span><span>Sá</span><span>Do</span>
+                                                </div>
+                                                <div class="mini-calendar-dias" id="miniCalDias"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="auth-field">
+                                    <h:outputLabel for="telefono" value="Teléfono"/>
+                                    <h:inputText id="telefono" value="#{registroBean.datos.telefono}" maxlength="30" p:inputmode="tel"/>
+                                </div>
+
+                                <div class="auth-field">
+                                    <span class="reg-label">Tipo de socio</span>
+                                    <div class="reg-toggle" id="tipoSocioToggle">
+                                        <button type="button" class="reg-toggle-btn" data-tipo-socio="EXTERNO">Externo</button>
+                                        <button type="button" class="reg-toggle-btn" data-tipo-socio="INTERNO">Interno</button>
+                                    </div>
+                                    <h:inputHidden id="tipoSocio" value="#{registroBean.datos.tipoSocio}"/>
+                                </div>
+
+                                <div class="reg-internos reg-internos-inactivo" id="regCamposInternos">
+                                    <div class="auth-field">
+                                        <h:outputLabel for="legajo" value="Legajo"/>
+                                        <h:inputText id="legajo" value="#{registroBean.datos.legajo}" maxlength="20"/>
+                                    </div>
+                                    <div class="auth-field">
+                                        <span class="reg-label">Categoría</span>
+                                        <div class="reg-toggle reg-toggle-3" id="categoriaToggle">
+                                            <button type="button" class="reg-toggle-btn" data-categoria="ALUMNO">Alumno</button>
+                                            <button type="button" class="reg-toggle-btn" data-categoria="DOCENTE">Docente</button>
+                                            <button type="button" class="reg-toggle-btn" data-categoria="NO_DOCENTE">No Docente</button>
+                                        </div>
+                                        <h:inputHidden id="categoriaInterna" value="#{registroBean.datos.categoriaInterna}"/>
+                                    </div>
+                                </div>
+
+                                <h:commandButton id="btnFinalizar" value="Finalizar registro" styleClass="btn btn-gold btn-deshabilitado"
+                                                 action="#{registroBean.finalizarRegistro}"/>
+                            </div>
+                        </h:form>
+                    </div>
+
+                    <!-- ============ PASO 1 (a la derecha; el panel visual lo tapa una vez completado) ============ -->
+                    <div class="register-slot register-slot-right">
+                        <h:form id="pasoUnoForm" styleClass="register-form">
+                            <h:graphicImage value="/assets/unse-shield.png" alt="" styleClass="register-watermark"/>
+                            <div class="register-form-inner">
+                                <h1 class="register-title">Crear cuenta</h1>
+                                <p class="register-sub">Sumate a la comunidad del Polideportivo UNSE.</p>
+
+                                <ui:fragment rendered="#{not empty registroBean.errorPasoUno}">
+                                    <p class="auth-error" role="alert">#{registroBean.errorPasoUno}</p>
+                                </ui:fragment>
+
+                                <div class="auth-field">
+                                    <h:outputLabel for="email" value="Correo electrónico"/>
+                                    <h:inputText id="email" value="#{registroBean.datos.email}" p:type="email" p:autocomplete="username"/>
+                                </div>
+                                <div class="auth-field">
+                                    <h:outputLabel for="password" value="Contraseña"/>
+                                    <h:inputSecret id="password" value="#{registroBean.datos.password}" redisplay="true"
+                                                   p:autocomplete="new-password"/>
+                                </div>
+                                <div class="auth-field">
+                                    <h:outputLabel for="confirmar" value="Repetir contraseña"/>
+                                    <h:inputSecret id="confirmar" value="#{registroBean.datos.confirmarPassword}" redisplay="true"
+                                                   p:autocomplete="new-password"/>
+                                </div>
+
+                                <h:commandButton value="Continuar" styleClass="btn btn-gold" action="#{registroBean.validarPasoUno}">
+                                    <f:ajax execute="@form" render="@form" onevent="sigridRegistroPasoUno"/>
+                                </h:commandButton>
+                                <span data-paso-uno-ok="#{registroBean.pasoUnoCompletado}" class="reg-marcador"></span>
+
+                                <p class="auth-alt">
+                                    ¿Ya tenés cuenta?
+                                    <h:link outcome="/login">Ingresá</h:link>
+                                </p>
+                            </div>
+                        </h:form>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </ui:define>
+
+</ui:composition>

@@ -1,0 +1,31 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!-- Lista con barras. Parámetros: items (List<ReporteItem>), vacio (texto si no hay filas) -->
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:ui="jakarta.faces.facelets">
+    <ui:fragment rendered="#{empty items}">
+        <div class="adm-empty">
+            <span class="icon" aria-hidden="true">bar_chart</span>
+            <p>#{vacio}</p>
+        </div>
+    </ui:fragment>
+    <ul class="rep-rank">
+        <ui:repeat var="i" value="#{items}">
+            <li>
+                <span class="res-rank-icon"><span class="icon" aria-hidden="true">#{i.icono}</span></span>
+                <span class="rep-rank-body">
+                    <span class="rep-rank-line">
+                        <span class="rep-rank-name">#{i.etiqueta}</span>
+                        <span class="rep-rank-num">#{i.valor}</span>
+                    </span>
+                    <span class="rep-meter rep-t-#{i.tono}">
+                        <span class="rep-m1" style="width: #{i.porcentaje}%"></span>
+                        <span class="rep-m2" style="width: #{i.porcentaje2}%"></span>
+                    </span>
+                    <ui:fragment rendered="#{not empty i.detalle}">
+                        <span class="rep-rank-detail">#{i.detalle}</span>
+                    </ui:fragment>
+                </span>
+            </li>
+        </ui:repeat>
+    </ul>
+</ui:composition>

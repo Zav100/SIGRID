@@ -1,0 +1,326 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:h="jakarta.faces.html"
+                xmlns:f="jakarta.faces.core"
+                xmlns:p="jakarta.faces.passthrough"
+                xmlns:ui="jakarta.faces.facelets"
+                template="/templates/admin-dashboard.xhtml">
+
+    <ui:define name="titulo">
+        Socios | Panel de administración
+    </ui:define>
+
+    <ui:define name="head">
+        <h:outputStylesheet library="css" name="socios.css"/>
+    </ui:define>
+
+    <ui:define name="content">
+
+        <!-- ============ ENCABEZADO ============ -->
+        <header class="adm-page-head">
+            <div>
+                <h1 class="adm-page-title">Socios</h1>
+            </div>
+        </header>
+
+        <!-- Indicadores: siempre sobre todos los socios; se vuelven a dibujar al dar de baja a uno -->
+        <h:panelGroup id="kpis" layout="block" styleClass="adm-kpis soc-kpis">
+            <article class="adm-kpi">
+                <div class="adm-kpi-head">
+                    <span class="adm-kpi-icon"><span class="icon" aria-hidden="true">group</span></span>
+                    <h2 class="adm-kpi-label">Total de socios</h2>
+                </div>
+                <p class="adm-kpi-value">#{adminSociosBean.total}</p>
+            </article>
+            <article class="adm-kpi">
+                <div class="adm-kpi-head">
+                    <span class="adm-kpi-icon"><span class="icon" aria-hidden="true">check_circle</span></span>
+                    <h2 class="adm-kpi-label">Membresía vigente</h2>
+                </div>
+                <p class="adm-kpi-value">#{adminSociosBean.vigentes}</p>
+            </article>
+            <article class="adm-kpi">
+                <div class="adm-kpi-head">
+                    <span class="adm-kpi-icon #{adminSociosBean.porVencer gt 0 ? 'is-alert' : ''}">
+                        <span class="icon" aria-hidden="true">card_membership</span>
+                    </span>
+                    <h2 class="adm-kpi-label">Por vencer</h2>
+                </div>
+                <p class="adm-kpi-value">#{adminSociosBean.porVencer}</p>
+                <p class="adm-kpi-sub">en los próximos #{adminSociosBean.diasPorVencer} días</p>
+            </article>
+            <article class="adm-kpi">
+                <div class="adm-kpi-head">
+                    <span class="adm-kpi-icon"><span class="icon" aria-hidden="true">event_busy</span></span>
+                    <h2 class="adm-kpi-label">Membresía expirada</h2>
+                </div>
+                <p class="adm-kpi-value">#{adminSociosBean.expiradas}</p>
+            </article>
+        </h:panelGroup>
+
+        <section class="adm-card soc-card" aria-labelledby="tSocios">
+            <header class="adm-card-head">
+                <h2 class="adm-card-title" id="tSocios">Listado de socios</h2>
+            </header>
+
+            <!-- Buscador y filtros: recortan la tabla de abajo por AJAX -->
+            <h:form id="filtros" styleClass="soc-toolbar">
+                <div class="adm-search soc-search" role="search">
+                    <span class="icon" aria-hidden="true">search</span>
+                    <h:inputText value="#{adminSociosBean.busqueda}" autocomplete="off"
+                                 p:placeholder="Buscar por nombre, DNI, correo o legajo…"
+                                 p:aria-label="Buscar socios"
+                                 onkeydown="if (event.key === 'Enter') return false;">
+                        <f:ajax event="keyup" delay="300" listener="#{adminSociosBean.filtrar}" render=":tabla"/>
+                    </h:inputText>
+                </div>
+
+                <h:selectOneMenu value="#{adminSociosBean.estado}" styleClass="soc-select"
+                                 p:aria-label="Filtrar por estado de la membresía">
+                    <f:selectItem itemValue="" itemLabel="Todas las membresías"/>
+                    <f:selectItem itemValue="VIGENTE" itemLabel="Vigente"/>
+                    <f:selectItem itemValue="EXPIRADA" itemLabel="Expirada"/>
+                    <f:ajax listener="#{adminSociosBean.filtrar}" render=":tabla"/>
+                </h:selectOneMenu>
+
+                <h:selectOneMenu value="#{adminSociosBean.tipo}" styleClass="soc-select"
+                                 p:aria-label="Filtrar por tipo de socio">
+                    <f:selectItem itemValue="" itemLabel="Todos los tipos"/>
+                    <f:selectItems value="#{adminSociosBean.tipos}"/>
+                    <f:ajax listener="#{adminSociosBean.filtrar}" render=":tabla"/>
+                </h:selectOneMenu>
+
+                <ui:include src="/templates/boton-pdf.xhtml">
+                    <ui:param name="clase" value="soc-btn"/>
+                </ui:include>
+            </h:form>
+
+            <h:panelGroup id="tabla" layout="block">
+                <!-- resultado de la última acción -->
+                <h:messages globalOnly="true" layout="list" styleClass="adm-flashes"
+                            infoClass="adm-flash adm-flash-ok" warnClass="adm-flash adm-flash-warn"
+                            errorClass="adm-flash adm-flash-off"/>
+
+                <ui:fragment rendered="#{empty adminSociosBean.filtrados}">
+                    <div class="adm-empty">
+                        <span class="icon" aria-hidden="true">group</span>
+                        <p>#{adminSociosBean.total eq 0 ? 'Todavía no hay socios.' : 'Ningún socio coincide con la búsqueda.'}</p>
+                    </div>
+                </ui:fragment>
+
+                <ui:fragment rendered="#{not empty adminSociosBean.filtrados}">
+                    <h:form id="filas">
+                        <div class="adm-table-wrap">
+                            <table class="adm-table">
+                                <thead>
+                                    <tr>
+                                        <th scope="col">Socio</th>
+                                        <th scope="col">Tipo</th>
+                                        <th scope="col">Membresía</th>
+                                        <th scope="col">Vence</th>
+                                        <th scope="col">Se unió</th>
+                                        <th scope="col" class="adm-col-actions">Acción</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <ui:repeat var="s" value="#{adminSociosBean.filtrados}">
+                                        <tr>
+                                            <td>
+                                                <div class="soc-who">
+                                                    <span class="adm-avatar" aria-hidden="true">#{s.iniciales}</span>
+                                                    <span>
+                                                        <span class="adm-cell-main">#{s.nombre}</span>
+                                                        <span class="adm-cell-sub">DNI #{s.dni} · #{s.email}</span>
+                                                    </span>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <span class="adm-cell-main soc-tipo">#{s.categoria}</span>
+                                                <ui:fragment rendered="#{not empty s.legajo}">
+                                                    <span class="adm-cell-sub">Legajo #{s.legajo}</span>
+                                                </ui:fragment>
+                                            </td>
+                                            <td>
+                                                <span class="adm-chip adm-chip-#{s.vigente ? 'ok' : 'off'}">#{s.vigente ? 'Vigente' : 'Expirada'}</span>
+                                            </td>
+                                            <td class="adm-nowrap #{s.porVencer ? 'soc-pronto' : ''}">#{empty s.vence ? '—' : s.vence}</td>
+                                            <td class="adm-nowrap">#{s.alta}</td>
+                                            <td class="adm-col-actions">
+                                                <div class="adm-actions">
+                                                    <!-- Detalle: abre la ficha de solo lectura. Editar: todavía sin función -->
+                                                    <h:commandLink styleClass="adm-icon-btn soc-act"
+                                                                   action="#{adminSociosBean.verDetalle(s.idSocio)}"
+                                                                   title="Ver detalle del socio" p:aria-label="Ver detalle de #{s.nombre}">
+                                                        <f:ajax execute="@this" render=":detalle :tabla"/>
+                                                        <span class="icon" aria-hidden="true">visibility</span>
+                                                    </h:commandLink>
+                                                    <h:commandLink styleClass="adm-icon-btn soc-act"
+                                                                   action="#{adminSociosBean.editar(s.idSocio)}"
+                                                                   title="Editar socio" p:aria-label="Editar a #{s.nombre}">
+                                                        <f:ajax execute="@this" render=":edicion :tabla"/>
+                                                        <span class="icon" aria-hidden="true">edit</span>
+                                                    </h:commandLink>
+                                                    <h:commandLink styleClass="adm-icon-btn soc-act soc-act-off"
+                                                                   action="#{adminSociosBean.darDeBaja(s.idSocio)}"
+                                                                   title="Dar de baja" p:aria-label="Dar de baja a #{s.nombre}"
+                                                                   onclick="return confirm('¿Dar de baja a este socio? Deja de figurar en el listado y su cuenta ya no podrá ingresar.')">
+                                                        <f:ajax execute="@this" render=":tabla :kpis"/>
+                                                        <span class="icon" aria-hidden="true">person_off</span>
+                                                    </h:commandLink>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    </ui:repeat>
+                                </tbody>
+                            </table>
+                        </div>
+                    </h:form>
+                </ui:fragment>
+            </h:panelGroup>
+        </section>
+
+        <!-- ============ FICHA DEL SOCIO (ventana emergente, solo lectura) ============ -->
+        <h:panelGroup id="detalle" layout="block">
+            <ui:fragment rendered="#{not empty adminSociosBean.detalle}">
+                <div class="soc-modal" role="dialog" aria-modal="true" aria-labelledby="tFicha"
+                     onclick="if (event.target === this) { this.querySelector('.js-cerrar-ficha').click(); }">
+                    <div class="soc-ficha">
+                        <header class="soc-ficha-head">
+                            <h2 id="tFicha">Información del socio</h2>
+                            <h:form id="cerrarFicha">
+                                <h:commandLink styleClass="soc-ficha-x js-cerrar-ficha"
+                                               action="#{adminSociosBean.cerrarDetalle}"
+                                               title="Cerrar" p:aria-label="Cerrar la ficha">
+                                    <f:ajax execute="@this" render=":detalle"/>
+                                    <span class="icon" aria-hidden="true">close</span>
+                                </h:commandLink>
+                            </h:form>
+                        </header>
+
+                        <div class="soc-ficha-body">
+                            <!-- avatar con las iniciales (los socios no tienen foto de perfil) -->
+                            <div class="soc-ficha-perfil">
+                                <span class="soc-ficha-avatar" aria-hidden="true">#{adminSociosBean.detalle.iniciales}</span>
+                                <h3 class="soc-ficha-nombre">#{adminSociosBean.detalle.nombre}</h3>
+                                <div class="soc-ficha-chips">
+                                    <span class="adm-chip adm-chip-muted">#{adminSociosBean.detalle.categoria}</span>
+                                    <span class="adm-chip adm-chip-#{adminSociosBean.detalle.vigente ? 'ok' : 'off'}">Membresía #{adminSociosBean.detalle.vigente ? 'vigente' : 'expirada'}</span>
+                                </div>
+                            </div>
+
+                            <ui:include src="/templates/carnet.xhtml">
+                                <ui:param name="iniciales" value="#{adminSociosBean.detalle.iniciales}"/>
+                                <ui:param name="nombre" value="#{adminSociosBean.detalle.nombre}"/>
+                                <ui:param name="numero" value="#{adminSociosBean.detalle.numero}"/>
+                                <ui:param name="desde" value="#{adminSociosBean.detalle.socioDesde}"/>
+                                <ui:param name="plano" value="#{true}"/>
+                                <ui:param name="congelado" value="#{not adminSociosBean.detalle.vigente}"/>
+                            </ui:include>
+
+                            <section class="soc-ficha-sec" aria-labelledby="fPersonales">
+                                <h3 id="fPersonales">Datos personales</h3>
+                                <ui:include src="/templates/datos.xhtml">
+                                    <ui:param name="datos" value="#{adminSociosBean.detalle.personales}"/>
+                                </ui:include>
+                            </section>
+
+                            <section class="soc-ficha-sec" aria-labelledby="fMembresia">
+                                <h3 id="fMembresia">Membresía</h3>
+                                <ui:include src="/templates/datos.xhtml">
+                                    <ui:param name="datos" value="#{adminSociosBean.detalle.membresia}"/>
+                                </ui:include>
+                            </section>
+
+                            <ui:fragment rendered="#{not empty adminSociosBean.detalle.historial}">
+                                <section class="soc-ficha-sec" aria-labelledby="fHistorial">
+                                    <h3 id="fHistorial">Últimas membresías</h3>
+                                    <ui:include src="/templates/datos.xhtml">
+                                        <ui:param name="datos" value="#{adminSociosBean.detalle.historial}"/>
+                                    </ui:include>
+                                </section>
+                            </ui:fragment>
+
+                            <section class="soc-ficha-sec" aria-labelledby="fActividad">
+                                <h3 id="fActividad">Actividad</h3>
+                                <ui:include src="/templates/datos.xhtml">
+                                    <ui:param name="datos" value="#{adminSociosBean.detalle.actividad}"/>
+                                </ui:include>
+                            </section>
+                        </div>
+                    </div>
+                </div>
+            </ui:fragment>
+        </h:panelGroup>
+        <!-- ============ EDITAR SOCIO (ventana emergente, mismo marco que la ficha) ============ -->
+        <h:panelGroup id="edicion" layout="block">
+            <ui:fragment rendered="#{not empty adminSociosBean.edicion}">
+                <div class="soc-modal" role="dialog" aria-modal="true" aria-labelledby="tEditar"
+                     onclick="if (event.target === this) { this.querySelector('.js-cerrar-ficha').click(); }">
+                    <div class="soc-ficha">
+                        <h:form id="editarForm" styleClass="soc-editar">
+                            <header class="soc-ficha-head">
+                                <h2 id="tEditar">Editar socio</h2>
+                                <h:commandLink styleClass="soc-ficha-x js-cerrar-ficha" action="#{adminSociosBean.cancelarEdicion}"
+                                               title="Cerrar" p:aria-label="Cerrar sin guardar">
+                                    <f:ajax execute="@this" render=":edicion"/>
+                                    <span class="icon" aria-hidden="true">close</span>
+                                </h:commandLink>
+                            </header>
+                            <div class="soc-ficha-body">
+                                <ui:fragment rendered="#{not empty adminSociosBean.errorEdicion}">
+                                    <p class="soc-error" role="alert">#{adminSociosBean.errorEdicion}</p>
+                                </ui:fragment>
+                                <div class="adm-fila">
+                                    <label class="adm-campo"><span>Nombre</span>
+                                        <h:inputText value="#{adminSociosBean.edicion.nombre}" styleClass="adm-input" maxlength="100"/>
+                                    </label>
+                                    <label class="adm-campo"><span>Apellido</span>
+                                        <h:inputText value="#{adminSociosBean.edicion.apellido}" styleClass="adm-input" maxlength="100"/>
+                                    </label>
+                                </div>
+                                <label class="adm-campo"><span>Correo</span>
+                                    <h:inputText value="#{adminSociosBean.edicion.email}" styleClass="adm-input" maxlength="255"/>
+                                </label>
+                                <div class="adm-fila">
+                                    <label class="adm-campo"><span>Teléfono</span>
+                                        <h:inputText value="#{adminSociosBean.edicion.telefono}" styleClass="adm-input" maxlength="30"/>
+                                    </label>
+                                    <label class="adm-campo"><span>Nacimiento</span>
+                                        <h:inputText value="#{adminSociosBean.edicion.nacimiento}" styleClass="adm-input" p:type="date"/>
+                                    </label>
+                                </div>
+                                <div class="adm-fila">
+                                    <label class="adm-campo"><span>DNI</span>
+                                        <h:inputText value="#{adminSociosBean.edicion.dni}" styleClass="adm-input" maxlength="15"/>
+                                    </label>
+                                    <label class="adm-campo"><span>Legajo (solo UNSE)</span>
+                                        <h:inputText value="#{adminSociosBean.edicion.legajo}" styleClass="adm-input" maxlength="20"/>
+                                    </label>
+                                </div>
+                                <label class="adm-campo"><span>Tipo de socio</span>
+                                    <h:selectOneMenu value="#{adminSociosBean.edicion.categoria}" styleClass="adm-input">
+                                        <f:selectItems value="#{adminSociosBean.tipos}"/>
+                                    </h:selectOneMenu>
+                                </label>
+                                <h:commandLink styleClass="adm-act adm-act-ok" action="#{adminSociosBean.guardarEdicion}">
+                                    <f:ajax execute="@form" render=":edicion :tabla :kpis"/>
+                                    <span class="icon" aria-hidden="true">check_circle</span>Guardar cambios
+                                </h:commandLink>
+                            </div>
+                        </h:form>
+                    </div>
+                </div>
+            </ui:fragment>
+        </h:panelGroup>
+        <script>
+            document.addEventListener('keydown', function (e) {
+                var cerrar = e.key === 'Escape' ? document.querySelector('.js-cerrar-ficha') : null;
+                if (cerrar) {
+                    cerrar.click();
+                }
+            });
+        </script>
+
+    </ui:define>
+
+</ui:composition>

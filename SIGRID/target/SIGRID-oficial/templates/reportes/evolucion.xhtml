@@ -1,0 +1,21 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!-- Barras apiladas de ingresos (reservas y membresías). Parámetros: barras (List<ReporteBarra>), maximo (texto) -->
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:ui="jakarta.faces.facelets">
+    <div class="rep-legend">
+        <span><i class="rep-swatch rep-sw-r"></i>Reservas</span>
+        <span><i class="rep-swatch rep-sw-m"></i>Membresías</span>
+        <span class="rep-legend-max">Barra más alta: #{maximo}</span>
+    </div>
+    <ul class="rep-bars" role="img" aria-label="Ingresos por reservas y membresías a lo largo del período">
+        <ui:repeat var="b" value="#{barras}">
+            <li class="rep-bar" title="#{b.titulo}">
+                <span class="rep-bar-stack">
+                    <span class="rep-seg rep-seg-r" style="height: #{b.altoReservas}%"></span>
+                    <span class="rep-seg rep-seg-m" style="height: #{b.altoMembresias}%"></span>
+                </span>
+                <span class="rep-bar-label">#{b.mostrarEtiqueta ? b.etiqueta : ''}</span>
+            </li>
+        </ui:repeat>
+    </ul>
+</ui:composition>

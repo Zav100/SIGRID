@@ -1,0 +1,295 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:h="jakarta.faces.html"
+                xmlns:ui="jakarta.faces.facelets"
+                template="/templates/public-home.xhtml">
+
+    <ui:define name="titulo">
+        Preguntas Frecuentes | Polideportivo UNSE
+    </ui:define>
+
+    <ui:define name="head">
+        <h:outputStylesheet library="css" name="faqpage.css"/>
+    </ui:define>
+
+    <ui:define name="content">
+
+        <!-- ============ PREGUNTAS FRECUENTES ============ -->
+        <section class="section" id="preguntas-frecuentes">
+            <div class="container">
+
+                <div class="faq-search reveal">
+                    <span class="icon" aria-hidden="true">search</span>
+                    <input type="text" placeholder="Buscá una pregunta, por ejemplo: reservar"/>
+                    <button type="button" class="btn btn-maroon">Buscar</button>
+                </div>
+
+                <div class="faq-filters reveal">
+                    <button type="button" class="filter-pill active" data-filtro="todas">Todas</button>
+                    <button type="button" class="filter-pill" data-filtro="socios">Socios</button>
+                    <button type="button" class="filter-pill" data-filtro="reservas">Reservas</button>
+                    <button type="button" class="filter-pill" data-filtro="instalaciones">Instalaciones</button>
+                    <button type="button" class="filter-pill" data-filtro="pileta">Pileta</button>
+                </div>
+
+                <div class="faq-layout">
+                    <div class="faq-main reveal">
+
+                        <div class="faq-category" data-categoria="socios">
+                            <p class="eyebrow eyebrow-left">— SOCIOS</p>
+                            <h2 class="section-title">Asociarse y carnet</h2>
+
+                            <details class="faq-item" open="open">
+                                <summary class="faq-question">
+                                    <span>¿Quiénes pueden asociarse al Polideportivo?</span>
+                                    <span class="faq-toggle">
+                                        <span class="icon" aria-hidden="true">arrow_forward</span>
+                                    </span>
+                                </summary>
+                                <p class="faq-answer">
+                                    Estudiantes, docentes, no docentes y graduados de la UNSE. También pueden sumarse aquellos que
+                                    no formen parte de la universidad como socios externos.
+                                </p>
+                            </details>
+
+                            <details class="faq-item">
+                                <summary class="faq-question">
+                                    <span>¿Qué necesito para asociarme?</span>
+                                    <span class="faq-toggle">
+                                        <span class="icon" aria-hidden="true">arrow_forward</span>
+                                    </span>
+                                </summary>
+                                <p class="faq-answer">
+                                    Necesitás presentar tu DNI y completar
+                                    el formulario de inscripción en la oficina del Centro Deportivo. ¡Fácil!
+                                </p>
+                            </details>
+
+                            <details class="faq-item">
+                                <summary class="faq-question">
+                                    <span>¿Cuánto cuesta la cuota?</span>
+                                    <span class="faq-toggle">
+                                        <span class="icon" aria-hidden="true">arrow_forward</span>
+                                    </span>
+                                </summary>
+                                <p class="faq-answer">
+                                    El valor de la cuota varía según la categoría de socio. Consultalo en la oficina del Centro del
+                                    Polideportivo o escribiendo a deportes@unse.edu.ar.
+                                </p>
+                            </details>
+
+                            <details class="faq-item">
+                                <summary class="faq-question">
+                                    <span>¿Qué hago si pierdo mi carnet?</span>
+                                    <span class="faq-toggle">
+                                        <span class="icon" aria-hidden="true">arrow_forward</span>
+                                    </span>
+                                </summary>
+                                <p class="faq-answer">
+                                    Como tu carnet es 100% digital, no hay carnet físico que perder: podés acceder a él en cualquier
+                                    momento desde tu cuenta de socio.
+                                </p>
+                            </details>
+                        </div>
+
+                        <div class="faq-category" data-categoria="reservas">
+                            <p class="eyebrow eyebrow-left">— RESERVAS</p>
+                            <h2 class="section-title">Reservas y turnos</h2>
+
+                            <details class="faq-item">
+                                <summary class="faq-question">
+                                    <span>¿Cómo reservo una cancha?</span>
+                                    <span class="faq-toggle">
+                                        <span class="icon" aria-hidden="true">arrow_forward</span>
+                                    </span>
+                                </summary>
+                                <p class="faq-answer">
+                                    Ingresá con tu cuenta de socio, elegí el espacio y el turno disponible desde la sección
+                                    Instalaciones.
+                                </p>
+                            </details>
+
+                            <details class="faq-item">
+                                <summary class="faq-question">
+                                    <span>¿Con cuánta anticipación puedo reservar?</span>
+                                    <span class="faq-toggle">
+                                        <span class="icon" aria-hidden="true">arrow_forward</span>
+                                    </span>
+                                </summary>
+                                <p class="faq-answer">Podés reservar con hasta 48 horas de anticipación.</p>
+                            </details>
+
+                            <details class="faq-item">
+                                <summary class="faq-question">
+                                    <span>¿Puedo cancelar una reserva?</span>
+                                    <span class="faq-toggle">
+                                        <span class="icon" aria-hidden="true">arrow_forward</span>
+                                    </span>
+                                </summary>
+                                <p class="faq-answer">
+                                    Sí, podés cancelar desde tu cuenta hasta 24 horas antes del turno reservado.
+                                </p>
+                            </details>
+
+                            <details class="faq-item">
+                                <summary class="faq-question">
+                                    <span>¿Cómo reservo un quincho o el SUM?</span>
+                                    <span class="faq-toggle">
+                                        <span class="icon" aria-hidden="true">arrow_forward</span>
+                                    </span>
+                                </summary>
+                                <p class="faq-answer">
+                                    Los quinchos y el SUM se reservan igual que una cancha, eligiendo el espacio y la franja horaria
+                                    disponible.
+                                </p>
+                            </details>
+                        </div>
+
+                        <div class="faq-category" data-categoria="instalaciones">
+                            <p class="eyebrow eyebrow-left">— INSTALACIONES</p>
+                            <h2 class="section-title">Uso del predio</h2>
+
+                            <details class="faq-item">
+                                <summary class="faq-question">
+                                    <span>¿Qué horario tiene el predio?</span>
+                                    <span class="faq-toggle">
+                                        <span class="icon" aria-hidden="true">arrow_forward</span>
+                                    </span>
+                                </summary>
+                                <p class="faq-answer">
+                                    Todos los días de 08:00 a 21:00hs. El acceso cierra 30 minutos antes.
+                                </p>
+                            </details>
+
+                            <details class="faq-item">
+                                <summary class="faq-question">
+                                    <span>¿Hay vestuarios y duchas?</span>
+                                    <span class="faq-toggle">
+                                        <span class="icon" aria-hidden="true">arrow_forward</span>
+                                    </span>
+                                </summary>
+                                <p class="faq-answer">Sí, contamos con vestuarios y duchas para socios.</p>
+                            </details>
+
+                            <details class="faq-item">
+                                <summary class="faq-question">
+                                    <span>¿Puedo llevar invitados?</span>
+                                    <span class="faq-toggle">
+                                        <span class="icon" aria-hidden="true">arrow_forward</span>
+                                    </span>
+                                </summary>
+                                <p class="faq-answer">
+                                    Sí, cada socio puede llevar invitados abonando el arancel correspondiente en la oficina del
+                                    Centro del Polideportivo.
+                                </p>
+                            </details>
+
+                            <details class="faq-item">
+                                <summary class="faq-question">
+                                    <span>¿Hay estacionamiento?</span>
+                                    <span class="faq-toggle">
+                                        <span class="icon" aria-hidden="true">arrow_forward</span>
+                                    </span>
+                                </summary>
+                                <p class="faq-answer">Sí, el predio cuenta con estacionamiento gratuito para socios.</p>
+                            </details>
+                        </div>
+
+                        <div class="faq-category" data-categoria="pileta">
+                            <p class="eyebrow eyebrow-left">— PILETA</p>
+                            <h2 class="section-title">Pileta</h2>
+
+                            <details class="faq-item">
+                                <summary class="faq-question">
+                                    <span>¿Cuándo abre la pileta?</span>
+                                    <span class="faq-toggle">
+                                        <span class="icon" aria-hidden="true">arrow_forward</span>
+                                    </span>
+                                </summary>
+                                <p class="faq-answer">
+                                    La pileta abre de lunes a domingo de 9:00 a 20:00, con guardavidas en todo el horario.
+                                </p>
+                            </details>
+
+                            <details class="faq-item">
+                                <summary class="faq-question">
+                                    <span>¿Necesito revisión médica para la pileta?</span>
+                                    <span class="faq-toggle">
+                                        <span class="icon" aria-hidden="true">arrow_forward</span>
+                                    </span>
+                                </summary>
+                                <p class="faq-answer">Sí, es obligatorio presentar el apto médico vigente antes de usar la pileta.</p>
+                            </details>
+
+                            <details class="faq-item">
+                                <summary class="faq-question">
+                                    <span>¿Hay clases de natación?</span>
+                                    <span class="faq-toggle">
+                                        <span class="icon" aria-hidden="true">arrow_forward</span>
+                                    </span>
+                                </summary>
+                                <p class="faq-answer">
+                                    No, no ofrecemos clases de natación. El uso de la pileta es recreativo y para familias/amigos.
+                                </p>
+                            </details>
+                        </div>
+
+                    </div>
+
+                    <aside class="faq-sidebar reveal">
+                        <div class="how-panel contact-card">
+                            <span class="float-icon icon-yellow">
+                                <span class="icon" aria-hidden="true">mail</span>
+                            </span>
+                            <h3>¿No encontraste tu respuesta?</h3>
+                            <p>Escribinos o acercate a la oficina del Centro del Polideportivo.</p>
+
+                            <p class="contact-meta">
+                                <span class="icon" aria-hidden="true">mail</span>
+                                deportes@unse.edu.ar
+                            </p>
+                            <p class="contact-meta">
+                                <span class="icon" aria-hidden="true">schedule</span>
+                                Lun a Vie · 8 a 21 h
+                            </p>
+                            <p class="contact-meta">
+                                <span class="icon" aria-hidden="true">location_on</span>
+                                Centro Polideportivo, Predio UNSE
+                            </p>
+
+                            <a href="#" class="btn btn-gold">
+                                <span class="icon" aria-hidden="true">arrow_forward</span>
+                                Enviar consulta
+                            </a>
+                        </div>
+
+                        <div class="quicklinks">
+                            <h3>Accesos rápidos</h3>
+
+                            <h:link outcome="/instalaciones" styleClass="quicklink-row">
+                                Ver instalaciones
+                                <span class="circle-arrow">
+                                    <span class="icon" aria-hidden="true">arrow_forward</span>
+                                </span>
+                            </h:link>
+                            <h:link outcome="/socio/inicio" styleClass="quicklink-row" rendered="#{loginBean.socio}">
+                                Reservar un turno
+                                <span class="circle-arrow">
+                                    <span class="icon" aria-hidden="true">arrow_forward</span>
+                                </span>
+                            </h:link>
+                            <h:link outcome="/login" styleClass="quicklink-row" rendered="#{not loginBean.socio}">
+                                Reservar un turno
+                                <span class="circle-arrow">
+                                    <span class="icon" aria-hidden="true">arrow_forward</span>
+                                </span>
+                            </h:link>
+                        </div>
+                    </aside>
+                </div>
+
+            </div>
+        </section>
+
+    </ui:define>
+</ui:composition>

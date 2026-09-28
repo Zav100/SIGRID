@@ -1,0 +1,11 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!-- Botón "Exportar PDF". Parámetro: clase (soc-btn o mem-btn). Abre el cuadro de impresión del navegador: ahí se elige
+     "Guardar como PDF". Lo que se ve en pantalla (con sus filtros) es lo que sale; el resto del panel se oculta con
+     resources/css/print.css. -->
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:ui="jakarta.faces.facelets">
+    <button type="button" class="#{clase}" onclick="window.print()"
+            title="Guardar esta pantalla como PDF (se abre el cuadro de impresión: elegí «Guardar como PDF»)">
+        <span class="icon" aria-hidden="true">download</span>Exportar PDF
+    </button>
+</ui:composition>

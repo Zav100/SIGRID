@@ -1,0 +1,494 @@
+/* =====================================================================
+   SIGRID · Estilos del panel de membresías del administrador (prefijo .mem-)
+   Se carga DESPUÉS de admin.css (desde la sección, vía "head"). Es un panel de dinero: lo cobrado en grande,
+   barras por mes, indicadores con una banda de color por estado y pestañas de estado en vez de filtros.
+   ===================================================================== */
+
+/* ============ INGRESOS E INDICADORES ============ */
+.mem-summary {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.mem-hero {
+  display: grid;
+  grid-template-columns: minmax(0, 5fr) minmax(0, 6fr);
+  gap: 28px;
+  padding: 24px;
+  background: linear-gradient(135deg, #FFFCF2 0%, var(--adm-card) 55%);
+}
+
+.mem-hero-main {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.mem-hero-icon {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  margin-bottom: 14px;
+  border-radius: 12px;
+  background: var(--adm-warn-bg);
+  color: var(--adm-warn);
+}
+
+.mem-hero-icon .icon {
+  font-size: 22px;
+}
+
+.mem-hero-label {
+  font-size: .78rem;
+  font-weight: 500;
+  color: var(--adm-ink-3);
+}
+
+.mem-money {
+  margin: 4px 0 12px;
+  font-size: 2.7rem;
+  font-weight: 700;
+  line-height: 1.1;
+  letter-spacing: -.03em;
+  font-variant-numeric: tabular-nums;
+}
+
+/* barras de los últimos meses: el mes actual en bordó, el resto en gris */
+.mem-bars {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.mem-bar {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+
+.mem-bar-value {
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: .68rem;
+  font-weight: 600;
+  color: var(--adm-ink-3);
+  font-variant-numeric: tabular-nums;
+}
+
+.mem-bar-track {
+  display: flex;
+  align-items: flex-end;
+  width: 100%;
+  height: 96px;
+  border-radius: 10px;
+  background: var(--adm-soft);
+  overflow: hidden;
+}
+
+.mem-bar-track span {
+  display: block;
+  width: 100%;
+  min-height: 4px;
+  border-radius: 10px 10px 0 0;
+  background: var(--adm-soft-2);
+}
+
+.mem-bar-name {
+  font-size: .7rem;
+  font-weight: 500;
+  text-transform: capitalize;
+  color: var(--adm-ink-3);
+}
+
+.mem-bar.is-now .mem-bar-track span {
+  background: var(--adm-accent);
+}
+
+.mem-bar.is-now .mem-bar-value,
+.mem-bar.is-now .mem-bar-name {
+  color: var(--adm-ink);
+  font-weight: 700;
+}
+
+/* indicadores con una banda de color según el estado */
+.mem-stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.mem-stat {
+  --stat: var(--adm-ink-3);
+  padding: 16px 18px 16px 20px;
+  border: 1px solid var(--adm-line);
+  border-left: 4px solid var(--stat);
+  border-radius: 6px 18px 18px 6px;
+  background: var(--adm-card);
+  box-shadow: 0 1px 2px rgba(41, 39, 39, .03);
+}
+
+.mem-stat.is-ok {
+  --stat: var(--adm-ok-dot);
+}
+
+.mem-stat.is-warn {
+  --stat: var(--adm-warn-dot);
+}
+
+.mem-stat.is-off {
+  --stat: var(--adm-off-dot);
+}
+
+.mem-stat-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.mem-stat-top .icon {
+  font-size: 22px;
+  color: var(--stat);
+}
+
+.mem-stat-label {
+  font-size: .8rem;
+  font-weight: 500;
+  color: var(--adm-ink-2);
+}
+
+.mem-stat-value {
+  margin: 8px 0 2px;
+  font-size: 2rem;
+  font-weight: 700;
+  line-height: 1.1;
+  letter-spacing: -.02em;
+  font-variant-numeric: tabular-nums;
+}
+
+.mem-stat-sub {
+  font-size: .74rem;
+  color: var(--adm-ink-3);
+}
+
+/* acciones de la cuota mensual (cambiar e historial) */
+.mem-cuotas-acciones {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 16px;
+  padding-top: 14px;
+  border-top: 1px solid var(--adm-line);
+}
+
+.mem-cuotas-nota {
+  font-size: .76rem;
+  color: var(--adm-ink-3);
+}
+
+/* ============ BUSCADOR, TIPO Y PESTAÑAS ============ */
+.mem-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+.mem-search {
+  flex: 1 1 240px;
+}
+
+.mem-select {
+  height: 42px;
+  padding: 0 36px 0 14px;
+  border: 1px solid var(--adm-line);
+  border-radius: 14px;
+  background: var(--adm-card) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%238B8582' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E") no-repeat right 12px center;
+  font: inherit;
+  font-size: .84rem;
+  font-weight: 500;
+  color: var(--adm-ink);
+  appearance: none;
+  cursor: pointer;
+}
+
+.mem-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 42px;
+  padding: 0 16px;
+  border: 1px solid var(--adm-line);
+  border-radius: 14px;
+  background: var(--adm-card);
+  font: inherit;
+  font-size: .84rem;
+  font-weight: 600;
+  color: var(--adm-ink);
+  cursor: pointer;
+  transition: background .15s ease;
+}
+
+.mem-btn:hover {
+  background: var(--adm-soft);
+}
+
+.mem-btn .icon {
+  font-size: 19px;
+  color: var(--adm-ink-2);
+}
+
+.mem-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 14px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--adm-line);
+}
+
+.mem-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 8px 6px 14px;
+  border-radius: 999px;
+  font-size: .8rem;
+  font-weight: 600;
+  color: var(--adm-ink-2);
+  transition: background .15s ease, color .15s ease;
+}
+
+.mem-tab b {
+  display: inline-grid;
+  place-items: center;
+  min-width: 22px;
+  height: 22px;
+  padding: 0 6px;
+  border-radius: 999px;
+  background: var(--adm-soft);
+  font-size: .72rem;
+  color: var(--adm-ink-2);
+}
+
+.mem-tab:hover {
+  background: var(--adm-soft);
+}
+
+.mem-tab.is-active {
+  background: var(--adm-ink);
+  color: var(--white);
+}
+
+.mem-tab.is-active b {
+  background: rgba(255, 255, 255, .18);
+  color: var(--white);
+}
+
+/* ============ TABLA ============ */
+.mem-who {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.mem-who > span:last-child {
+  min-width: 0;
+}
+
+.mem-periodo {
+  display: block;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.adm-table th.mem-num,
+.mem-num {
+  text-align: right;
+  font-weight: 600;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+/* solicitud con comprobante: espera una decisión, se marca en ámbar suave */
+.adm-table tbody tr.mem-row-pend td {
+  background: #FFFCF0;
+}
+
+.mem-nota {
+  margin-top: 3px;
+}
+
+.mem-pronto {
+  color: var(--adm-warn);
+  font-weight: 600;
+}
+
+/* ============ TARIFAS ============ */
+.mem-tarifas li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 11px 0;
+  border-bottom: 1px solid var(--adm-line);
+  font-size: .84rem;
+  color: var(--adm-ink-2);
+}
+
+.mem-tarifas li:first-child {
+  padding-top: 0;
+}
+
+.mem-tarifas li:last-child {
+  padding-bottom: 0;
+  border-bottom: 0;
+}
+
+.mem-tarifas strong {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--adm-ink);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ============ RESPONSIVE ============ */
+@media (max-width: 900px) {
+  .mem-hero {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 20px;
+  }
+}
+
+@media (max-width: 720px) {
+  .mem-stats {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .mem-money {
+    font-size: 2.2rem;
+  }
+
+  .mem-bar-value {
+    display: none;
+  }
+}
+
+@media (max-width: 480px) {
+  .mem-hero {
+    padding: 18px;
+  }
+
+  .mem-select,
+  .mem-btn {
+    flex: 1 1 100%;
+  }
+}
+
+/* la lista ocupa todo el ancho, debajo de los indicadores */
+.mem-top {
+  margin-bottom: 20px;
+}
+
+/* ============ INGRESOS POR TIPO DE SOCIO ============ */
+.mem-mix {
+  --mix-0: var(--maroon-700);
+  --mix-1: #B57B8C;
+  --mix-2: var(--gold);
+  --mix-3: #BDB6B1;
+}
+
+.mem-mix .adm-card-head {
+  margin-bottom: 12px;
+}
+
+.mem-mix-bar {
+  display: flex;
+  gap: 3px;
+  height: 14px;
+  border-radius: 999px;
+  background: var(--adm-soft);
+  overflow: hidden;
+}
+
+.mem-mix-seg {
+  flex: 1 1 0;
+  min-width: 6px;
+}
+
+.mem-mix-0 {
+  background: var(--mix-0);
+}
+
+.mem-mix-1 {
+  background: var(--mix-1);
+}
+
+.mem-mix-2 {
+  background: var(--mix-2);
+}
+
+.mem-mix-3 {
+  background: var(--mix-3);
+}
+
+.mem-mix-legend {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px 16px;
+  margin-top: 14px;
+}
+
+.mem-mix-legend li {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  column-gap: 8px;
+  align-items: center;
+  font-size: .78rem;
+  color: var(--adm-ink-2);
+}
+
+.mem-mix-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+}
+
+.mem-mix-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.mem-mix-legend strong {
+  grid-column: 2;
+  font-size: .95rem;
+  font-weight: 700;
+  color: var(--adm-ink);
+  font-variant-numeric: tabular-nums;
+}
+
+.mem-mix-pct {
+  grid-column: 2;
+  font-size: .72rem;
+  color: var(--adm-ink-3);
+}
+
+.mem-mix-empty {
+  font-size: .84rem;
+  color: var(--adm-ink-3);
+}
+
+@media (max-width: 720px) {
+  .mem-mix-legend {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}

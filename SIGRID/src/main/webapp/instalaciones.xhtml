@@ -1,0 +1,413 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:h="jakarta.faces.html"
+                xmlns:p="jakarta.faces.passthrough"
+                xmlns:ui="jakarta.faces.facelets"
+                template="/templates/public-home.xhtml">
+
+    <ui:define name="titulo">
+        Instalaciones | Polideportivo UNSE
+    </ui:define>
+
+    <ui:define name="head">
+        <h:outputStylesheet library="css" name="instalaciones-publica.css"/>
+    </ui:define>
+
+    <ui:define name="content">
+
+        <!-- ============ CANCHAS DEPORTIVAS ============ -->
+        <section class="section" id="canchas">
+            <div class="container">
+                <div class="section-head">
+                    <div>
+                        <p class="eyebrow eyebrow-left">— CANCHAS</p>
+                        <h2 class="section-title">Canchas deportivas</h2>
+                    </div>
+                </div>
+
+                <div class="cards-grid reveal">
+                    <article class="facility-card">
+                        <div class="facility-photo photo-real">
+                            <h:graphicImage value="/assets/futbol11-noche.webp" alt="Cancha de Fútbol 11"/>
+                        </div>
+                        <div class="facility-body">
+                            <h3>Cancha de Fútbol 11</h3>
+                            <p class="facility-sub">Predio UNSE</p>
+                            <p class="facility-meta">
+                                <span class="icon" aria-hidden="true">location_on</span>
+                                Instalación del predio
+                            </p>
+                            <p class="facility-meta">
+                                <span class="icon" aria-hidden="true">groups</span>
+                                Capacidad: 22 jugadores
+                            </p>
+                            <h:link outcome="/socio/inicio" styleClass="facility-arrow" rendered="#{loginBean.socio}"
+                                    p:aria-label="Ver cancha de fútbol 11">
+                                <span class="icon" aria-hidden="true">arrow_forward</span>
+                            </h:link>
+                            <h:link outcome="/login" styleClass="facility-arrow" rendered="#{not loginBean.socio}"
+                                    p:aria-label="Ver cancha de fútbol 11">
+                                <span class="icon" aria-hidden="true">arrow_forward</span>
+                            </h:link>
+                        </div>
+                    </article>
+
+                    <article class="facility-card">
+                        <div class="facility-photo photo-real">
+                            <h:graphicImage value="/assets/basquet.webp" alt="Cancha de básquet del predio"/>
+                        </div>
+                        <div class="facility-body">
+                            <h3>Cancha de Básquet</h3>
+                            <p class="facility-sub">Predio UNSE</p>
+                            <p class="facility-meta">
+                                <span class="icon" aria-hidden="true">location_on</span>
+                                Instalación del predio
+                            </p>
+                            <p class="facility-meta">
+                                <span class="icon" aria-hidden="true">groups</span>
+                                Capacidad: 10 jugadores
+                            </p>
+                            <h:link outcome="/socio/inicio" styleClass="facility-arrow" rendered="#{loginBean.socio}"
+                                    p:aria-label="Ver cancha de básquet">
+                                <span class="icon" aria-hidden="true">arrow_forward</span>
+                            </h:link>
+                            <h:link outcome="/login" styleClass="facility-arrow" rendered="#{not loginBean.socio}"
+                                    p:aria-label="Ver cancha de básquet">
+                                <span class="icon" aria-hidden="true">arrow_forward</span>
+                            </h:link>
+                        </div>
+                    </article>
+
+                    <article class="facility-card">
+                        <div class="facility-photo photo-real">
+                            <h:graphicImage value="/assets/news-rugby.png" alt="Cancha de rugby del predio"/>
+                        </div>
+                        <div class="facility-body">
+                            <h3>Cancha de Rugby</h3>
+                            <p class="facility-sub">Predio UNSE</p>
+                            <p class="facility-meta">
+                                <span class="icon" aria-hidden="true">location_on</span>
+                                Instalación del predio
+                            </p>
+                            <p class="facility-meta">
+                                <span class="icon" aria-hidden="true">groups</span>
+                                Capacidad: 30 jugadores
+                            </p>
+                            <h:link outcome="/socio/inicio" styleClass="facility-arrow" rendered="#{loginBean.socio}"
+                                    p:aria-label="Ver cancha de rugby">
+                                <span class="icon" aria-hidden="true">arrow_forward</span>
+                            </h:link>
+                            <h:link outcome="/login" styleClass="facility-arrow" rendered="#{not loginBean.socio}"
+                                    p:aria-label="Ver cancha de rugby">
+                                <span class="icon" aria-hidden="true">arrow_forward</span>
+                            </h:link>
+                        </div>
+                    </article>
+
+                    <article class="facility-card">
+                        <div class="facility-photo photo-real">
+                            <h:graphicImage value="/assets/beach-voley.webp" alt="Cancha de beach vóley del predio"/>
+                        </div>
+                        <div class="facility-body">
+                            <h3>Cancha de Beach Vóley</h3>
+                            <p class="facility-sub">Predio UNSE</p>
+                            <p class="facility-meta">
+                                <span class="icon" aria-hidden="true">location_on</span>
+                                Instalación del predio
+                            </p>
+                            <p class="facility-meta">
+                                <span class="icon" aria-hidden="true">groups</span>
+                                Capacidad: 4 por equipo
+                            </p>
+                            <h:link outcome="/socio/inicio" styleClass="facility-arrow" rendered="#{loginBean.socio}"
+                                    p:aria-label="Ver cancha de beach vóley">
+                                <span class="icon" aria-hidden="true">arrow_forward</span>
+                            </h:link>
+                            <h:link outcome="/login" styleClass="facility-arrow" rendered="#{not loginBean.socio}"
+                                    p:aria-label="Ver cancha de beach vóley">
+                                <span class="icon" aria-hidden="true">arrow_forward</span>
+                            </h:link>
+                        </div>
+                    </article>
+                </div>
+            </div>
+        </section>
+
+        <!-- ============ NATACIÓN ============ -->
+        <section class="section" id="natacion">
+            <div class="container">
+                <div class="section-head">
+                    <div>
+                        <p class="eyebrow eyebrow-left">— PARA LA FAMILIA</p>
+                        <h2 class="section-title">Pileta familiar</h2>
+                    </div>
+                </div>
+
+                <div class="feature-panel reveal">
+                    <div class="feature-photo">
+                        <h:graphicImage value="/assets/pileta.webp" alt="Pileta del predio"/>
+                    </div>
+                    <div class="feature-body">
+                        <h3>Pileta</h3>
+                        <p class="facility-desc">
+                            Pileta de uso libre para socios activos, con guardavidas en todo el horario.
+                            Ideal para pasar el día con amigos y familia.
+                        </p>
+                        <p class="facility-meta">
+                            <span class="icon" aria-hidden="true">groups</span>
+                            Capacidad: 40 personas
+                        </p>
+                        <p class="facility-meta">
+                            <span class="icon" aria-hidden="true">schedule</span>
+                            Lun a Dom · 9:00 – 20:00
+                        </p>
+                        <h:link outcome="/socio/inicio" styleClass="btn btn-gold" rendered="#{loginBean.socio}">
+                            <span class="icon" aria-hidden="true">arrow_forward</span>
+                            Reservar turno
+                        </h:link>
+                        <h:link outcome="/login" styleClass="btn btn-gold" rendered="#{not loginBean.socio}">
+                            <span class="icon" aria-hidden="true">arrow_forward</span>
+                            Reservar turno
+                        </h:link>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ============ QUINCHOS Y SUM ============ -->
+        <section class="section" id="espacios-sociales">
+            <div class="container">
+                <div class="section-head">
+                    <div>
+                        <p class="eyebrow eyebrow-left">— ESPACIOS SOCIALES</p>
+                        <h2 class="section-title">Quinchos y SUM</h2>
+                    </div>
+                </div>
+
+                <div class="cards-grid cards-grid-2 reveal">
+                    <article class="facility-card">
+                        <div class="facility-photo facility-photo-wide photo-real">
+                            <h:graphicImage value="/assets/quincho.webp" alt="Quinchos del predio"/>
+                        </div>
+                        <div class="facility-body">
+                            <h3>Quinchos</h3>
+                            <p class="facility-sub">Predio UNSE</p>
+                            <p class="facility-desc">Parrilla, mesas y bancos para reuniones y terceros tiempos.</p>
+                            <p class="facility-meta">
+                                <span class="icon" aria-hidden="true">groups</span>
+                                Hasta 30 personas
+                            </p>
+                            <h:link outcome="/socio/inicio" styleClass="facility-arrow" rendered="#{loginBean.socio}"
+                                    p:aria-label="Ver quinchos">
+                                <span class="icon" aria-hidden="true">arrow_forward</span>
+                            </h:link>
+                            <h:link outcome="/login" styleClass="facility-arrow" rendered="#{not loginBean.socio}"
+                                    p:aria-label="Ver quinchos">
+                                <span class="icon" aria-hidden="true">arrow_forward</span>
+                            </h:link>
+                        </div>
+                    </article>
+
+                    <article class="facility-card">
+                        <div class="facility-photo facility-photo-wide photo-real">
+                            <h:graphicImage value="/assets/sum.webp" alt="Salón de usos múltiples del predio"/>
+                        </div>
+                        <div class="facility-body">
+                            <h3>SUM</h3>
+                            <p class="facility-sub">Salón de usos múltiples</p>
+                            <p class="facility-desc">Salón de usos múltiples para eventos, charlas y más.</p>
+                            <p class="facility-meta">
+                                <span class="icon" aria-hidden="true">groups</span>
+                                Hasta 120 personas
+                            </p>
+                            <h:link outcome="/socio/inicio" styleClass="facility-arrow" rendered="#{loginBean.socio}"
+                                    p:aria-label="Ver SUM">
+                                <span class="icon" aria-hidden="true">arrow_forward</span>
+                            </h:link>
+                            <h:link outcome="/login" styleClass="facility-arrow" rendered="#{not loginBean.socio}"
+                                    p:aria-label="Ver SUM">
+                                <span class="icon" aria-hidden="true">arrow_forward</span>
+                            </h:link>
+                        </div>
+                    </article>
+                </div>
+            </div>
+        </section>
+
+        <!-- ============ CAPACIDAD Y EQUIPAMIENTO ============ -->
+        <section class="section" id="capacidad">
+            <div class="container">
+                <div class="section-head">
+                    <div>
+                        <p class="eyebrow eyebrow-left">— DE UN VISTAZO</p>
+                        <h2 class="section-title">Capacidad y equipamiento</h2>
+                    </div>
+                </div>
+
+                <div class="table-wrap reveal">
+                    <table class="spec-table">
+                        <thead>
+                            <tr>
+                                <th>Espacio</th>
+                                <th>Superficie</th>
+                                <th>Capacidad</th>
+                                <th>Turno</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Cancha de Fútbol 11</td>
+                                <td>Césped natural</td>
+                                <td>22 jugadores</td>
+                                <td>90 min</td>
+                            </tr>
+                            <tr>
+                                <td>Cancha de Básquet</td>
+                                <td>Sintético</td>
+                                <td>10 jugadores</td>
+                                <td>60 min</td>
+                            </tr>
+                            <tr>
+                                <td>Cancha de Rugby</td>
+                                <td>Césped natural</td>
+                                <td>30 jugadores</td>
+                                <td>90 min</td>
+                            </tr>
+                            <tr>
+                                <td>Cancha de Beach Vóley</td>
+                                <td>Arena</td>
+                                <td>8 jugadores</td>
+                                <td>60 min</td>
+                            </tr>
+                            <tr>
+                                <td>Pileta</td>
+                                <td>—</td>
+                                <td>40 personas</td>
+                                <td>Por franja</td>
+                            </tr>
+                            <tr>
+                                <td>Quinchos (3)</td>
+                                <td>Techado</td>
+                                <td>30 personas c/u</td>
+                                <td>5 h</td>
+                            </tr>
+                            <tr>
+                                <td>SUM</td>
+                                <td>Salón cerrado</td>
+                                <td>120 personas</td>
+                                <td>Por evento</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- ============ INFORMACIÓN ÚTIL ============ -->
+        <section class="section" id="informacion-util">
+            <div class="container">
+                <div class="section-head">
+                    <div>
+                        <p class="eyebrow eyebrow-left">— ANTES DE VENIR</p>
+                        <h2 class="section-title">Información útil</h2>
+                    </div>
+                </div>
+
+                <div class="info-grid reveal">
+                    <div class="how-panel hours-panel">
+                        <span class="float-icon icon-dark">
+                            <span class="icon" aria-hidden="true">schedule</span>
+                        </span>
+                        <h3>Horarios del predio</h3>
+                        <p class="facility-desc">El acceso cierra 30 minutos antes.</p>
+                        <div class="hours-row"><span>Todos los días</span><strong>08:00 – 21:00 h</strong></div>
+                    </div>
+
+                    <div class="info-cards">
+                        <article class="float-card">
+                            <span class="float-icon icon-brand">
+                                <span class="icon" aria-hidden="true">calendar_month</span>
+                            </span>
+                            <h3>Cómo reservar</h3>
+                            <p>Ingresá con tu cuenta de socio, elegí el espacio y el turno. Podés reservar hasta 48 horas antes.</p>
+                        </article>
+
+                        <article class="float-card">
+                            <span class="float-icon icon-yellow">
+                                <span class="icon" aria-hidden="true">badge</span>
+                            </span>
+                            <h3>Requisitos</h3>
+                            <p>Carnet de socio al día y apto médico vigente.</p>
+                        </article>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ============ GALERÍA DEL PREDIO ============ -->
+        <section class="section" id="galeria-predio">
+            <div class="container">
+                <div class="section-head">
+                    <div>
+                        <p class="eyebrow eyebrow-left">— GALERÍA</p>
+                        <h2 class="section-title">Conocé el predio en imágenes</h2>
+                    </div>
+                    <div class="carousel-controls">
+                        <button type="button" class="carousel-btn" id="carruselPrev" aria-label="Imagen anterior">
+                            <span class="icon carousel-btn-prev-icon" aria-hidden="true">arrow_forward</span>
+                        </button>
+                        <button type="button" class="carousel-btn" id="carruselNext" aria-label="Imagen siguiente">
+                            <span class="icon" aria-hidden="true">arrow_forward</span>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="carousel-wrap reveal">
+                    <div class="carousel-track" id="carruselPredio">
+                        <figure class="carousel-slide">
+                            <h:graphicImage value="/assets/futbol11-noche.webp" alt="Cancha de Fútbol 11"/>
+                            <figcaption class="carousel-caption">Cancha de Fútbol 11</figcaption>
+                        </figure>
+                        <figure class="carousel-slide">
+                            <h:graphicImage value="/assets/basquet.webp" alt="Cancha de básquet del predio"/>
+                            <figcaption class="carousel-caption">Cancha de Básquet</figcaption>
+                        </figure>
+                        <figure class="carousel-slide">
+                            <h:graphicImage value="/assets/news-rugby.png" alt="Cancha de rugby del predio"/>
+                            <figcaption class="carousel-caption">Cancha de Rugby</figcaption>
+                        </figure>
+                        <figure class="carousel-slide">
+                            <h:graphicImage value="/assets/beach-voley.webp" alt="Cancha de beach vóley del predio"/>
+                            <figcaption class="carousel-caption">Cancha de Beach Vóley</figcaption>
+                        </figure>
+                        <figure class="carousel-slide">
+                            <h:graphicImage value="/assets/pileta.webp" alt="Pileta del predio"/>
+                            <figcaption class="carousel-caption">Pileta</figcaption>
+                        </figure>
+                        <figure class="carousel-slide">
+                            <h:graphicImage value="/assets/quincho.webp" alt="Quinchos del predio"/>
+                            <figcaption class="carousel-caption">Quinchos</figcaption>
+                        </figure>
+                        <figure class="carousel-slide">
+                            <h:graphicImage value="/assets/sum.webp" alt="Salón de usos múltiples del predio"/>
+                            <figcaption class="carousel-caption">SUM</figcaption>
+                        </figure>
+                        <figure class="carousel-slide">
+                            <h:graphicImage value="/assets/news-voley.png" alt="Cancha de beach vóley del predio"/>
+                            <figcaption class="carousel-caption">Cancha de Beach Vóley</figcaption>
+                        </figure>
+                        <figure class="carousel-slide">
+                            <h:graphicImage value="/assets/news-institucional.png" alt="Pileta del predio"/>
+                            <figcaption class="carousel-caption">Pileta</figcaption>
+                        </figure>
+                        <figure class="carousel-slide">
+                            <h:graphicImage value="/assets/cancha2.png" alt="Cancha de Fútbol 11"/>
+                            <figcaption class="carousel-caption">Cancha de Fútbol 11</figcaption>
+                        </figure>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </ui:define>
+</ui:composition>

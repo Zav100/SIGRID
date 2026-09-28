@@ -1,0 +1,405 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:h="jakarta.faces.html"
+                xmlns:f="jakarta.faces.core"
+                xmlns:p="jakarta.faces.passthrough"
+                xmlns:ui="jakarta.faces.facelets"
+                template="/templates/admin-dashboard.xhtml">
+
+    <ui:define name="titulo">
+        Inicio | Panel de administración
+    </ui:define>
+
+    <ui:define name="content">
+
+        <!-- ============ ENCABEZADO ============ -->
+        <header class="adm-page-head">
+            <div>
+                <h1 class="adm-page-title">#{adminDashboardBean.saludo}</h1>
+            </div>
+            <p class="adm-date">
+                <span class="icon" aria-hidden="true">calendar_today</span>
+                #{adminDashboardBean.fechaLarga}
+            </p>
+        </header>
+
+        <!-- Todo el tablero se vuelve a dibujar por AJAX al aceptar o denegar una solicitud (cambian los
+             indicadores, el plano, la agenda, el calendario y las próximas reservas) -->
+        <h:panelGroup id="tablero" layout="block" styleClass="adm-layout">
+
+            <!-- ============ COLUMNA PRINCIPAL ============ -->
+            <div class="adm-col">
+
+                <!-- Indicadores del día -->
+                <section class="adm-kpis" aria-label="Resumen de hoy">
+                    <article class="adm-kpi">
+                        <div class="adm-kpi-head">
+                            <span class="adm-kpi-icon"><span class="icon" aria-hidden="true">today</span></span>
+                            <h2 class="adm-kpi-label">Reservas hoy</h2>
+                        </div>
+                        <p class="adm-kpi-value">#{adminDashboardBean.reservasHoy}</p>
+                        <div class="adm-meter" role="img"
+                             aria-label="#{adminDashboardBean.ocupacionHoy} % de los turnos ocupados">
+                            <span style="width: #{adminDashboardBean.ocupacionHoy}%"></span>
+                        </div>
+                        <p class="adm-kpi-sub">#{adminDashboardBean.ocupacionHoy} % de los turnos ocupados</p>
+                    </article>
+
+                    <article class="adm-kpi">
+                        <div class="adm-kpi-head">
+                            <span class="adm-kpi-icon #{adminDashboardBean.totalSolicitudes gt 0 ? 'is-alert' : ''}">
+                                <span class="icon" aria-hidden="true">pending_actions</span>
+                            </span>
+                            <h2 class="adm-kpi-label">Por confirmar</h2>
+                        </div>
+                        <p class="adm-kpi-value">#{adminDashboardBean.totalSolicitudes}</p>
+                        <p class="adm-kpi-sub">con comprobante para revisar</p>
+                    </article>
+
+                    <article class="adm-kpi">
+                        <div class="adm-kpi-head">
+                            <span class="adm-kpi-icon"><span class="icon" aria-hidden="true">card_membership</span></span>
+                            <h2 class="adm-kpi-label">Membresías por vencer</h2>
+                        </div>
+                        <p class="adm-kpi-value">#{adminDashboardBean.membresiasPorVencer}</p>
+                        <p class="adm-kpi-sub">en los próximos #{adminDashboardBean.diasAlertaVencimiento} días</p>
+                    </article>
+                </section>
+
+                <!-- Solicitudes por confirmar: llegan solo con el comprobante cargado. El administrador cotejó
+                     a mano el comprobante y el ingreso en la cuenta y las acepta o las deniega desde acá. -->
+                <section class="adm-card" aria-labelledby="tSolicitudes">
+                    <header class="adm-card-head">
+                        <h2 class="adm-card-title" id="tSolicitudes">
+                            Solicitudes por confirmar
+                            <span class="adm-count">#{adminDashboardBean.totalSolicitudes}</span>
+                        </h2>
+                        <h:link rendered="#{adminNavBean.existe('/admin/solicitudes-dashboard-admin')}"
+                                outcome="/admin/solicitudes-dashboard-admin" styleClass="adm-link">
+                            Ver todas <span class="icon" aria-hidden="true">arrow_forward</span>
+                        </h:link>
+                    </header>
+
+                    <!-- resultado de la última acción -->
+                    <h:messages globalOnly="true" layout="list" styleClass="adm-flashes"
+                                infoClass="adm-flash adm-flash-ok" warnClass="adm-flash adm-flash-warn"
+                                errorClass="adm-flash adm-flash-off"/>
+
+                    <ui:fragment rendered="#{empty adminDashboardBean.solicitudesVisibles}">
+                        <div class="adm-empty">
+                            <span class="icon" aria-hidden="true">task_alt</span>
+                            <p>No hay solicitudes por confirmar.</p>
+                            <span>Está todo al día.</span>
+                        </div>
+                    </ui:fragment>
+
+                    <ui:fragment rendered="#{not empty adminDashboardBean.solicitudesVisibles}">
+                        <h:form id="solForm">
+                            <div class="adm-table-wrap">
+                                <table class="adm-table">
+                                    <thead>
+                                        <tr>
+                                            <th scope="col">Turno</th>
+                                            <th scope="col">Instalación</th>
+                                            <th scope="col">Socio</th>
+                                            <th scope="col">Monto</th>
+                                            <th scope="col" class="adm-col-actions">Acción</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <ui:repeat var="fila" value="#{adminDashboardBean.solicitudesVisibles}">
+                                            <tr class="js-buscable">
+                                                <td class="adm-nowrap">
+                                                    <span class="adm-cell-main">#{fila.cuando}</span>
+                                                    <span class="adm-cell-sub">#{fila.horario}</span>
+                                                </td>
+                                                <td>
+                                                    <span class="adm-cell-main">#{fila.instalacion}</span>
+                                                    <span class="adm-cell-sub">#{fila.disciplina}</span>
+                                                </td>
+                                                <td class="adm-nowrap">#{fila.socio}</td>
+                                                <td class="adm-cell-time">#{fila.monto}</td>
+                                                <td class="adm-col-actions">
+                                                    <div class="adm-actions">
+                                                        <h:commandLink styleClass="adm-act adm-act-ok"
+                                                                       action="#{adminDashboardBean.confirmar(fila.idReserva)}"
+                                                                       title="Aceptar la reserva"
+                                                                       p:aria-label="Aceptar la reserva de #{fila.socio}">
+                                                            <f:ajax execute="@this" render=":tablero :admNav"/>
+                                                            <span class="icon" aria-hidden="true">check</span>Aceptar
+                                                        </h:commandLink>
+                                                        <h:commandLink styleClass="adm-act adm-act-off"
+                                                                       action="#{adminDashboardBean.rechazar(fila.idReserva)}"
+                                                                       title="Denegar la reserva"
+                                                                       p:aria-label="Denegar la reserva de #{fila.socio}"
+                                                                       onclick="return confirm('¿Denegar esta solicitud? El turno quedará libre.')">
+                                                            <f:ajax execute="@this" render=":tablero :admNav"/>
+                                                            <span class="icon" aria-hidden="true">close</span>Denegar
+                                                        </h:commandLink>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        </ui:repeat>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </h:form>
+                        <ui:fragment rendered="#{adminDashboardBean.solicitudesOcultas gt 0}">
+                            <p class="adm-more">y #{adminDashboardBean.solicitudesOcultas} más</p>
+                        </ui:fragment>
+                    </ui:fragment>
+                </section>
+
+                <div class="adm-duo">
+
+                    <!-- Plano de las instalaciones del día elegido en el calendario (hoy por defecto): gris si no
+                         están disponibles, con color si tienen reservas. Al tocar una con reservas se abre su
+                         tarjeta con el listado (ver admin.js); se actualiza por AJAX junto con la agenda. -->
+                    <h:panelGroup id="mapa" layout="block" styleClass="adm-card adm-plan-card">
+                        <header class="adm-card-head">
+                            <h2 class="adm-card-title">
+                                Plano de instalaciones
+                                <span class="adm-count">#{adminDashboardBean.etiquetaDia}</span>
+                            </h2>
+                        </header>
+
+                        <div class="adm-plan">
+                            <ui:repeat var="e" value="#{adminDashboardBean.plano}">
+                                <button type="button"
+                                        class="adm-space adm-space-#{e.clave} is-#{e.estado} #{e.conReservas ? 'is-click' : ''}"
+                                        data-espacio="#{e.clave}" tabindex="#{e.conReservas ? '0' : '-1'}"
+                                        title="#{e.nombre}: #{e.detalle}" aria-label="#{e.nombre}: #{e.detalle}"
+                                        aria-controls="pop-#{e.clave}">
+                                    <ui:fragment rendered="#{e.clave eq 'pileta'}">
+                                        <!-- la pileta tiene forma de cruz: el contorno se dibuja con un polígono -->
+                                        <svg class="adm-space-shape" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
+                                            <polygon points="10.7,0 89.3,0 89.3,10.9 100,10.9 100,89.1 89.3,89.1 89.3,100 10.7,100 10.7,89.1 0,89.1 0,10.9 10.7,10.9"/>
+                                        </svg>
+                                    </ui:fragment>
+                                    <span class="icon adm-space-icon" aria-hidden="true">#{e.icono}</span>
+                                    <span class="adm-space-name">#{e.nombre}</span>
+                                    <span class="adm-space-info">#{e.detalle}</span>
+                                </button>
+                            </ui:repeat>
+
+                            <!-- tarjetas con las reservas de cada espacio; el script muestra la del espacio tocado -->
+                            <ui:repeat var="e" value="#{adminDashboardBean.plano}">
+                                <ui:fragment rendered="#{e.conReservas}">
+                                    <div class="adm-plan-pop" id="pop-#{e.clave}" data-espacio="#{e.clave}" hidden="hidden"
+                                         role="group" aria-label="Reservas de #{e.nombre}">
+                                        <header class="adm-plan-pop-head">
+                                            <div>
+                                                <span class="adm-cell-main">#{e.nombre}</span>
+                                                <span class="adm-cell-sub">#{e.detalle}</span>
+                                            </div>
+                                            <button type="button" class="adm-icon-btn adm-plan-close" aria-label="Cerrar">
+                                                <span class="icon" aria-hidden="true">close</span>
+                                            </button>
+                                        </header>
+                                        <ul class="adm-plan-pop-list">
+                                            <ui:repeat var="r" value="#{e.reservas}">
+                                                <li>
+                                                    <span class="adm-cell-time">#{r.horario}</span>
+                                                    <span class="adm-plan-pop-socio">#{r.socio}</span>
+                                                    <span class="adm-chip adm-chip-#{r.estadoClase}">#{r.estadoTexto}</span>
+                                                </li>
+                                            </ui:repeat>
+                                        </ul>
+                                    </div>
+                                </ui:fragment>
+                            </ui:repeat>
+                        </div>
+
+                        <ul class="adm-cal-legend">
+                            <li><i class="adm-key adm-key-ok"></i>Con reservas o abierta</li>
+                            <li><i class="adm-key adm-key-warn"></i>Con solicitudes por confirmar</li>
+                            <li><i class="adm-key adm-key-free"></i>Libre</li>
+                            <li><i class="adm-key adm-key-off"></i>No disponible</li>
+                        </ul>
+                    </h:panelGroup>
+
+                    <!-- Agenda del día elegido en el calendario (hoy por defecto); se actualiza por AJAX -->
+                    <h:panelGroup id="agenda" layout="block" styleClass="adm-card">
+                        <header class="adm-card-head">
+                            <h2 class="adm-card-title">
+                                #{adminDashboardBean.tituloAgenda}
+                                <span class="adm-count">#{adminDashboardBean.totalAgenda}</span>
+                            </h2>
+                            <h:link rendered="#{adminNavBean.existe('/admin/reservas-dashboard-admin')}"
+                                    outcome="/admin/reservas-dashboard-admin" styleClass="adm-link">
+                                Ver todas <span class="icon" aria-hidden="true">arrow_forward</span>
+                            </h:link>
+                        </header>
+
+                        <ui:fragment rendered="#{empty adminDashboardBean.agendaVisible}">
+                            <div class="adm-empty">
+                                <span class="icon" aria-hidden="true">event_busy</span>
+                                <p>No hay reservas para este día.</p>
+                            </div>
+                        </ui:fragment>
+
+                        <ui:fragment rendered="#{not empty adminDashboardBean.agendaVisible}">
+                            <div class="adm-table-wrap">
+                                <table class="adm-table">
+                                    <thead>
+                                        <tr>
+                                            <th scope="col">Horario</th>
+                                            <th scope="col">Instalación</th>
+                                            <th scope="col">Socio</th>
+                                            <th scope="col">Estado</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <ui:repeat var="fila" value="#{adminDashboardBean.agendaVisible}">
+                                            <tr class="js-buscable #{fila.estadoClase eq 'off' ? 'is-muted' : ''}">
+                                                <td class="adm-cell-time">#{fila.horario}</td>
+                                                <td>
+                                                    <span class="adm-cell-main">#{fila.instalacion}</span>
+                                                    <span class="adm-cell-sub">#{fila.disciplina}</span>
+                                                </td>
+                                                <td>#{fila.socio}</td>
+                                                <td>
+                                                    <span class="adm-chip adm-chip-#{fila.estadoClase}">#{fila.estadoTexto}</span>
+                                                </td>
+                                            </tr>
+                                        </ui:repeat>
+                                    </tbody>
+                                </table>
+                            </div>
+                            <ui:fragment rendered="#{adminDashboardBean.agendaOculta gt 0}">
+                                <p class="adm-more">y #{adminDashboardBean.agendaOculta} más</p>
+                            </ui:fragment>
+                        </ui:fragment>
+                    </h:panelGroup>
+                </div>
+            </div>
+
+            <!-- ============ COLUMNA LATERAL ============ -->
+            <div class="adm-col adm-col-side">
+
+                <!-- Calendario: puntitos por estado; elegir un día cambia el plano y la agenda -->
+                <h:form id="calForm" styleClass="adm-card adm-cal">
+                    <header class="adm-cal-head">
+                        <h2 class="adm-card-title">#{adminDashboardBean.tituloMes}</h2>
+                        <div class="adm-cal-nav">
+                            <h:commandLink rendered="#{not adminDashboardBean.enHoy}"
+                                           action="#{adminDashboardBean.irAHoy}" styleClass="adm-pill-btn">
+                                <f:ajax execute="@this" render="@form :agenda :mapa"/>
+                                Hoy
+                            </h:commandLink>
+                            <h:commandLink action="#{adminDashboardBean.mesAnterior}" styleClass="adm-icon-btn"
+                                           title="Mes anterior" p:aria-label="Mes anterior">
+                                <f:ajax execute="@this" render="@form"/>
+                                <span class="icon" aria-hidden="true">chevron_left</span>
+                            </h:commandLink>
+                            <h:commandLink action="#{adminDashboardBean.mesSiguiente}" styleClass="adm-icon-btn"
+                                           title="Mes siguiente" p:aria-label="Mes siguiente">
+                                <f:ajax execute="@this" render="@form"/>
+                                <span class="icon" aria-hidden="true">chevron_right</span>
+                            </h:commandLink>
+                        </div>
+                    </header>
+
+                    <div class="adm-cal-week" aria-hidden="true">
+                        <span>L</span><span>M</span><span>M</span><span>J</span><span>V</span><span>S</span><span>D</span>
+                    </div>
+                    <div class="adm-cal-grid">
+                        <ui:repeat var="dia" value="#{adminDashboardBean.dias}">
+                            <h:commandLink styleClass="adm-day #{dia.delMes ? '' : 'is-out'} #{dia.hoy ? 'is-hoy' : ''} #{dia.seleccionado ? 'is-sel' : ''}"
+                                           action="#{adminDashboardBean.seleccionarDia(dia.fecha)}"
+                                           title="#{dia.etiqueta}" p:aria-label="#{dia.etiqueta}">
+                                <f:ajax execute="@this" render="@form :agenda :mapa"/>
+                                <span class="adm-day-num">#{dia.numero}</span>
+                                <span class="adm-dots" aria-hidden="true">
+                                    <ui:fragment rendered="#{dia.confirmadas gt 0}"><i class="adm-dot adm-dot-ok"></i></ui:fragment>
+                                    <ui:fragment rendered="#{dia.pendientes gt 0}"><i class="adm-dot adm-dot-warn"></i></ui:fragment>
+                                    <ui:fragment rendered="#{dia.canceladas gt 0}"><i class="adm-dot adm-dot-off"></i></ui:fragment>
+                                </span>
+                            </h:commandLink>
+                        </ui:repeat>
+                    </div>
+
+                    <ul class="adm-cal-legend">
+                        <li><i class="adm-dot adm-dot-ok"></i>Confirmada</li>
+                        <li><i class="adm-dot adm-dot-warn"></i>Pendiente</li>
+                        <li><i class="adm-dot adm-dot-off"></i>Cancelada</li>
+                    </ul>
+                </h:form>
+
+                <!-- Próximas reservas ya confirmadas -->
+                <section class="adm-card" aria-labelledby="tProximas">
+                    <header class="adm-card-head">
+                        <h2 class="adm-card-title" id="tProximas">Próximas reservas</h2>
+                        <h:link rendered="#{adminNavBean.existe('/admin/reservas-dashboard-admin')}"
+                                outcome="/admin/reservas-dashboard-admin" styleClass="adm-link">
+                            Ver todas <span class="icon" aria-hidden="true">arrow_forward</span>
+                        </h:link>
+                    </header>
+
+                    <ui:fragment rendered="#{empty adminDashboardBean.proximas}">
+                        <div class="adm-empty">
+                            <span class="icon" aria-hidden="true">event_busy</span>
+                            <p>No hay reservas confirmadas por delante.</p>
+                        </div>
+                    </ui:fragment>
+
+                    <ul class="adm-list">
+                        <ui:repeat var="fila" value="#{adminDashboardBean.proximas}">
+                            <li class="adm-item js-buscable">
+                                <span class="adm-item-icon"><span class="icon" aria-hidden="true">#{fila.icono}</span></span>
+                                <span class="adm-item-main">
+                                    <span class="adm-cell-main">#{fila.instalacion}</span>
+                                    <span class="adm-cell-sub">#{fila.socio}</span>
+                                </span>
+                                <span class="adm-item-when">
+                                    <span class="adm-cell-main">#{fila.cuando}</span>
+                                    <span class="adm-cell-sub">#{fila.horario}</span>
+                                </span>
+                            </li>
+                        </ui:repeat>
+                    </ul>
+                </section>
+
+                <!-- Estado de las instalaciones -->
+                <section class="adm-card" aria-labelledby="tInstalaciones">
+                    <header class="adm-card-head">
+                        <h2 class="adm-card-title" id="tInstalaciones">Estado de las instalaciones</h2>
+                        <h:link rendered="#{adminNavBean.existe('/admin/instalaciones-dashboard-admin')}"
+                                outcome="/admin/instalaciones-dashboard-admin" styleClass="adm-link">
+                            Ver todas <span class="icon" aria-hidden="true">arrow_forward</span>
+                        </h:link>
+                    </header>
+
+                    <ui:fragment rendered="#{adminDashboardBean.instalaciones.total eq 0}">
+                        <div class="adm-empty">
+                            <span class="icon" aria-hidden="true">stadium</span>
+                            <p>Todavía no hay instalaciones cargadas.</p>
+                        </div>
+                    </ui:fragment>
+
+                    <ui:fragment rendered="#{adminDashboardBean.instalaciones.total gt 0}">
+                        <div class="adm-stack" role="img"
+                             aria-label="#{adminDashboardBean.instalaciones.habilitadas} habilitadas, #{adminDashboardBean.instalaciones.mantenimiento} en mantenimiento y #{adminDashboardBean.instalaciones.deshabilitadas} deshabilitadas">
+                            <ui:fragment rendered="#{adminDashboardBean.instalaciones.habilitadas gt 0}">
+                                <span class="adm-seg adm-seg-ok" style="flex-grow: #{adminDashboardBean.instalaciones.habilitadas}"></span>
+                            </ui:fragment>
+                            <ui:fragment rendered="#{adminDashboardBean.instalaciones.mantenimiento gt 0}">
+                                <span class="adm-seg adm-seg-warn" style="flex-grow: #{adminDashboardBean.instalaciones.mantenimiento}"></span>
+                            </ui:fragment>
+                            <ui:fragment rendered="#{adminDashboardBean.instalaciones.deshabilitadas gt 0}">
+                                <span class="adm-seg adm-seg-off" style="flex-grow: #{adminDashboardBean.instalaciones.deshabilitadas}"></span>
+                            </ui:fragment>
+                        </div>
+                        <ul class="adm-status-list">
+                            <li><i class="adm-dot adm-dot-ok"></i>Habilitadas<strong>#{adminDashboardBean.instalaciones.habilitadas}</strong></li>
+                            <li><i class="adm-dot adm-dot-warn"></i>En mantenimiento<strong>#{adminDashboardBean.instalaciones.mantenimiento}</strong></li>
+                            <li><i class="adm-dot adm-dot-off"></i>Deshabilitadas<strong>#{adminDashboardBean.instalaciones.deshabilitadas}</strong></li>
+                        </ul>
+                    </ui:fragment>
+                </section>
+            </div>
+        </h:panelGroup>
+
+    </ui:define>
+
+</ui:composition>

@@ -1,0 +1,91 @@
+/* =====================================================================
+   SIGRID · Impresión del panel de administración (se carga con media="print")
+   Es lo que hace funcionar los botones "Exportar PDF": abren el cuadro de impresión del navegador y, al elegir
+   "Guardar como PDF", sale solo el contenido de la página (con sus filtros), sin menú ni controles.
+   ===================================================================== */
+
+@page {
+  margin: 14mm;
+}
+
+* {
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+}
+
+.adm-body {
+  background: #fff;
+}
+
+/* fuera todo lo que es de navegación o de acción */
+.adm-sidebar,
+.adm-topbar,
+.adm-backdrop,
+.soc-toolbar,
+.mem-toolbar,
+.soc-btn,
+.mem-btn,
+.adm-col-actions,
+.adm-actions,
+.res-foot,
+.adm-more,
+.adm-flashes,
+.soc-modal,
+.adm-menu-btn {
+  display: none !important;
+}
+
+.adm-shell {
+  display: block;
+}
+
+.adm-main {
+  margin: 0;
+  border: 0;
+  border-radius: 0;
+  background: #fff;
+  box-shadow: none;
+}
+
+.adm-content {
+  padding: 0;
+}
+
+/* membrete de cada hoja */
+.adm-content::before {
+  content: "SIGRID · Polideportivo UNSE · Panel de administración";
+  display: block;
+  margin-bottom: 14px;
+  padding-bottom: 8px;
+  border-bottom: 2px solid var(--adm-accent);
+  font-size: 10pt;
+  font-weight: 700;
+  letter-spacing: .5px;
+  color: var(--adm-ink-2);
+}
+
+.adm-card,
+.adm-kpi {
+  border-color: var(--adm-line);
+  box-shadow: none;
+}
+
+.adm-table-wrap {
+  overflow: visible;
+}
+
+.adm-table {
+  width: 100%;
+}
+
+.adm-table thead {
+  display: table-header-group;
+}
+
+.adm-table tr {
+  break-inside: avoid;
+}
+
+.adm-card-head {
+  break-after: avoid;
+}

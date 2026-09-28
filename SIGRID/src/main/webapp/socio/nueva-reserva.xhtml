@@ -1,0 +1,178 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:h="jakarta.faces.html"
+                xmlns:f="jakarta.faces.core"
+                xmlns:ui="jakarta.faces.facelets"
+                template="/templates/socio.xhtml">
+
+    <ui:define name="titulo">
+        Nueva reserva | Polideportivo UNSE
+    </ui:define>
+
+    <ui:define name="content">
+        <header class="so-page-head">
+            <div>
+                <h1 class="so-page-title">Nueva reserva</h1>
+            </div>
+            <h:link outcome="/socio/mis-reservas" styleClass="so-btn so-btn-ghost">
+                <span class="icon" aria-hidden="true">event_available</span>Mis reservas
+            </h:link>
+        </header>
+
+        <!-- Membresía vencida: no se puede reservar -->
+        <ui:fragment rendered="#{not socioBean.perfil.vigente}">
+            <section class="so-card so-blocked">
+                <span class="so-ico so-ico-lg so-ico-off"><span class="icon" aria-hidden="true">lock</span></span>
+                <div>
+                    <h2>Tu membresía está vencida</h2>
+                    <p>Para reservar necesitás una membresía vigente. Renovala y vas a poder elegir tu turno de nuevo.</p>
+                </div>
+                <h:link outcome="/socio/inicio" styleClass="so-btn so-btn-sm">Volver al inicio</h:link>
+            </section>
+        </ui:fragment>
+
+        <!-- Valoración pendiente: no se puede reservar hasta valorar -->
+        <ui:fragment rendered="#{socioBean.perfil.vigente and socioBean.cantidadPorValorar gt 0}">
+            <section class="so-card so-blocked so-blocked-warn">
+                <span class="so-ico so-ico-lg so-ico-warn"><span class="icon" aria-hidden="true">star</span></span>
+                <div>
+                    <h2>Valoración pendiente</h2>
+                    <p>Tenés #{socioBean.cantidadPorValorar} #{socioBean.cantidadPorValorar eq 1 ? 'turno' : 'turnos'} sin valorar. Tu opinión es muy importante para mejorar el predio: valoralo y ya podés reservar de nuevo.</p>
+                </div>
+                <h:link outcome="/socio/mis-reservas" styleClass="so-btn so-btn-sm">
+                    <span class="icon" aria-hidden="true">star</span>Valorar ahora
+                </h:link>
+            </section>
+        </ui:fragment>
+
+        <ui:fragment rendered="#{socioBean.perfil.vigente and socioBean.cantidadPorValorar eq 0}">
+            <h:form id="reserva">
+                <h:panelGroup id="pasos" layout="block" styleClass="so-book">
+
+                    <div class="so-book-main">
+                        <h:messages globalOnly="true" layout="list" styleClass="so-flashes"
+                                    infoClass="so-flash so-flash-ok" warnClass="so-flash so-flash-warn"
+                                    errorClass="so-flash so-flash-off"/>
+
+                        <!-- 1. Instalación -->
+                        <section class="so-card" aria-labelledby="tInst">
+                            <header class="so-card-head">
+                                <h2 id="tInst"><span class="so-step">1</span>Elegí la instalación</h2>
+                            </header>
+                            <div class="so-insts">
+                                <ui:repeat var="i" value="#{socioNuevaReservaBean.instalaciones}">
+                                    <h:commandLink rendered="#{i.habilitada}"
+                                                   styleClass="so-inst #{socioNuevaReservaBean.idInstalacion eq i.idInstalacion ? 'is-selected' : ''}"
+                                                   action="#{socioNuevaReservaBean.seleccionarInstalacion(i.idInstalacion)}">
+                                        <f:ajax execute="@this" render=":reserva:pasos"/>
+                                        <span class="so-ico so-ico-lg"><span class="icon" aria-hidden="true">#{i.icono}</span></span>
+                                        <span class="so-inst-name">#{i.nombre}</span>
+                                        <span class="so-inst-sub">#{i.disciplina}<ui:fragment rendered="#{not empty i.capacidad}"> · #{i.capacidad}</ui:fragment></span>
+                                        <span class="so-inst-price">#{i.precio}<small> por turno</small></span>
+                                        <span class="so-inst-check icon" aria-hidden="true">check_circle</span>
+                                    </h:commandLink>
+                                    <ui:fragment rendered="#{not i.habilitada}">
+                                        <div class="so-inst is-off" aria-disabled="true">
+                                            <span class="so-ico so-ico-lg so-ico-soft"><span class="icon" aria-hidden="true">#{i.icono}</span></span>
+                                            <span class="so-inst-name">#{i.nombre}</span>
+                                            <span class="so-inst-sub">#{i.disciplina}</span>
+                                            <span class="so-inst-warn">#{i.aviso}</span>
+                                        </div>
+                                    </ui:fragment>
+                                </ui:repeat>
+                            </div>
+                        </section>
+
+                        <ui:fragment rendered="#{socioNuevaReservaBean.idInstalacion ne null}">
+                            <!-- 2. Día -->
+                            <section class="so-card" aria-labelledby="tDia">
+                                <header class="so-card-head">
+                                    <h2 id="tDia"><span class="so-step">2</span>Elegí el día</h2>
+                                </header>
+                                <div class="so-days" role="listbox" aria-label="Días disponibles">
+                                    <ui:repeat var="d" value="#{socioNuevaReservaBean.dias}">
+                                        <h:commandLink styleClass="so-pick #{socioNuevaReservaBean.fecha eq d.fecha ? 'is-selected' : ''}"
+                                                       action="#{socioNuevaReservaBean.seleccionarDia(d.iso)}">
+                                            <f:ajax execute="@this" render=":reserva:pasos"/>
+                                            <span class="so-pick-w">#{d.hoy ? 'Hoy' : d.dia}</span>
+                                            <span class="so-pick-n">#{d.numero}</span>
+                                            <span class="so-pick-m">#{d.mes}</span>
+                                        </h:commandLink>
+                                    </ui:repeat>
+                                </div>
+                            </section>
+
+                            <!-- 3. Turno -->
+                            <section class="so-card" aria-labelledby="tTurno">
+                                <header class="so-card-head">
+                                    <h2 id="tTurno"><span class="so-step">3</span>Elegí el turno</h2>
+                                    <span class="so-card-note">#{socioNuevaReservaBean.fechaTexto}</span>
+                                </header>
+                                <ui:fragment rendered="#{empty socioNuevaReservaBean.turnos}">
+                                    <div class="so-empty">
+                                        <span class="icon" aria-hidden="true">event_busy</span>
+                                        <p>Esta instalación todavía no tiene turnos cargados.</p>
+                                    </div>
+                                </ui:fragment>
+                                <div class="so-slots">
+                                    <ui:repeat var="t" value="#{socioNuevaReservaBean.turnos}">
+                                        <h:commandLink rendered="#{t.libre}"
+                                                       styleClass="so-slot #{socioNuevaReservaBean.idTurno eq t.idTurno ? 'is-selected' : ''}"
+                                                       action="#{socioNuevaReservaBean.seleccionarTurno(t.idTurno)}">
+                                            <f:ajax execute="@this" render=":reserva:pasos"/>
+                                            <span class="icon" aria-hidden="true">schedule</span>
+                                            <span class="so-slot-time">#{t.horario}</span>
+                                            <span class="so-slot-state">Libre</span>
+                                        </h:commandLink>
+                                        <ui:fragment rendered="#{not t.libre}">
+                                            <span class="so-slot is-off" aria-disabled="true">
+                                                <span class="icon" aria-hidden="true">schedule</span>
+                                                <span class="so-slot-time">#{t.horario}</span>
+                                                <span class="so-slot-state">#{t.motivo}</span>
+                                            </span>
+                                        </ui:fragment>
+                                    </ui:repeat>
+                                </div>
+                            </section>
+                        </ui:fragment>
+                    </div>
+
+                    <!-- Resumen -->
+                    <aside class="so-book-side">
+                        <section class="so-card so-summary" aria-labelledby="tResumen">
+                            <header class="so-card-head">
+                                <h2 id="tResumen"><span class="icon" aria-hidden="true">description</span>Tu reserva</h2>
+                            </header>
+                            <dl class="so-dl">
+                                <div>
+                                    <dt>Instalación</dt>
+                                    <dd>#{socioNuevaReservaBean.instalacion eq null ? '—' : socioNuevaReservaBean.instalacion.nombre}</dd>
+                                </div>
+                                <div>
+                                    <dt>Día</dt>
+                                    <dd class="so-cap">#{socioNuevaReservaBean.fecha eq null ? '—' : socioNuevaReservaBean.fechaTexto}</dd>
+                                </div>
+                                <div>
+                                    <dt>Horario</dt>
+                                    <dd>#{socioNuevaReservaBean.turno eq null ? '—' : socioNuevaReservaBean.turno.horario}</dd>
+                                </div>
+                                <div class="so-dl-total">
+                                    <dt>Total a transferir</dt>
+                                    <dd>#{socioNuevaReservaBean.turno eq null ? '—' : socioNuevaReservaBean.precio}</dd>
+                                </div>
+                            </dl>
+                            <p class="so-summary-tipo">Precio para socios de tipo <strong>#{socioBean.perfil.categoria}</strong></p>
+                            <div class="so-warnbox">
+                                <p><span class="icon" aria-hidden="true">block</span><span><strong>No hay devoluciones de dinero.</strong> Si necesitás cancelar, te queda un crédito de 30 días para reprogramar tu turno.</span></p>
+                                <p><span class="icon" aria-hidden="true">hourglass_top</span><span><strong>La reserva no es automática.</strong> Después de pagar, el administrador la revisa y la confirma en un plazo de hasta 24 h.</span></p>
+                            </div>
+                            <h:commandButton value="Confirmar reserva" action="#{socioNuevaReservaBean.confirmar}"
+                                             disabled="#{socioNuevaReservaBean.turno eq null}" styleClass="so-btn so-btn-block"/>
+                        </section>
+                    </aside>
+                </h:panelGroup>
+            </h:form>
+        </ui:fragment>
+    </ui:define>
+
+</ui:composition>

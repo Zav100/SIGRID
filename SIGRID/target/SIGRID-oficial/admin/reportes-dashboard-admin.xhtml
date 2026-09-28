@@ -1,0 +1,331 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:h="jakarta.faces.html"
+                xmlns:f="jakarta.faces.core"
+                xmlns:p="jakarta.faces.passthrough"
+                xmlns:ui="jakarta.faces.facelets"
+                template="/templates/admin-dashboard.xhtml">
+
+    <ui:define name="titulo">
+        Reportes | Panel de administración
+    </ui:define>
+
+    <ui:define name="head">
+        <h:outputStylesheet library="css" name="socios.css"/>
+        <h:outputStylesheet library="css" name="membresias.css"/>
+        <h:outputStylesheet library="css" name="reservas.css"/>
+        <h:outputStylesheet library="css" name="valoraciones.css"/>
+        <h:outputStylesheet library="css" name="reportes.css"/>
+    </ui:define>
+
+    <ui:define name="content">
+
+        <!-- ============ ENCABEZADO ============ -->
+        <header class="adm-page-head">
+            <div>
+                <h1 class="adm-page-title">Reportes</h1>
+            </div>
+        </header>
+
+        <!-- ============ PERÍODO, PESTAÑAS Y EXPORTAR ============ -->
+        <section class="adm-card rep-cabecera" aria-label="Período y secciones del reporte">
+            <h:form id="barra" styleClass="rep-toolbar">
+                <div class="rep-tabs mem-tabs">
+                    <h:commandLink styleClass="mem-tab #{adminReportesBean.pestana eq 'RESUMEN' ? 'is-active' : ''}"
+                                   action="#{adminReportesBean.elegir('RESUMEN')}">
+                        <f:ajax execute="@this" render=":barra :contenido"/>
+                        <span class="icon" aria-hidden="true">space_dashboard</span>Resumen ejecutivo
+                    </h:commandLink>
+                    <h:commandLink styleClass="mem-tab #{adminReportesBean.pestana eq 'INGRESOS' ? 'is-active' : ''}"
+                                   action="#{adminReportesBean.elegir('INGRESOS')}">
+                        <f:ajax execute="@this" render=":barra :contenido"/>
+                        <span class="icon" aria-hidden="true">payments</span>Ingresos
+                    </h:commandLink>
+                    <h:commandLink styleClass="mem-tab #{adminReportesBean.pestana eq 'OCUPACION' ? 'is-active' : ''}"
+                                   action="#{adminReportesBean.elegir('OCUPACION')}">
+                        <f:ajax execute="@this" render=":barra :contenido"/>
+                        <span class="icon" aria-hidden="true">stadium</span>Ocupación y uso
+                    </h:commandLink>
+                    <h:commandLink styleClass="mem-tab #{adminReportesBean.pestana eq 'MEMBRESIAS' ? 'is-active' : ''}"
+                                   action="#{adminReportesBean.elegir('MEMBRESIAS')}">
+                        <f:ajax execute="@this" render=":barra :contenido"/>
+                        <span class="icon" aria-hidden="true">card_membership</span>Membresías
+                    </h:commandLink>
+                </div>
+
+                <div class="rep-controls">
+                    <h:selectOneMenu value="#{adminReportesBean.periodo}" styleClass="soc-select"
+                                     p:aria-label="Período del reporte">
+                        <f:selectItem itemValue="7D" itemLabel="Últimos 7 días"/>
+                        <f:selectItem itemValue="30D" itemLabel="Últimos 30 días"/>
+                        <f:selectItem itemValue="MES" itemLabel="Este mes"/>
+                        <f:selectItem itemValue="MES_ANT" itemLabel="Mes anterior"/>
+                        <f:selectItem itemValue="90D" itemLabel="Últimos 90 días"/>
+                        <f:selectItem itemValue="12M" itemLabel="Últimos 12 meses"/>
+                        <f:ajax listener="#{adminReportesBean.recalcular}" render=":contenido :periodoTexto"/>
+                    </h:selectOneMenu>
+
+                    <ui:include src="/templates/boton-pdf.xhtml">
+                        <ui:param name="clase" value="soc-btn"/>
+                    </ui:include>
+                </div>
+            </h:form>
+            <h:panelGroup id="periodoTexto" layout="block" styleClass="rep-periodo">
+                <strong>#{adminReportesBean.rango.nombre}:</strong> del #{adminReportesBean.rango.texto}
+                · comparado con el #{adminReportesBean.rango.textoPrevio}
+            </h:panelGroup>
+        </section>
+
+        <h:panelGroup id="contenido" layout="block">
+
+            <!-- ============ 1. RESUMEN EJECUTIVO ============ -->
+            <ui:fragment rendered="#{adminReportesBean.pestana eq 'RESUMEN'}">
+                <ui:include src="/templates/reportes/kpis.xhtml">
+                    <ui:param name="kpis" value="#{adminReportesBean.resumen}"/>
+                </ui:include>
+
+                <div class="rep-duo">
+                    <section class="adm-card" aria-labelledby="tAlertas">
+                        <header class="adm-card-head">
+                            <h2 class="adm-card-title" id="tAlertas">Para mirar hoy</h2>
+                        </header>
+                        <ul class="rep-alertas">
+                            <ui:repeat var="a" value="#{adminReportesBean.alertas}">
+                                <li class="rep-alerta rep-alerta-#{a.clase}">
+                                    <span class="rep-alerta-icon"><span class="icon" aria-hidden="true">#{a.icono}</span></span>
+                                    <span>#{a.texto}</span>
+                                </li>
+                            </ui:repeat>
+                        </ul>
+                    </section>
+
+                    <section class="adm-card" aria-labelledby="tEvolucionResumen">
+                        <header class="adm-card-head">
+                            <h2 class="adm-card-title" id="tEvolucionResumen">Ingresos del período</h2>
+                        </header>
+                        <ui:include src="/templates/reportes/evolucion.xhtml">
+                            <ui:param name="barras" value="#{adminReportesBean.evolucion}"/>
+                            <ui:param name="maximo" value="#{adminReportesBean.maximoEvolucion}"/>
+                        </ui:include>
+                    </section>
+                </div>
+            </ui:fragment>
+
+            <!-- ============ 2. INGRESOS ============ -->
+            <ui:fragment rendered="#{adminReportesBean.pestana eq 'INGRESOS'}">
+                <ui:include src="/templates/reportes/kpis.xhtml">
+                    <ui:param name="kpis" value="#{adminReportesBean.balance}"/>
+                </ui:include>
+
+                <section class="adm-card rep-block" aria-labelledby="tEvolucion">
+                    <header class="adm-card-head">
+                        <h2 class="adm-card-title" id="tEvolucion">Evolución de los ingresos</h2>
+                        <h:form id="agrupar">
+                            <h:selectOneMenu value="#{adminReportesBean.agrupado}" styleClass="soc-select"
+                                             p:aria-label="Agrupar los ingresos por">
+                                <f:selectItem itemValue="" itemLabel="Agrupar: automático"/>
+                                <f:selectItem itemValue="DIA" itemLabel="Por día"/>
+                                <f:selectItem itemValue="SEMANA" itemLabel="Por semana"/>
+                                <f:selectItem itemValue="MES" itemLabel="Por mes"/>
+                                <f:ajax listener="#{adminReportesBean.recalcular}" render=":contenido"/>
+                            </h:selectOneMenu>
+                        </h:form>
+                    </header>
+                    <ui:include src="/templates/reportes/evolucion.xhtml">
+                        <ui:param name="barras" value="#{adminReportesBean.evolucion}"/>
+                        <ui:param name="maximo" value="#{adminReportesBean.maximoEvolucion}"/>
+                    </ui:include>
+                </section>
+
+                <div class="rep-duo rep-duo-igual">
+                    <section class="adm-card" aria-labelledby="tPorInstalacion">
+                        <header class="adm-card-head">
+                            <h2 class="adm-card-title" id="tPorInstalacion">Ingresos por instalación</h2>
+                            <span class="adm-cell-sub">por reservas, la que más factura primero</span>
+                        </header>
+                        <ui:include src="/templates/reportes/items.xhtml">
+                            <ui:param name="items" value="#{adminReportesBean.porInstalacion}"/>
+                            <ui:param name="vacio" value="Todavía no hay instalaciones."/>
+                        </ui:include>
+                    </section>
+
+                    <section class="adm-card" aria-labelledby="tPorCategoria">
+                        <header class="adm-card-head">
+                            <h2 class="adm-card-title" id="tPorCategoria">Ingresos por tipo de socio</h2>
+                            <span class="rep-legend rep-legend-chico">
+                                <span><i class="rep-swatch rep-sw-r"></i>Reservas</span>
+                                <span><i class="rep-swatch rep-sw-m"></i>Membresías</span>
+                            </span>
+                        </header>
+                        <ui:include src="/templates/reportes/items.xhtml">
+                            <ui:param name="items" value="#{adminReportesBean.porCategoria}"/>
+                            <ui:param name="vacio" value="Todavía no hay tipos de socio."/>
+                        </ui:include>
+                    </section>
+                </div>
+
+                <h2 class="rep-subtitulo">Dinero en juego</h2>
+                <ui:include src="/templates/reportes/kpis.xhtml">
+                    <ui:param name="kpis" value="#{adminReportesBean.dinero}"/>
+                </ui:include>
+            </ui:fragment>
+
+            <!-- ============ 3. OCUPACIÓN Y USO ============ -->
+            <ui:fragment rendered="#{adminReportesBean.pestana eq 'OCUPACION'}">
+                <ui:include src="/templates/reportes/kpis.xhtml">
+                    <ui:param name="kpis" value="#{adminReportesBean.ocupacionKpis}"/>
+                </ui:include>
+
+                <div class="rep-duo rep-duo-igual">
+                    <section class="adm-card" aria-labelledby="tOcupacion">
+                        <header class="adm-card-head">
+                            <h2 class="adm-card-title" id="tOcupacion">Ocupación por instalación</h2>
+                            <span class="adm-cell-sub">turnos reservados sobre disponibles</span>
+                        </header>
+                        <ui:include src="/templates/reportes/items.xhtml">
+                            <ui:param name="items" value="#{adminReportesBean.ocupacionPorInstalacion}"/>
+                            <ui:param name="vacio" value="Todavía no hay instalaciones."/>
+                        </ui:include>
+                    </section>
+
+                    <section class="adm-card" aria-labelledby="tCalor">
+                        <header class="adm-card-head">
+                            <h2 class="adm-card-title" id="tCalor">Mapa de calor</h2>
+                            <span class="adm-cell-sub">ocupación por día y hora de inicio</span>
+                        </header>
+                        <div class="rep-heat-wrap">
+                            <table class="rep-heat">
+                                <thead>
+                                    <tr>
+                                        <th></th>
+                                        <ui:repeat var="dia" value="#{adminReportesBean.calor.dias}">
+                                            <th scope="col">#{dia}</th>
+                                        </ui:repeat>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <ui:repeat var="fila" value="#{adminReportesBean.calor.filas}">
+                                        <tr>
+                                            <th scope="row">#{fila.hora}</th>
+                                            <ui:repeat var="c" value="#{fila.celdas}">
+                                                <td><span class="rep-cell rep-h#{c.nivel}" title="#{c.titulo}">#{c.texto}</span></td>
+                                            </ui:repeat>
+                                        </tr>
+                                    </ui:repeat>
+                                </tbody>
+                            </table>
+                        </div>
+                        <p class="rep-scale" aria-hidden="true">
+                            menos
+                            <i class="rep-cell rep-h1"></i><i class="rep-cell rep-h2"></i><i class="rep-cell rep-h3"></i><i class="rep-cell rep-h4"></i><i class="rep-cell rep-h5"></i>
+                            más ocupado
+                        </p>
+                    </section>
+                </div>
+
+                <div class="rep-duo rep-duo-igual">
+                    <section class="adm-card" aria-labelledby="tPicos">
+                        <header class="adm-card-head">
+                            <h2 class="adm-card-title" id="tPicos">Horas pico</h2>
+                            <span class="adm-cell-sub">las franjas más ocupadas</span>
+                        </header>
+                        <ui:include src="/templates/reportes/items.xhtml">
+                            <ui:param name="items" value="#{adminReportesBean.picos}"/>
+                            <ui:param name="vacio" value="Todavía no hay reservas."/>
+                        </ui:include>
+                    </section>
+
+                    <section class="adm-card" aria-labelledby="tVacias">
+                        <header class="adm-card-head">
+                            <h2 class="adm-card-title" id="tVacias">Horas más vacías</h2>
+                            <span class="adm-cell-sub">donde conviene promocionar</span>
+                        </header>
+                        <ui:include src="/templates/reportes/items.xhtml">
+                            <ui:param name="items" value="#{adminReportesBean.vacias}"/>
+                            <ui:param name="vacio" value="Todavía no hay reservas."/>
+                        </ui:include>
+                    </section>
+                </div>
+
+                <section class="adm-card rep-block" aria-labelledby="tSinReservas">
+                    <header class="adm-card-head">
+                        <h2 class="adm-card-title" id="tSinReservas">Turnos que nunca se reservan</h2>
+                        <span class="adm-cell-sub">#{adminReportesBean.textoSinReservas}</span>
+                    </header>
+                    <ui:include src="/templates/reportes/items.xhtml">
+                        <ui:param name="items" value="#{adminReportesBean.sinReservas}"/>
+                        <ui:param name="vacio" value="Todos los turnos tuvieron al menos una reserva en el período."/>
+                    </ui:include>
+                </section>
+
+                <section class="adm-card rep-block" aria-labelledby="tMantenimiento">
+                    <header class="adm-card-head">
+                        <h2 class="adm-card-title" id="tMantenimiento">Mantenimiento</h2>
+                        <span class="adm-cell-sub">días sin servicio y lo que se dejó de ganar</span>
+                    </header>
+                    <ui:include src="/templates/reportes/items.xhtml">
+                        <ui:param name="items" value="#{adminReportesBean.mantenimiento}"/>
+                        <ui:param name="vacio" value="Ninguna instalación estuvo en mantenimiento en el período."/>
+                    </ui:include>
+                </section>
+            </ui:fragment>
+
+            <!-- ============ 5. MEMBRESÍAS ============ -->
+            <ui:fragment rendered="#{adminReportesBean.pestana eq 'MEMBRESIAS'}">
+                <ui:include src="/templates/reportes/kpis.xhtml">
+                    <ui:param name="kpis" value="#{adminReportesBean.membresiasKpis}"/>
+                </ui:include>
+
+                <div class="rep-duo rep-duo-igual">
+                    <section class="adm-card" aria-labelledby="tEstados">
+                        <header class="adm-card-head">
+                            <h2 class="adm-card-title" id="tEstados">Estado de las suscripciones</h2>
+                            <span class="adm-cell-sub">de siempre</span>
+                        </header>
+                        <ui:include src="/templates/reportes/items.xhtml">
+                            <ui:param name="items" value="#{adminReportesBean.estados}"/>
+                            <ui:param name="vacio" value="Todavía no hay suscripciones."/>
+                        </ui:include>
+                    </section>
+
+                    <section class="adm-card" aria-labelledby="tVencimientos">
+                        <header class="adm-card-head">
+                            <h2 class="adm-card-title" id="tVencimientos">Vencimientos próximos</h2>
+                            <span class="adm-cell-sub">por semana, desde hoy</span>
+                        </header>
+                        <ui:include src="/templates/reportes/items.xhtml">
+                            <ui:param name="items" value="#{adminReportesBean.vencimientos}"/>
+                            <ui:param name="vacio" value="No hay membresías por vencer."/>
+                        </ui:include>
+                    </section>
+                </div>
+
+                <div class="rep-duo rep-duo-igual">
+                    <section class="adm-card" aria-labelledby="tMemCategoria">
+                        <header class="adm-card-head">
+                            <h2 class="adm-card-title" id="tMemCategoria">Ingreso por tipo de socio</h2>
+                            <span class="adm-cell-sub">cuotas cobradas en el período</span>
+                        </header>
+                        <ui:include src="/templates/reportes/items.xhtml">
+                            <ui:param name="items" value="#{adminReportesBean.membresiasPorCategoria}"/>
+                            <ui:param name="vacio" value="Todavía no hay tipos de socio."/>
+                        </ui:include>
+                    </section>
+
+                    <section class="adm-card" aria-labelledby="tValidacion">
+                        <header class="adm-card-head">
+                            <h2 class="adm-card-title" id="tValidacion">Validación de comprobantes</h2>
+                            <span class="adm-cell-sub">tiempo medio de espera del socio</span>
+                        </header>
+                        <ui:include src="/templates/reportes/items.xhtml">
+                            <ui:param name="items" value="#{adminReportesBean.validacion}"/>
+                            <ui:param name="vacio" value="Todavía no hay pagos validados."/>
+                        </ui:include>
+                    </section>
+                </div>
+            </ui:fragment>
+        </h:panelGroup>
+
+    </ui:define>
+
+</ui:composition>

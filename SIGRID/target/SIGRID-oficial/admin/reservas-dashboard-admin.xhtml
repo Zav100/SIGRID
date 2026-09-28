@@ -1,0 +1,298 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:h="jakarta.faces.html"
+                xmlns:f="jakarta.faces.core"
+                xmlns:p="jakarta.faces.passthrough"
+                xmlns:ui="jakarta.faces.facelets"
+                template="/templates/admin-dashboard.xhtml">
+
+    <ui:define name="titulo">
+        Reservas | Panel de administración
+    </ui:define>
+
+    <ui:define name="head">
+        <h:outputStylesheet library="css" name="socios.css"/>
+        <h:outputStylesheet library="css" name="membresias.css"/>
+        <h:outputStylesheet library="css" name="reservas.css"/>
+    </ui:define>
+
+    <ui:define name="content">
+
+        <!-- ============ ENCABEZADO ============ -->
+        <header class="adm-page-head">
+            <div>
+                <h1 class="adm-page-title">Reservas</h1>
+            </div>
+        </header>
+
+        <!-- Indicadores y rankings: siempre sobre todas las reservas; se vuelven a dibujar al confirmar o denegar -->
+        <h:panelGroup id="resumen" layout="block">
+            <!-- Recaudado hoy: reservas confirmadas hoy, con su comprobante ya cotejado -->
+            <section class="adm-card mem-hero res-hero" aria-label="Recaudado por reservas">
+                <div class="mem-hero-main">
+                    <span class="mem-hero-icon"><span class="icon" aria-hidden="true">payments</span></span>
+                    <p class="mem-hero-label">Recaudado hoy por reservas</p>
+                    <p class="mem-money">#{adminReservasBean.recaudacion.totalHoy}</p>
+                    <span class="adm-chip adm-chip-#{adminReservasBean.recaudacion.tendencia eq 'up' ? 'ok' : adminReservasBean.recaudacion.tendencia eq 'down' ? 'off' : 'muted'}">#{adminReservasBean.recaudacion.comparacion}</span>
+                    <p class="mem-hero-label res-hero-count">#{adminReservasBean.recaudacion.cantidadHoy} #{adminReservasBean.recaudacion.cantidadHoy eq 1 ? 'reserva confirmada' : 'reservas confirmadas'} hoy</p>
+                </div>
+                <div class="mem-hero-chart">
+                    <p class="mem-hero-label">Últimos 7 días</p>
+                    <ul class="mem-bars">
+                        <ui:repeat var="dia" value="#{adminReservasBean.recaudacion.dias}">
+                            <li class="mem-bar #{dia.actual ? 'is-now' : ''}" title="#{dia.etiqueta}: #{dia.monto}">
+                                <span class="mem-bar-value">#{dia.monto}</span>
+                                <span class="mem-bar-track"><span style="height: #{dia.porcentaje}%"></span></span>
+                                <span class="mem-bar-name">#{dia.etiqueta}</span>
+                            </li>
+                        </ui:repeat>
+                    </ul>
+                </div>
+            </section>
+
+            <div class="adm-kpis soc-kpis">
+                <article class="adm-kpi">
+                    <div class="adm-kpi-head">
+                        <span class="adm-kpi-icon #{adminReservasBean.porConfirmar gt 0 ? 'is-alert' : ''}">
+                            <span class="icon" aria-hidden="true">pending_actions</span>
+                        </span>
+                        <h2 class="adm-kpi-label">Por confirmar</h2>
+                    </div>
+                    <p class="adm-kpi-value">#{adminReservasBean.porConfirmar}</p>
+                    <p class="adm-kpi-sub">con comprobante para revisar</p>
+                </article>
+                <article class="adm-kpi">
+                    <div class="adm-kpi-head">
+                        <span class="adm-kpi-icon"><span class="icon" aria-hidden="true">today</span></span>
+                        <h2 class="adm-kpi-label">Reservas de hoy</h2>
+                    </div>
+                    <p class="adm-kpi-value">#{adminReservasBean.deHoy}</p>
+                    <p class="adm-kpi-sub">confirmadas y por confirmar</p>
+                </article>
+                <article class="adm-kpi">
+                    <div class="adm-kpi-head">
+                        <span class="adm-kpi-icon"><span class="icon" aria-hidden="true">event_available</span></span>
+                        <h2 class="adm-kpi-label">Próximas confirmadas</h2>
+                    </div>
+                    <p class="adm-kpi-value">#{adminReservasBean.proximasConfirmadas}</p>
+                    <p class="adm-kpi-sub">todavía no se realizaron</p>
+                </article>
+                <article class="adm-kpi">
+                    <div class="adm-kpi-head">
+                        <span class="adm-kpi-icon"><span class="icon" aria-hidden="true">event_busy</span></span>
+                        <h2 class="adm-kpi-label">Canceladas y rechazadas</h2>
+                    </div>
+                    <p class="adm-kpi-value">#{adminReservasBean.canceladas}</p>
+                    <p class="adm-kpi-sub">#{adminReservasBean.porcentajeCanceladas}% de #{adminReservasBean.total} reservas</p>
+                </article>
+            </div>
+
+            <div class="res-duo">
+                <section class="adm-card" aria-labelledby="tMasReservadas">
+                    <header class="adm-card-head">
+                        <h2 class="adm-card-title" id="tMasReservadas">Instalaciones más reservadas</h2>
+                    </header>
+                    <ui:fragment rendered="#{empty adminReservasBean.masReservadas}">
+                        <div class="adm-empty">
+                            <span class="icon" aria-hidden="true">bar_chart</span>
+                            <p>Todavía no hay reservas.</p>
+                        </div>
+                    </ui:fragment>
+                    <ul class="res-rank">
+                        <ui:repeat var="i" value="#{adminReservasBean.masReservadas}">
+                            <li>
+                                <span class="res-rank-icon"><span class="icon" aria-hidden="true">#{i.icono}</span></span>
+                                <span class="res-rank-body">
+                                    <span class="res-rank-line">
+                                        <span class="res-rank-name">#{i.etiqueta}</span>
+                                        <span class="res-rank-num">#{i.cantidad}</span>
+                                    </span>
+                                    <span class="adm-meter"><span style="width: #{i.porcentaje}%"></span></span>
+                                </span>
+                            </li>
+                        </ui:repeat>
+                    </ul>
+                </section>
+
+                <section class="adm-card" aria-labelledby="tHorasPico">
+                    <header class="adm-card-head">
+                        <h2 class="adm-card-title" id="tHorasPico">Horarios más pedidos</h2>
+                    </header>
+                    <ui:fragment rendered="#{empty adminReservasBean.horasPico}">
+                        <div class="adm-empty">
+                            <span class="icon" aria-hidden="true">bar_chart</span>
+                            <p>Todavía no hay reservas.</p>
+                        </div>
+                    </ui:fragment>
+                    <ul class="res-rank">
+                        <ui:repeat var="i" value="#{adminReservasBean.horasPico}">
+                            <li>
+                                <span class="res-rank-icon"><span class="icon" aria-hidden="true">#{i.icono}</span></span>
+                                <span class="res-rank-body">
+                                    <span class="res-rank-line">
+                                        <span class="res-rank-name">#{i.etiqueta}</span>
+                                        <span class="res-rank-num">#{i.cantidad}</span>
+                                    </span>
+                                    <span class="adm-meter"><span style="width: #{i.porcentaje}%"></span></span>
+                                </span>
+                            </li>
+                        </ui:repeat>
+                    </ul>
+                </section>
+            </div>
+        </h:panelGroup>
+
+        <section class="adm-card soc-card" aria-labelledby="tReservas">
+            <header class="adm-card-head">
+                <h2 class="adm-card-title" id="tReservas">Historial de reservas</h2>
+            </header>
+
+            <!-- Buscador y filtros: recortan la tabla de abajo por AJAX -->
+            <h:form id="filtros" styleClass="soc-toolbar">
+                <div class="adm-search soc-search" role="search">
+                    <span class="icon" aria-hidden="true">search</span>
+                    <h:inputText value="#{adminReservasBean.busqueda}" autocomplete="off"
+                                 p:placeholder="Buscar por socio, DNI, correo, instalación o fecha…"
+                                 p:aria-label="Buscar reservas"
+                                 onkeydown="if (event.key === 'Enter') return false;">
+                        <f:ajax event="keyup" delay="300" listener="#{adminReservasBean.filtrar}" render=":tabla"/>
+                    </h:inputText>
+                </div>
+
+                <h:selectOneMenu value="#{adminReservasBean.tiempo}" styleClass="soc-select"
+                                 p:aria-label="Filtrar por fecha del turno">
+                    <f:selectItem itemValue="" itemLabel="Cualquier fecha"/>
+                    <f:selectItem itemValue="HOY" itemLabel="Hoy"/>
+                    <f:selectItem itemValue="PROXIMAS" itemLabel="Próximas"/>
+                    <f:selectItem itemValue="SEMANA" itemLabel="Esta semana"/>
+                    <f:selectItem itemValue="MES" itemLabel="Este mes"/>
+                    <f:selectItem itemValue="PASADAS" itemLabel="Ya pasaron"/>
+                    <f:ajax listener="#{adminReservasBean.filtrar}" render=":tabla"/>
+                </h:selectOneMenu>
+
+                <h:selectOneMenu value="#{adminReservasBean.estado}" styleClass="soc-select"
+                                 p:aria-label="Filtrar por estado de la reserva">
+                    <f:selectItem itemValue="" itemLabel="Todos los estados"/>
+                    <f:selectItem itemValue="POR_CONFIRMAR" itemLabel="Por confirmar"/>
+                    <f:selectItem itemValue="ESPERANDO_PAGO" itemLabel="Esperando pago"/>
+                    <f:selectItem itemValue="CONFIRMADA" itemLabel="Confirmadas"/>
+                    <f:selectItem itemValue="CANCELADA" itemLabel="Canceladas"/>
+                    <f:selectItem itemValue="RECHAZADA" itemLabel="Rechazadas"/>
+                    <f:ajax listener="#{adminReservasBean.filtrar}" render=":tabla"/>
+                </h:selectOneMenu>
+
+                <h:selectOneMenu value="#{adminReservasBean.tipo}" styleClass="soc-select"
+                                 p:aria-label="Filtrar por tipo de instalación">
+                    <f:selectItem itemValue="" itemLabel="Todas las instalaciones"/>
+                    <f:selectItems value="#{adminReservasBean.tipos}"/>
+                    <f:ajax listener="#{adminReservasBean.filtrar}" render=":tabla"/>
+                </h:selectOneMenu>
+
+                <h:commandLink styleClass="soc-btn"
+                               action="#{adminReservasBean.limpiar}" title="Quitar todos los filtros">
+                    <f:ajax execute="@this" render=":filtros :tabla"/>
+                    <span class="icon" aria-hidden="true">close</span>Limpiar
+                </h:commandLink>
+
+                <h:commandLink styleClass="soc-btn" action="#{adminReservasBean.mostrarTodo}"
+                               title="Guardar la lista completa como PDF (se abre el cuadro de impresión: elegí «Guardar como PDF»)">
+                    <f:ajax execute="@this" render=":tabla" onevent="sigridImprimir"/>
+                    <span class="icon" aria-hidden="true">download</span>Exportar PDF
+                </h:commandLink>
+            </h:form>
+
+            <h:panelGroup id="tabla" layout="block">
+                <!-- resultado de la última acción -->
+                <h:messages globalOnly="true" layout="list" styleClass="adm-flashes"
+                            infoClass="adm-flash adm-flash-ok" warnClass="adm-flash adm-flash-warn"
+                            errorClass="adm-flash adm-flash-off"/>
+
+                <ui:fragment rendered="#{empty adminReservasBean.visibles}">
+                    <div class="adm-empty">
+                        <span class="icon" aria-hidden="true">event_available</span>
+                        <p>#{adminReservasBean.total eq 0 ? 'Todavía no hay reservas.' : 'Ninguna reserva coincide con la búsqueda.'}</p>
+                    </div>
+                </ui:fragment>
+
+                <ui:fragment rendered="#{not empty adminReservasBean.visibles}">
+                    <h:form id="filas">
+                        <div class="adm-table-wrap">
+                            <table class="adm-table">
+                                <thead>
+                                    <tr>
+                                        <th scope="col">Turno</th>
+                                        <th scope="col">Instalación</th>
+                                        <th scope="col">Socio</th>
+                                        <th scope="col">Estado</th>
+                                        <th scope="col">Monto</th>
+                                        <th scope="col">Reservada</th>
+                                        <th scope="col" class="adm-col-actions">Acción</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <ui:repeat var="r" value="#{adminReservasBean.visibles}">
+                                        <tr class="#{r.activa ? '' : 'is-muted'}">
+                                            <td class="adm-nowrap">
+                                                <span class="adm-cell-main">#{r.cuando}</span>
+                                                <span class="adm-cell-sub">#{r.horario}#{r.finalizada ? ' · ya pasó' : ''}</span>
+                                            </td>
+                                            <td>
+                                                <div class="soc-who">
+                                                    <span class="res-inst-icon"><span class="icon" aria-hidden="true">#{r.icono}</span></span>
+                                                    <span>
+                                                        <span class="adm-cell-main">#{r.instalacion}</span>
+                                                        <span class="adm-cell-sub">#{r.disciplina}</span>
+                                                    </span>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <span class="adm-cell-main">#{r.socio}</span>
+                                                <span class="adm-cell-sub">#{r.email}</span>
+                                            </td>
+                                            <td><span class="adm-chip adm-chip-#{r.estadoClase}">#{r.estadoTexto}</span></td>
+                                            <td class="adm-cell-time">#{empty r.monto ? '—' : r.monto}</td>
+                                            <td class="adm-nowrap">#{r.reservadaEl}</td>
+                                            <td class="adm-col-actions">
+                                                <div class="adm-actions">
+                                                    <h:commandLink styleClass="adm-act adm-act-ok" rendered="#{r.porConfirmar}"
+                                                                   action="#{adminReservasBean.confirmar(r.idReserva)}"
+                                                                   title="Aceptar la reserva"
+                                                                   p:aria-label="Aceptar la reserva de #{r.socio}">
+                                                        <f:ajax execute="@this" render=":tabla :resumen :admNav"/>
+                                                        <span class="icon" aria-hidden="true">check</span>Aceptar
+                                                    </h:commandLink>
+                                                    <h:commandLink styleClass="adm-act adm-act-off" rendered="#{r.porConfirmar}"
+                                                                   action="#{adminReservasBean.rechazar(r.idReserva)}"
+                                                                   title="Denegar la reserva"
+                                                                   p:aria-label="Denegar la reserva de #{r.socio}"
+                                                                   onclick="return confirm('¿Denegar esta solicitud? El turno quedará libre.')">
+                                                        <f:ajax execute="@this" render=":tabla :resumen :admNav"/>
+                                                        <span class="icon" aria-hidden="true">close</span>Denegar
+                                                    </h:commandLink>
+                                                    <ui:fragment rendered="#{not r.porConfirmar}">
+                                                        <span class="adm-cell-sub">—</span>
+                                                    </ui:fragment>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    </ui:repeat>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div class="res-foot">
+                            <span>Mostrando #{adminReservasBean.visibles.size()} de #{adminReservasBean.totalFiltradas}</span>
+                            <h:commandLink styleClass="soc-btn" rendered="#{adminReservasBean.hayMas}"
+                                           action="#{adminReservasBean.verMas}">
+                                <f:ajax execute="@this" render=":tabla"/>
+                                Ver más
+                            </h:commandLink>
+                        </div>
+                    </h:form>
+                </ui:fragment>
+            </h:panelGroup>
+        </section>
+
+    </ui:define>
+
+</ui:composition>

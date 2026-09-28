@@ -1,0 +1,133 @@
+/* =====================================================================
+   SIGRID · Estilos de las solicitudes pendientes del administrador (prefijo .sol-)
+   Se carga DESPUÉS de admin.css y socios.css (indicadores y barra de filtros son .soc-*).
+   ===================================================================== */
+
+/* tres indicadores en una fila (socios.css trae cuatro) */
+.adm-kpis.soc-kpis {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  margin-bottom: 20px;
+}
+
+@media (max-width: 720px) {
+  .adm-kpis.soc-kpis {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* importes y esperas son texto corto, no un número enorme */
+.adm-kpi-value.sol-monto {
+  font-size: 1.6rem;
+}
+
+.sol-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+  gap: 16px;
+}
+
+.sol-card {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 16px;
+  border: 1px solid var(--adm-line);
+  border-radius: 16px;
+  background: var(--adm-card);
+}
+
+/* turno de hoy o mañana: borde ámbar suave; turno ya pasado: borde rojo suave */
+.sol-card.is-urgente {
+  border-color: var(--adm-warn-dot);
+}
+
+.sol-card.is-vencida {
+  border-color: var(--adm-off-dot);
+}
+
+.sol-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.sol-head-text {
+  flex: 1;
+  min-width: 0;
+}
+
+.res-inst-icon {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  background: var(--adm-soft);
+  color: var(--adm-ink-2);
+}
+
+.res-inst-icon .icon {
+  font-size: 19px;
+}
+
+.sol-datos {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px 16px;
+  margin: 0;
+  font-size: .84rem;
+}
+
+.sol-datos dt {
+  font-size: .72rem;
+  color: var(--adm-ink-3);
+}
+
+.sol-datos dd {
+  margin: 2px 0 0;
+  font-weight: 500;
+  overflow-wrap: anywhere;
+}
+
+.sol-datos dd .adm-cell-sub {
+  font-weight: 400;
+}
+
+.sol-ver {
+  display: block;
+  width: fit-content;
+  margin-top: 2px;
+  font-size: .78rem;
+  font-weight: 600;
+  color: var(--adm-accent);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.sol-importe {
+  font-size: 1.05rem;
+  font-weight: 700 !important;
+  font-variant-numeric: tabular-nums;
+}
+
+.sol-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: auto;
+  padding-top: 12px;
+  border-top: 1px solid var(--adm-line);
+}
+
+.sol-actions .adm-act {
+  flex: 1;
+  justify-content: center;
+  height: 36px;
+  cursor: pointer;
+}
+
+@media (max-width: 480px) {
+  .sol-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

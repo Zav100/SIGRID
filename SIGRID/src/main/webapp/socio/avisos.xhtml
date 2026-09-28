@@ -1,0 +1,50 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:h="jakarta.faces.html"
+                xmlns:ui="jakarta.faces.facelets"
+                template="/templates/socio.xhtml">
+
+    <ui:define name="titulo">
+        Avisos | Polideportivo UNSE
+    </ui:define>
+
+    <ui:define name="content">
+        <header class="so-page-head">
+            <div>
+                <h1 class="so-page-title">Avisos</h1>
+            </div>
+        </header>
+
+        <ui:fragment rendered="#{empty socioBean.avisos}">
+            <section class="so-card">
+                <div class="so-empty">
+                    <span class="icon" aria-hidden="true">task_alt</span>
+                    <p>No tenés avisos por ahora.</p>
+                    <span>Cuando haya novedades de tus reservas o de tu membresía las vas a ver acá.</span>
+                </div>
+            </section>
+        </ui:fragment>
+
+        <ui:fragment rendered="#{not empty socioBean.avisos}">
+            <section class="so-card so-avisos">
+                <ui:repeat var="a" value="#{socioBean.avisos}">
+                    <div class="so-aviso so-aviso-#{a.clase}">
+                        <span class="so-aviso-ico"><span class="icon" aria-hidden="true">#{a.icono}</span></span>
+                        <div class="so-aviso-body">
+                            <p class="so-aviso-title">#{a.titulo}</p>
+                            <p class="so-aviso-text">#{a.texto}</p>
+                        </div>
+                        <span class="so-aviso-when">#{a.cuando}</span>
+                    </div>
+                </ui:repeat>
+            </section>
+        </ui:fragment>
+
+        <div class="so-actions-row">
+            <h:link outcome="/socio/mis-reservas" styleClass="so-btn so-btn-ghost">
+                <span class="icon" aria-hidden="true">event_available</span>Ir a mis reservas
+            </h:link>
+        </div>
+    </ui:define>
+
+</ui:composition>

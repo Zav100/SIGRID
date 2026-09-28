@@ -1,0 +1,431 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:h="jakarta.faces.html"
+                xmlns:f="jakarta.faces.core"
+                xmlns:p="jakarta.faces.passthrough"
+                xmlns:ui="jakarta.faces.facelets"
+                template="/templates/admin-dashboard.xhtml">
+
+    <ui:define name="titulo">
+        Cancelaciones y reprogramaciones | Panel de administración
+    </ui:define>
+
+    <ui:define name="head">
+        <h:outputStylesheet library="css" name="socios.css"/>
+        <h:outputStylesheet library="css" name="membresias.css"/>
+        <h:outputStylesheet library="css" name="solicitudes.css"/>
+        <h:outputStylesheet library="css" name="cambios.css"/>
+    </ui:define>
+
+    <ui:define name="content">
+
+        <!-- ============ ENCABEZADO ============ -->
+        <header class="adm-page-head">
+            <div>
+                <h1 class="adm-page-title">Cancelaciones y reprogramaciones</h1>
+            </div>
+        </header>
+
+        <!-- Esta página se actualiza sola (pedidos, indicadores y contador del menú); el menú deja de hacerlo por su cuenta -->
+        <h:form id="pulso">
+            <h:commandScript name="actualizarCambios" execute="@this"
+                             action="#{adminCambiosBean.actualizar}" render=":resumen :pestanas :lista :admNav"/>
+        </h:form>
+        <script>
+            window.sigridPulsoPropio = true;
+            setInterval(function () {
+                if (!document.hidden) {
+                    actualizarCambios();
+                }
+            }, 30000);
+        </script>
+
+        <!-- Indicadores: siempre sobre todo -->
+        <h:panelGroup id="resumen" layout="block" styleClass="adm-kpis soc-kpis">
+            <article class="adm-kpi">
+                <div class="adm-kpi-head">
+                    <span class="adm-kpi-icon #{adminCambiosBean.totalPedidos gt 0 ? 'is-alert' : ''}">
+                        <span class="icon" aria-hidden="true">pending_actions</span>
+                    </span>
+                    <h2 class="adm-kpi-label">Pedidos por resolver</h2>
+                </div>
+                <p class="adm-kpi-value">#{adminCambiosBean.totalPedidos}</p>
+                <p class="adm-kpi-sub">cancelaciones y reprogramaciones</p>
+            </article>
+            <article class="adm-kpi">
+                <div class="adm-kpi-head">
+                    <span class="adm-kpi-icon"><span class="icon" aria-hidden="true">event_repeat</span></span>
+                    <h2 class="adm-kpi-label">Créditos vigentes</h2>
+                </div>
+                <p class="adm-kpi-value">#{adminCambiosBean.creditosVigentes}</p>
+                <p class="adm-kpi-sub">reservas por reprogramar</p>
+            </article>
+            <article class="adm-kpi">
+                <div class="adm-kpi-head">
+                    <span class="adm-kpi-icon #{adminCambiosBean.creditosPorVencer gt 0 ? 'is-alert' : ''}">
+                        <span class="icon" aria-hidden="true">schedule</span>
+                    </span>
+                    <h2 class="adm-kpi-label">Vencen pronto</h2>
+                </div>
+                <p class="adm-kpi-value">#{adminCambiosBean.creditosPorVencer}</p>
+                <p class="adm-kpi-sub">en los próximos #{adminCambiosBean.diasPorVencer} días</p>
+            </article>
+            <article class="adm-kpi">
+                <div class="adm-kpi-head">
+                    <span class="adm-kpi-icon"><span class="icon" aria-hidden="true">event_busy</span></span>
+                    <h2 class="adm-kpi-label">Créditos vencidos</h2>
+                </div>
+                <p class="adm-kpi-value">#{adminCambiosBean.creditosVencidos}</p>
+                <p class="adm-kpi-sub">lo pagado se perdió</p>
+            </article>
+        </h:panelGroup>
+
+        <section class="adm-card soc-card" aria-labelledby="tCambios">
+            <header class="adm-card-head">
+                <h2 class="adm-card-title" id="tCambios">Casos</h2>
+            </header>
+
+            <h:form id="filtros" styleClass="soc-toolbar">
+                <div class="adm-search soc-search" role="search">
+                    <span class="icon" aria-hidden="true">search</span>
+                    <h:inputText value="#{adminCambiosBean.busqueda}" autocomplete="off"
+                                 p:placeholder="Buscar por socio, DNI, correo o instalación…"
+                                 p:aria-label="Buscar en esta pestaña"
+                                 onkeydown="if (event.key === 'Enter') return false;">
+                        <f:ajax event="keyup" delay="300" render=":lista"/>
+                    </h:inputText>
+                </div>
+            </h:form>
+
+            <!-- pestañas, con cuántos casos hay en cada una -->
+            <h:form id="pestanas" styleClass="mem-tabs">
+                <h:commandLink styleClass="mem-tab #{adminCambiosBean.pestana eq 'PEDIDOS' ? 'is-active' : ''}"
+                               action="#{adminCambiosBean.elegir('PEDIDOS')}">
+                    <f:ajax execute="@this" render=":pestanas :lista"/>Pedidos <b>#{adminCambiosBean.totalPedidos}</b>
+                </h:commandLink>
+                <h:commandLink styleClass="mem-tab #{adminCambiosBean.pestana eq 'CREDITOS' ? 'is-active' : ''}"
+                               action="#{adminCambiosBean.elegir('CREDITOS')}">
+                    <f:ajax execute="@this" render=":pestanas :lista"/>Con crédito <b>#{adminCambiosBean.creditosVigentes}</b>
+                </h:commandLink>
+                <h:commandLink styleClass="mem-tab #{adminCambiosBean.pestana eq 'REPROGRAMADAS' ? 'is-active' : ''}"
+                               action="#{adminCambiosBean.elegir('REPROGRAMADAS')}">
+                    <f:ajax execute="@this" render=":pestanas :lista"/>Reprogramadas <b>#{adminCambiosBean.totalReprogramadas}</b>
+                </h:commandLink>
+                <h:commandLink styleClass="mem-tab #{adminCambiosBean.pestana eq 'VENCIDOS' ? 'is-active' : ''}"
+                               action="#{adminCambiosBean.elegir('VENCIDOS')}">
+                    <f:ajax execute="@this" render=":pestanas :lista"/>Vencidos <b>#{adminCambiosBean.creditosVencidos}</b>
+                </h:commandLink>
+                <h:commandLink styleClass="mem-tab #{adminCambiosBean.pestana eq 'PREDIO' ? 'is-active' : ''}"
+                               action="#{adminCambiosBean.elegir('PREDIO')}">
+                    <f:ajax execute="@this" render=":pestanas :lista"/>Cancelar por el predio <b>#{adminCambiosBean.totalCancelables}</b>
+                </h:commandLink>
+            </h:form>
+
+            <h:panelGroup id="lista" layout="block">
+                <!-- resultado de la última acción -->
+                <h:messages globalOnly="true" layout="list" styleClass="adm-flashes"
+                            infoClass="adm-flash adm-flash-ok" warnClass="adm-flash adm-flash-warn"
+                            errorClass="adm-flash adm-flash-off"/>
+
+                <!-- ============ PEDIDOS DEL SOCIO ============ -->
+                <ui:fragment rendered="#{adminCambiosBean.pestana eq 'PEDIDOS'}">
+                    <ui:fragment rendered="#{empty adminCambiosBean.pedidos}">
+                        <div class="adm-empty">
+                            <span class="icon" aria-hidden="true">task_alt</span>
+                            <p>#{adminCambiosBean.totalPedidos eq 0 ? 'No hay pedidos por resolver.' : 'Ningún pedido coincide con la búsqueda.'}</p>
+                            <ui:fragment rendered="#{adminCambiosBean.totalPedidos eq 0}"><span>Está todo al día.</span></ui:fragment>
+                        </div>
+                    </ui:fragment>
+
+                    <ui:fragment rendered="#{not empty adminCambiosBean.pedidos}">
+                        <h:form id="formPedidos">
+                            <!-- motivo del rechazo: lo carga el prompt del botón "Rechazar" -->
+                            <h:inputHidden id="motivo" value="#{adminCambiosBean.motivo}"/>
+                            <div class="sol-grid">
+                                <ui:repeat var="c" value="#{adminCambiosBean.pedidos}">
+                                    <article class="sol-card">
+                                        <header class="sol-head">
+                                            <span class="res-inst-icon"><span class="icon" aria-hidden="true">#{c.icono}</span></span>
+                                            <span class="sol-head-text">
+                                                <span class="adm-cell-main">#{c.instalacion}</span>
+                                                <span class="adm-cell-sub">#{c.reprogramacion ? 'Usa su crédito para reprogramar' : 'Pide cancelar'}</span>
+                                            </span>
+                                            <span class="adm-chip #{c.reprogramacion ? 'cam-chip-repro' : 'adm-chip-muted'}">#{c.reprogramacion ? 'Reprogramación' : 'Cancelación'}</span>
+                                        </header>
+
+                                        <dl class="sol-datos">
+                                            <div>
+                                                <dt>Socio</dt>
+                                                <dd>#{c.socio}<span class="adm-cell-sub">DNI #{c.dni}</span></dd>
+                                            </div>
+                                            <div>
+                                                <dt>Pagó</dt>
+                                                <dd class="sol-importe">#{empty c.monto ? '—' : c.monto}</dd>
+                                            </div>
+                                            <div class="cam-full">
+                                                <div class="cam-cambio">
+                                                    <div class="cam-turno cam-turno-viejo">
+                                                        <span class="cam-turno-label">#{c.reprogramacion ? 'Turno cancelado (su crédito)' : 'Turno a cancelar'}</span>
+                                                        <strong>#{c.actual}</strong>
+                                                    </div>
+                                                    <ui:fragment rendered="#{c.reprogramacion}">
+                                                        <span class="cam-flecha" aria-hidden="true"><span class="icon">arrow_forward</span></span>
+                                                        <div class="cam-turno cam-turno-nuevo">
+                                                            <span class="cam-turno-label">Turno nuevo pedido</span>
+                                                            <strong>#{c.nuevo}</strong>
+                                                        </div>
+                                                    </ui:fragment>
+                                                    <ui:fragment rendered="#{not c.reprogramacion}">
+                                                        <div class="cam-turno cam-turno-credito">
+                                                            <span class="cam-turno-label">Si lo aprobás</span>
+                                                            <strong>Queda con #{adminCambiosBean.diasCredito} días de crédito para reprogramar</strong>
+                                                        </div>
+                                                    </ui:fragment>
+                                                </div>
+                                            </div>
+                                            <div class="cam-full">
+                                                <dt>Motivo del socio</dt>
+                                                <dd>#{c.motivo}</dd>
+                                            </div>
+                                            <div class="cam-full">
+                                                <dt>Pedido #{c.hace}</dt>
+                                                <dd class="cam-plazo">#{c.anticipacion}</dd>
+                                            </div>
+                                        </dl>
+
+                                        <footer class="sol-actions">
+                                            <h:commandLink styleClass="adm-act adm-act-ok"
+                                                           action="#{adminCambiosBean.aprobar(c.idSolicitud)}"
+                                                           title="Aprobar el pedido"
+                                                           p:aria-label="Aprobar el pedido de #{c.socio}"
+                                                           onclick="return confirm('#{c.reprogramacion ? 'La reserva pasa al turno nuevo y queda confirmada.' : 'La reserva se cancela y el socio queda con un crédito para reprogramar.'} ¿Aprobar el pedido?')">
+                                                <f:ajax execute="@this" render=":resumen :pestanas :lista :admNav"/>
+                                                <span class="icon" aria-hidden="true">check</span>Aprobar
+                                            </h:commandLink>
+                                            <h:commandLink styleClass="adm-act adm-act-off"
+                                                           action="#{adminCambiosBean.rechazar(c.idSolicitud)}"
+                                                           title="Rechazar el pedido"
+                                                           p:aria-label="Rechazar el pedido de #{c.socio}"
+                                                           onclick="var m = prompt('Rechazar el pedido: la reserva sigue como estaba.\n\nMotivo (opcional):', ''); if (m === null) { return false; } document.getElementById('formPedidos:motivo').value = m;">
+                                                <f:ajax execute="@this motivo" render=":resumen :pestanas :lista :admNav"/>
+                                                <span class="icon" aria-hidden="true">close</span>Rechazar
+                                            </h:commandLink>
+                                        </footer>
+                                    </article>
+                                </ui:repeat>
+                            </div>
+                        </h:form>
+                    </ui:fragment>
+                </ui:fragment>
+
+                <!-- ============ CRÉDITOS VIGENTES ============ -->
+                <ui:fragment rendered="#{adminCambiosBean.pestana eq 'CREDITOS'}">
+                    <ui:fragment rendered="#{empty adminCambiosBean.vigentes}">
+                        <div class="adm-empty">
+                            <span class="icon" aria-hidden="true">event_repeat</span>
+                            <p>#{adminCambiosBean.creditosVigentes eq 0 ? 'No hay créditos vigentes.' : 'Ningún crédito coincide con la búsqueda.'}</p>
+                        </div>
+                    </ui:fragment>
+                    <ui:fragment rendered="#{not empty adminCambiosBean.vigentes}">
+                        <div class="adm-table-wrap">
+                            <table class="adm-table">
+                                <thead>
+                                    <tr>
+                                        <th scope="col">Socio</th>
+                                        <th scope="col">Instalación</th>
+                                        <th scope="col">Turno cancelado</th>
+                                        <th scope="col">Pagó</th>
+                                        <th scope="col">Puede reprogramar hasta</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <ui:repeat var="c" value="#{adminCambiosBean.vigentes}">
+                                        <tr>
+                                            <td>
+                                                <span class="adm-cell-main">#{c.socio}</span>
+                                                <span class="adm-cell-sub">#{c.email}</span>
+                                            </td>
+                                            <td>
+                                                <div class="soc-who">
+                                                    <span class="res-inst-icon"><span class="icon" aria-hidden="true">#{c.icono}</span></span>
+                                                    <span class="adm-cell-main">#{c.instalacion}</span>
+                                                </div>
+                                            </td>
+                                            <td class="adm-nowrap">#{c.turnoOriginal}</td>
+                                            <td class="adm-cell-time">#{empty c.monto ? '—' : c.monto}</td>
+                                            <td class="adm-nowrap">
+                                                <span class="adm-cell-main">#{c.limite}</span>
+                                                <span class="adm-chip adm-chip-#{c.porVencer ? 'warn' : 'ok'}">#{c.plazo}</span>
+                                            </td>
+                                        </tr>
+                                    </ui:repeat>
+                                </tbody>
+                            </table>
+                        </div>
+                    </ui:fragment>
+                </ui:fragment>
+
+                <!-- ============ REPROGRAMADAS ============ -->
+                <ui:fragment rendered="#{adminCambiosBean.pestana eq 'REPROGRAMADAS'}">
+                    <ui:fragment rendered="#{empty adminCambiosBean.reprogramadas}">
+                        <div class="adm-empty">
+                            <span class="icon" aria-hidden="true">event_repeat</span>
+                            <p>#{adminCambiosBean.totalReprogramadas eq 0 ? 'Todavía no hay reprogramaciones.' : 'Ninguna reprogramación coincide con la búsqueda.'}</p>
+                        </div>
+                    </ui:fragment>
+                    <ui:fragment rendered="#{not empty adminCambiosBean.reprogramadas}">
+                        <div class="adm-table-wrap">
+                            <table class="adm-table">
+                                <thead>
+                                    <tr>
+                                        <th scope="col">Socio</th>
+                                        <th scope="col">Instalación</th>
+                                        <th scope="col">Cambio de turno</th>
+                                        <th scope="col">Motivo</th>
+                                        <th scope="col">Cuándo</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <ui:repeat var="h" value="#{adminCambiosBean.reprogramadas}">
+                                        <tr>
+                                            <td>
+                                                <span class="adm-cell-main">#{h.socio}</span>
+                                                <span class="adm-cell-sub">#{h.email}</span>
+                                            </td>
+                                            <td>
+                                                <div class="soc-who">
+                                                    <span class="res-inst-icon"><span class="icon" aria-hidden="true">#{h.icono}</span></span>
+                                                    <span class="adm-cell-main">#{h.instalacion}</span>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <span class="adm-cell-sub">#{h.de}</span>
+                                                <span class="adm-cell-main"><span class="icon cam-inline" aria-hidden="true">arrow_forward</span>#{h.a}</span>
+                                            </td>
+                                            <td class="cam-motivo">#{h.motivo}</td>
+                                            <td class="adm-nowrap">#{h.cuando}</td>
+                                        </tr>
+                                    </ui:repeat>
+                                </tbody>
+                            </table>
+                        </div>
+                    </ui:fragment>
+                </ui:fragment>
+
+                <!-- ============ CRÉDITOS VENCIDOS ============ -->
+                <ui:fragment rendered="#{adminCambiosBean.pestana eq 'VENCIDOS'}">
+                    <ui:fragment rendered="#{empty adminCambiosBean.vencidos}">
+                        <div class="adm-empty">
+                            <span class="icon" aria-hidden="true">event_busy</span>
+                            <p>#{adminCambiosBean.creditosVencidos eq 0 ? 'No hay créditos vencidos.' : 'Ningún crédito coincide con la búsqueda.'}</p>
+                        </div>
+                    </ui:fragment>
+                    <ui:fragment rendered="#{not empty adminCambiosBean.vencidos}">
+                        <div class="adm-table-wrap">
+                            <table class="adm-table">
+                                <thead>
+                                    <tr>
+                                        <th scope="col">Socio</th>
+                                        <th scope="col">Instalación</th>
+                                        <th scope="col">Turno cancelado</th>
+                                        <th scope="col">Perdió</th>
+                                        <th scope="col">Venció</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <ui:repeat var="c" value="#{adminCambiosBean.vencidos}">
+                                        <tr class="is-muted">
+                                            <td>
+                                                <span class="adm-cell-main">#{c.socio}</span>
+                                                <span class="adm-cell-sub">#{c.email}</span>
+                                            </td>
+                                            <td>
+                                                <div class="soc-who">
+                                                    <span class="res-inst-icon"><span class="icon" aria-hidden="true">#{c.icono}</span></span>
+                                                    <span class="adm-cell-main">#{c.instalacion}</span>
+                                                </div>
+                                            </td>
+                                            <td class="adm-nowrap">#{c.turnoOriginal}</td>
+                                            <td class="adm-cell-time">#{empty c.monto ? '—' : c.monto}</td>
+                                            <td class="adm-nowrap">
+                                                <span class="adm-cell-main">#{c.limite}</span>
+                                                <span class="adm-chip adm-chip-off">#{c.plazo}</span>
+                                            </td>
+                                        </tr>
+                                    </ui:repeat>
+                                </tbody>
+                            </table>
+                        </div>
+                    </ui:fragment>
+                </ui:fragment>
+
+                <!-- ============ CANCELAR POR EL PREDIO ============ -->
+                <ui:fragment rendered="#{adminCambiosBean.pestana eq 'PREDIO'}">
+                    <ui:fragment rendered="#{empty adminCambiosBean.cancelables}">
+                        <div class="adm-empty">
+                            <span class="icon" aria-hidden="true">event_available</span>
+                            <p>#{adminCambiosBean.totalCancelables eq 0 ? 'No hay reservas confirmadas próximas.' : 'Ninguna reserva coincide con la búsqueda.'}</p>
+                        </div>
+                    </ui:fragment>
+                    <ui:fragment rendered="#{not empty adminCambiosBean.cancelables}">
+                        <h:form id="formPredio">
+                            <!-- motivo de la cancelación: lo carga el prompt del botón -->
+                            <h:inputHidden id="motivo" value="#{adminCambiosBean.motivo}"/>
+                            <div class="adm-table-wrap">
+                                <table class="adm-table">
+                                    <thead>
+                                        <tr>
+                                            <th scope="col">Turno</th>
+                                            <th scope="col">Instalación</th>
+                                            <th scope="col">Socio</th>
+                                            <th scope="col">Pagó</th>
+                                            <th scope="col" class="adm-col-actions">Acción</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <ui:repeat var="r" value="#{adminCambiosBean.cancelables}">
+                                            <tr>
+                                                <td class="adm-nowrap">
+                                                    <span class="adm-cell-main">#{r.cuando}</span>
+                                                    <span class="adm-cell-sub">#{r.horario}</span>
+                                                </td>
+                                                <td>
+                                                    <div class="soc-who">
+                                                        <span class="res-inst-icon"><span class="icon" aria-hidden="true">#{r.icono}</span></span>
+                                                        <span>
+                                                            <span class="adm-cell-main">#{r.instalacion}</span>
+                                                            <span class="adm-cell-sub">#{r.disciplina}</span>
+                                                        </span>
+                                                    </div>
+                                                </td>
+                                                <td>
+                                                    <span class="adm-cell-main">#{r.socio}</span>
+                                                    <span class="adm-cell-sub">#{r.email}</span>
+                                                </td>
+                                                <td class="adm-cell-time">#{empty r.monto ? '—' : r.monto}</td>
+                                                <td class="adm-col-actions">
+                                                    <div class="adm-actions">
+                                                        <h:commandLink styleClass="adm-act adm-act-off"
+                                                                       action="#{adminCambiosBean.cancelarPorElPredio(r.idReserva)}"
+                                                                       title="Cancelar la reserva por una causa del predio"
+                                                                       p:aria-label="Cancelar por el predio la reserva de #{r.socio}"
+                                                                       onclick="var m = prompt('Cancelar esta reserva por el predio: el socio queda con crédito para reprogramar.\n\nMotivo (obligatorio):', ''); if (m === null || m.trim() === '') { return false; } document.getElementById('formPredio:motivo').value = m;">
+                                                            <f:ajax execute="@this motivo" render=":resumen :pestanas :lista :admNav"/>
+                                                            <span class="icon" aria-hidden="true">block</span>Cancelar
+                                                        </h:commandLink>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        </ui:repeat>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </h:form>
+                    </ui:fragment>
+                </ui:fragment>
+            </h:panelGroup>
+        </section>
+
+    </ui:define>
+
+</ui:composition>

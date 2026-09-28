@@ -1,0 +1,49 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:h="jakarta.faces.html"
+                xmlns:f="jakarta.faces.core"
+                xmlns:p="jakarta.faces.passthrough"
+                xmlns:ui="jakarta.faces.facelets"
+                template="/templates/public-home.xhtml">
+
+    <ui:define name="titulo">
+        Ingresar | Polideportivo UNSE
+    </ui:define>
+
+    <ui:define name="content">
+        <section class="auth-section">
+            <div class="container">
+                <h:form id="loginForm" styleClass="auth-card">
+                    <h1 class="auth-title">Ingresar</h1>
+                    <p class="auth-sub">Accedé con tu cuenta de socio o de administrador.</p>
+
+                    <h:messages globalOnly="true" styleClass="auth-messages" infoClass="auth-message-ok"/>
+
+                    <div class="auth-field">
+                        <h:outputLabel for="email" value="Correo electrónico"/>
+                        <h:inputText id="email" value="#{loginBean.email}" required="true"
+                                     requiredMessage="Ingresá tu correo."
+                                     p:type="email" p:autocomplete="username"/>
+                        <h:message for="email" styleClass="auth-error"/>
+                    </div>
+
+                    <div class="auth-field">
+                        <h:outputLabel for="password" value="Contraseña"/>
+                        <h:inputSecret id="password" value="#{loginBean.password}" required="true"
+                                       requiredMessage="Ingresá tu contraseña."
+                                       p:autocomplete="current-password"/>
+                        <h:message for="password" styleClass="auth-error"/>
+                    </div>
+
+                    <h:commandButton value="Ingresar" action="#{loginBean.autenticar}" styleClass="btn btn-gold"/>
+
+                    <p class="auth-alt">
+                        ¿No tenés cuenta?
+                        <h:link outcome="/register">¡Creá una!</h:link>
+                    </p>
+                </h:form>
+            </div>
+        </section>
+    </ui:define>
+
+</ui:composition>

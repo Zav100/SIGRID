@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="es"
+      xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="jakarta.faces.html"
+      xmlns:f="jakarta.faces.core"
+      xmlns:p="jakarta.faces.passthrough"
+      xmlns:ui="jakarta.faces.facelets">
+
+<!--
+    Template del panel del socio. Cada página (socio/*.xhtml) la usa con template="/templates/socio.xhtml" y define:
+      - "titulo":  el título de la pestaña
+      - "content": la zona principal (debajo de la cabecera y del menú)
+      - "head":    (opcional) CSS/JS propio de la página
+    La cabecera y el menú leen al socio logueado de socioBean.
+-->
+<h:head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <meta name="robots" content="noindex"/>
+    <title><ui:insert name="titulo">Mi panel | Polideportivo UNSE</ui:insert></title>
+    <link rel="preconnect" href="https://fonts.googleapis.com"/>
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous"/>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&amp;display=swap"
+          rel="stylesheet"/>
+    <!-- Íconos: Material Symbols Rounded. Solo se descargan los de icon_names, que deben ir en orden alfabético:
+         si una página usa un ícono nuevo (o lo devuelve el servicio, ver DashboardServicio.icono), agregarlo acá. -->
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0..1,0&amp;icon_names=add,arrow_forward,block,calendar_today,card_membership,check,check_circle,chevron_right,cleaning_services,close,description,event_available,event_busy,event_repeat,fitness_center,groups,home,hourglass_top,info,lock,logout,luggage,notifications,outdoor_grill,payments,pending_actions,pool,receipt_long,schedule,sell,sports_basketball,sports_hockey,sports_rugby,sports_soccer,sports_tennis,sports_volleyball,stadium,star,task_alt,upload_file,verified&amp;display=block"
+          rel="stylesheet"/>
+    <h:outputStylesheet library="css" name="styles.css"/>
+    <h:outputStylesheet library="css" name="socio.css"/>
+    <ui:insert name="head"/>
+</h:head>
+
+<h:body styleClass="so-body">
+
+    <!-- ============ CABECERA ============ -->
+    <header class="so-hero">
+        <span class="so-hero-mark" aria-hidden="true"><h:graphicImage value="/assets/unse-shield.png" alt=""/></span>
+        <div class="so-wrap">
+            <div class="so-top">
+                <h:link outcome="/socio/inicio" styleClass="so-brand">
+                    <span class="so-brand-mark" aria-hidden="true"><h:graphicImage value="/assets/unse-shield.png" alt=""/></span>
+                    <span class="so-brand-text">
+                        <strong>SIGRID</strong>
+                        <span>Polideportivo UNSE</span>
+                    </span>
+                </h:link>
+                <div class="so-top-actions">
+                    <h:link outcome="/index" styleClass="so-ghost">
+                        <span class="icon" aria-hidden="true">home</span><span class="so-hide-sm">Ir al sitio</span>
+                    </h:link>
+                    <h:form styleClass="so-inline">
+                        <h:commandLink action="#{loginBean.cerrarSesion}" styleClass="so-ghost" title="Cerrar sesión">
+                            <span class="icon" aria-hidden="true">logout</span><span class="so-hide-sm">Salir</span>
+                        </h:commandLink>
+                    </h:form>
+                </div>
+            </div>
+
+            <div class="so-profile">
+                <span class="so-avatar #{socioBean.perfil.vigente ? '' : 'is-off'}" aria-hidden="true">#{socioBean.perfil.iniciales}</span>
+                <div class="so-profile-text">
+                    <p class="so-hello">#{socioBean.saludo},</p>
+                    <h1 class="so-name">#{socioBean.perfil.nombre}</h1>
+                    <div class="so-chips">
+                        <span class="so-chip"><span class="icon" aria-hidden="true">verified</span>#{socioBean.perfil.categoria}</span>
+                        <span class="so-chip #{socioBean.perfil.vigente ? 'so-chip-ok' : 'so-chip-off'}">
+                            <span class="so-dot"></span>Membresía #{socioBean.perfil.vigente ? 'vigente' : 'vencida'}
+                        </span>
+                        <span class="so-chip so-hide-sm">Socio #{socioBean.perfil.numero}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="so-wrap">
+        <!-- ============ MENÚ ============ -->
+        <nav class="so-nav" aria-label="Secciones">
+            <h:link outcome="/socio/inicio"
+                    styleClass="so-tab #{facesContext.viewRoot.viewId eq '/socio/inicio.xhtml' ? 'is-active' : ''}">
+                <span class="icon" aria-hidden="true">home</span>Inicio
+            </h:link>
+            <h:link outcome="/socio/mis-reservas"
+                    styleClass="so-tab #{facesContext.viewRoot.viewId eq '/socio/mis-reservas.xhtml' ? 'is-active' : ''}">
+                <span class="icon" aria-hidden="true">event_available</span>Mis reservas
+                <ui:fragment rendered="#{socioBean.cantidadPorPagar gt 0}">
+                    <span class="so-badge">#{socioBean.cantidadPorPagar}</span>
+                </ui:fragment>
+            </h:link>
+            <h:link outcome="/socio/avisos"
+                    styleClass="so-tab #{facesContext.viewRoot.viewId eq '/socio/avisos.xhtml' ? 'is-active' : ''}">
+                <span class="icon" aria-hidden="true">notifications</span>Avisos
+                <ui:fragment rendered="#{socioBean.avisosUrgentes gt 0}">
+                    <span class="so-badge">#{socioBean.avisosUrgentes}</span>
+                </ui:fragment>
+            </h:link>
+        </nav>
+
+        <main class="so-main">
+            <ui:insert name="content"/>
+        </main>
+    </div>
+
+    <footer class="so-foot">
+        <p>© Polideportivo UNSE · Universidad Nacional Santiago del Estero</p>
+    </footer>
+</h:body>
+</html>

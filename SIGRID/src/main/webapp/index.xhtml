@@ -1,0 +1,323 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:h="jakarta.faces.html"
+                xmlns:f="jakarta.faces.core"
+                xmlns:p="jakarta.faces.passthrough"
+                xmlns:ui="jakarta.faces.facelets"
+                template="/templates/public-home.xhtml">
+
+    <ui:define name="titulo">
+        Polideportivo Central | Sistema de Socios
+    </ui:define>
+
+    <ui:define name="content">
+
+        <!-- ============ HERO ============ -->
+        <section class="hero-classic" id="top">
+            <div class="hero-classic-bg">
+                <h:graphicImage value="/assets/cancha2.png" alt="Cancha de fútbol del predio"/>
+                <div class="hero-classic-scrim"></div>
+            </div>
+
+            <div class="hero-classic-inner">
+                <div class="hero-classic-content">
+                    <p class="eyebrow eyebrow-left">— PREDIOS DEPORTIVOS UNSE</p>
+                    <h1 class="hero-classic-title">
+                        Espacios para<br/>
+                        el <span class="accent">deporte</span>, la salud<br/>
+                        y la comunidad
+                    </h1>
+                    <p class="hero-classic-subtext">
+                        La Secretaría de Bienestar Estudiantil pone a disposición de la comunidad universitaria
+                        los predios deportivos de la UNSE, para que puedas entrenar, competir y disfrutar.
+                    </p>
+                    <h:link outcome="/faqpage" styleClass="btn btn-gold">
+                        Conocé más
+                        <span class="icon" aria-hidden="true">arrow_forward</span>
+                    </h:link>
+                </div>
+            </div>
+
+            <p class="hero-script">El deporte también es<br/>parte de la UNSE</p>
+        </section>
+
+        <!-- ============ INFORMACIÓN GENERAL (se apoya sobre el borde del hero) ============ -->
+        <section class="showcase-section" id="actividades">
+            <div class="container">
+                <div class="showcase-card">
+                    <div class="showcase-inner">
+                        <p class="eyebrow">— INFORMACIÓN GENERAL —</p>
+                        <p class="showcase-text">
+                            Nuestro predio reúne canchas, pileta y espacios pensados para que cada socio entrene,
+                            compita y disfrute del deporte en un mismo lugar, con reservas simples y una comunidad
+                            que crece cada día.
+                        </p>
+
+                        <div class="showcase-highlights">
+                            <ui:repeat var="dato" value="#{homeBean.destacados}">
+                                <div class="showcase-highlight">
+                                    <span class="highlight-value">
+                                        #{dato.valor}
+                                        <ui:fragment rendered="#{dato.estrella}">
+                                            <span class="icon icon-fill" aria-hidden="true">star</span>
+                                        </ui:fragment>
+                                    </span>
+                                    <span class="highlight-label">#{dato.etiqueta}</span>
+                                </div>
+                            </ui:repeat>
+                        </div>
+
+                        <div class="showcase-stats reveal">
+                            <div class="showcase-stat">
+                                <span class="showcase-stat-icon"><span class="icon" aria-hidden="true">calendar_month</span></span>
+                                <h3>Reservas online</h3>
+                                <p>Gestioná tus reservas de forma rápida y sencilla, desde cualquier lugar.</p>
+                            </div>
+                            <div class="showcase-stat">
+                                <span class="showcase-stat-icon"><span class="icon" aria-hidden="true">groups</span></span>
+                                <h3>Para todos los socios</h3>
+                                <p>Un sistema pensado para toda la comunidad de socios y sus grupos.</p>
+                            </div>
+                            <div class="showcase-stat">
+                                <span class="showcase-stat-icon"><span class="icon" aria-hidden="true">favorite</span></span>
+                                <h3>Deporte y bienestar</h3>
+                                <p>Fomentamos hábitos saludables y la vida activa dentro del predio.</p>
+                            </div>
+                            <div class="showcase-stat">
+                                <span class="showcase-stat-icon"><span class="icon" aria-hidden="true">verified_user</span></span>
+                                <h3>Instalaciones seguras</h3>
+                                <p>Espacios cuidados y mantenidos para la tranquilidad de nuestros socios.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ============ INSTALACIONES ============ -->
+        <section class="section" id="instalaciones">
+            <div class="container">
+                <div class="section-head">
+                    <div>
+                        <p class="eyebrow eyebrow-left">— NUESTRAS INSTALACIONES</p>
+                        <h2 class="section-title">Conocé los espacios disponibles</h2>
+                    </div>
+                    <h:link outcome="/instalaciones" styleClass="link-arrow">
+                        Ver todas las instalaciones
+                        <span class="icon" aria-hidden="true">arrow_forward</span>
+                    </h:link>
+                </div>
+
+                <div class="cards-grid reveal">
+                    <ui:repeat var="card" value="#{homeBean.instalaciones}">
+                        <article class="facility-card">
+                            <div class="facility-photo">
+                                <h:graphicImage value="/assets/#{card.imagen}" alt="#{card.alt}"/>
+                            </div>
+                            <div class="facility-body">
+                                <h3>#{card.nombre}</h3>
+                                <p class="facility-sub">#{card.subtitulo}</p>
+                                <p class="facility-meta">
+                                    <span class="icon" aria-hidden="true">location_on</span>
+                                    #{card.ubicacion}
+                                </p>
+                                <p class="facility-meta">
+                                    <span class="icon" aria-hidden="true">groups</span>
+                                    #{card.capacidad}
+                                </p>
+                                <h:link outcome="/instalaciones" styleClass="facility-arrow"
+                                        p:aria-label="Ver #{card.nombre.toLowerCase()}">
+                                    <span class="icon" aria-hidden="true">arrow_forward</span>
+                                </h:link>
+                            </div>
+                        </article>
+                    </ui:repeat>
+                </div>
+            </div>
+        </section>
+
+        <!-- ============ CÓMO FUNCIONA ============ -->
+        <section class="section how-section" id="como-funciona">
+            <div class="container">
+                <div class="how-panel">
+                    <div class="how-panel-top">
+                        <div class="steps">
+                            <div class="step">
+                                <span class="step-num">01</span>
+                                <span class="step-dot"></span>
+                                <span class="step-label">ASOCIATE</span>
+                            </div>
+                            <span class="step-line"></span>
+                            <div class="step">
+                                <span class="step-num">02</span>
+                                <span class="step-dot"></span>
+                                <span class="step-label">RESERVÁ</span>
+                            </div>
+                            <span class="step-line"></span>
+                            <div class="step">
+                                <span class="step-num">03</span>
+                                <span class="step-dot"></span>
+                                <span class="step-label">DISFRUTÁ</span>
+                            </div>
+                        </div>
+
+                        <div class="hero-badge">
+                            <span class="badge-dot"></span>
+                            Te esperamos todos los días de 08:00 a 21:00hs.
+                        </div>
+                    </div>
+
+                    <div class="float-cards">
+                        <article class="float-card">
+                            <span class="float-icon icon-brand"><span class="icon" aria-hidden="true">badge</span></span>
+                            <h3>HACETE SOCIO</h3>
+                            <p>Sumate como Alumno, Docente, No Docente o Externo y activá tu membresía mensual:
+                                tarifas preferenciales y carnet digital desde el primer día.</p>
+                            <div class="float-preview">
+                                <div class="mock-tags">
+                                    <span class="mock-tag">Alumno UNSE</span>
+                                    <span class="mock-tag">Docente</span>
+                                    <span class="mock-tag">No Docente</span>
+                                    <span class="mock-tag">Externo</span>
+                                </div>
+                            </div>
+                        </article>
+
+                        <article class="float-card">
+                            <span class="float-icon icon-yellow"><span class="icon" aria-hidden="true">calendar_month</span></span>
+                            <h3>ELEGÍ Y RESERVÁ</h3>
+                            <p>Canchas, pileta, SUM, quinchos y más. Mirá los horarios disponibles y reservá tu turno
+                                online, cuando quieras y desde donde estés.</p>
+                            <div class="float-preview">
+                                <div class="mock-search">
+                                    <span class="icon" aria-hidden="true">search</span>
+                                    <span>Cancha, pileta, quincho...</span>
+                                </div>
+                                <div class="mock-slot">
+                                    <span class="mock-time">19:00</span>
+                                    <div class="mock-bar"><span></span></div>
+                                    <span class="mock-time-end">20:00</span>
+                                </div>
+                            </div>
+                        </article>
+
+                        <article class="float-card">
+                            <span class="float-icon icon-dark"><span class="icon" aria-hidden="true">celebration</span></span>
+                            <h3>DISFRUTÁ TUS BENEFICIOS</h3>
+                            <p>Tu reserva te espera en tu calendario de socio. Aprovechá tarifas exclusivas,
+                                reprogramá si surge un imprevisto y viví el predio al máximo.</p>
+                            <div class="float-preview">
+                                <blockquote class="mock-quote">"Reservamos el quincho para el cumpleaños y fue todo muy fácil. ¡Volvemos seguro!"</blockquote>
+                            </div>
+                        </article>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ============ CARNET DIGITAL ============ -->
+        <section class="section" id="carnet">
+            <div class="container">
+                <div class="membership-panel">
+                    <div class="membership-text">
+                        <p class="eyebrow eyebrow-left">— CARNET DIGITAL —</p>
+                        <h2 class="membership-title">Tu carnet de socio, siempre en tu bolsillo</h2>
+                        <p class="membership-copy">
+                            Como socio de Polideportivo UNSE tenés tu carnet 100% virtual: sin trámites, sin
+                            esperas y siempre actualizado. Lo mostrás desde el celular para ingresar al predio,
+                            reservar instalaciones y acceder a beneficios exclusivos.
+                        </p>
+                        <ul class="membership-benefits">
+                            <ui:repeat var="beneficio" value="#{homeBean.beneficiosCarnet}">
+                                <li>
+                                    <span class="benefit-check"><span class="icon" aria-hidden="true">check</span></span>
+                                    #{beneficio}
+                                </li>
+                            </ui:repeat>
+                        </ul>
+                        <h:link outcome="/socio/inicio" styleClass="btn btn-gold" rendered="#{loginBean.socio}">
+                            Hacerme socio
+                            <span class="icon" aria-hidden="true">arrow_forward</span>
+                        </h:link>
+                        <h:link outcome="/register" styleClass="btn btn-gold" rendered="#{not loginBean.socio}">
+                            Hacerme socio
+                            <span class="icon" aria-hidden="true">arrow_forward</span>
+                        </h:link>
+                    </div>
+
+                    <div class="membership-card-wrap">
+                        <ui:include src="/templates/carnet.xhtml">
+                            <ui:param name="iniciales" value="MG"/>
+                            <ui:param name="nombre" value="María González"/>
+                            <ui:param name="numero" value="#00482"/>
+                            <ui:param name="desde" value="03/2024"/>
+                        </ui:include>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ============ GALERÍA ============ -->
+        <section class="section" id="informacion">
+            <div class="container">
+                <div class="section-head">
+                    <div>
+                        <p class="eyebrow eyebrow-left">— GALERÍA</p>
+                        <h2 class="section-title">Viví el deporte en el predio</h2>
+                    </div>
+                    <h:link outcome="/instalaciones" styleClass="link-arrow">
+                        Ver más
+                        <span class="icon" aria-hidden="true">arrow_forward</span>
+                    </h:link>
+                </div>
+
+                <div class="gallery reveal" id="gallery">
+                    <ui:repeat var="item" value="#{homeBean.galeria}">
+                        <button type="button" class="gallery-item #{item.claseFondo}" data-caption="#{item.leyenda}">
+                            <h:graphicImage rendered="#{not empty item.imagen}" value="/assets/#{item.imagen}"
+                                            alt="#{item.leyenda}"/>
+                            <ui:fragment rendered="#{empty item.imagen}">
+                                <span>#{item.emoji}</span>
+                            </ui:fragment>
+                        </button>
+                    </ui:repeat>
+                </div>
+            </div>
+        </section>
+
+        <!-- ============ CÓMO LLEGAR ============ -->
+        <section class="section" id="ubicacion">
+            <div class="container">
+                <div class="section-head">
+                    <div>
+                        <p class="eyebrow eyebrow-left">— UBICACIÓN</p>
+                        <h2 class="section-title">¿Cómo llegar?</h2>
+                    </div>
+                </div>
+
+                <p class="map-desc">
+                    Encontranos en el Polideportivo UNSE. Mirá el mapa para planificar tu recorrido en auto,
+                    colectivo o a pie, y llegar sin vueltas al predio.
+                </p>
+
+                <div class="map-frame reveal">
+                    <iframe title="Ubicación del Polideportivo UNSE"
+                            src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3530.498502229152!2d-64.281727!3d-27.7636102!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x943b52533ac81acf%3A0x4d1a8d1b1787987e!2sPolideportivo%20UNSE!5e0!3m2!1ses-419!2sar!4v1790590366823!5m2!1ses-419!2sar"
+                            allowfullscreen="allowfullscreen" loading="lazy" referrerpolicy="strict-origin-when-cross-origin">
+                    </iframe>
+                </div>
+            </div>
+        </section>
+
+        <!-- ============ LIGHTBOX (lo maneja resources/scripts/script.js) ============ -->
+        <div class="lightbox" id="lightbox">
+            <button type="button" class="lightbox-close" id="lightboxClose" aria-label="Cerrar">
+                <span class="icon" aria-hidden="true">close</span>
+            </button>
+            <div class="lightbox-frame" id="lightboxFrame"></div>
+            <p class="lightbox-caption" id="lightboxCaption"></p>
+        </div>
+
+    </ui:define>
+
+</ui:composition>

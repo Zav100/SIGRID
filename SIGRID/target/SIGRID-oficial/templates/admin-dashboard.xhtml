@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="es"
+      xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="jakarta.faces.html"
+      xmlns:f="jakarta.faces.core"
+      xmlns:p="jakarta.faces.passthrough"
+      xmlns:ui="jakarta.faces.facelets">
+
+<!--
+    Template del panel de administración. Cada sección del panel (admin/*-dashboard-admin.xhtml) la usa con
+    template="/templates/admin-dashboard.xhtml" y solo define:
+      - "titulo":  el título de la pestaña
+      - "content": lo que va en la zona principal (a la derecha del menú)
+      - "head":    (opcional) CSS/JS propio de esa sección
+    El menú lateral sale de AdminNavBean: para sumar una sección se agrega ahí y se crea su .xhtml.
+-->
+<h:head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <meta name="robots" content="noindex"/>
+    <title><ui:insert name="titulo">Panel de administración | Polideportivo UNSE</ui:insert></title>
+    <link rel="preconnect" href="https://fonts.googleapis.com"/>
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous"/>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&amp;display=swap"
+          rel="stylesheet"/>
+    <!-- Íconos: Material Symbols Rounded. Solo se descargan los de icon_names, que deben ir en orden
+         alfabético: si una sección usa un ícono nuevo (o lo devuelve el servicio, ver DashboardServicio.icono),
+         agregarlo acá. -->
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0..1,0&amp;icon_names=add,arrow_forward,badge,bar_chart,block,build,calendar_month,calendar_today,card_membership,check,check_circle,chevron_left,chevron_right,close,download,edit,emoji_events,event_available,event_busy,event_repeat,fitness_center,group,groups,logout,menu,outdoor_grill,payments,pending_actions,person_off,pool,print,receipt_long,schedule,search,sell,space_dashboard,sports_basketball,sports_hockey,sports_rugby,sports_soccer,sports_tennis,sports_volleyball,stadium,star,task_alt,today,trending_down,trending_flat,trending_up,visibility,warning&amp;display=block"
+          rel="stylesheet"/>
+    <!-- styles.css aporta los tokens de color, el reset y la clase .icon; admin.css es todo del panel (.adm-*) -->
+    <h:outputStylesheet library="css" name="styles.css"/>
+    <h:outputStylesheet library="css" name="admin.css"/>
+    <link rel="stylesheet" media="print" href="#{resource['css/print.css']}"/>
+    <ui:insert name="head"/>
+</h:head>
+
+<h:body styleClass="adm-body">
+    <div class="adm-shell">
+
+        <!-- ============ MENÚ LATERAL ============ -->
+        <aside class="adm-sidebar" id="admSidebar">
+            <h:link outcome="/admin/inicio-dashboard-admin" styleClass="adm-brand">
+                <span class="adm-brand-mark" aria-hidden="true">
+                    <h:graphicImage value="/assets/unse-shield.png" alt=""/>
+                </span>
+                <span class="adm-brand-text">
+                    <strong>SIGRID</strong>
+                    <span>Polideportivo UNSE</span>
+                </span>
+            </h:link>
+
+            <nav aria-label="Secciones del panel">
+                <!-- id: el dashboard lo vuelve a dibujar por AJAX para actualizar el contador de solicitudes -->
+                <h:panelGroup id="admNav" layout="block" styleClass="adm-nav">
+                <ui:repeat var="grupo" value="#{adminNavBean.grupos}">
+                    <div class="adm-nav-group">
+                        <p class="adm-nav-title">#{grupo.titulo}</p>
+                        <ui:repeat var="item" value="#{grupo.items}">
+                            <!-- vista ya creada: enlace; todavía no: ítem apagado -->
+                            <h:link rendered="#{adminNavBean.existe(item.vista)}" outcome="#{item.vista}"
+                                    styleClass="adm-nav-link #{facesContext.viewRoot.viewId eq item.archivo ? 'is-active' : ''}">
+                                <span class="icon" aria-hidden="true">#{item.icono}</span>
+                                <span class="adm-nav-text">#{item.texto}</span>
+                                <ui:fragment rendered="#{item.contador gt 0}">
+                                    <span class="adm-badge">#{item.contador}</span>
+                                </ui:fragment>
+                            </h:link>
+                            <ui:fragment rendered="#{not adminNavBean.existe(item.vista)}">
+                                <span class="adm-nav-link is-soon" title="Próximamente" aria-disabled="true">
+                                    <span class="icon" aria-hidden="true">#{item.icono}</span>
+                                    <span class="adm-nav-text">#{item.texto}</span>
+                                </span>
+                            </ui:fragment>
+                        </ui:repeat>
+                    </div>
+                </ui:repeat>
+                </h:panelGroup>
+            </nav>
+        </aside>
+        <div class="adm-backdrop" id="admBackdrop"></div>
+
+        <!-- ============ ZONA PRINCIPAL ============ -->
+        <div class="adm-main">
+            <header class="adm-topbar">
+                <button type="button" class="adm-icon-btn adm-menu-btn" id="admMenuBtn"
+                        aria-label="Abrir menú" aria-expanded="false" aria-controls="admSidebar">
+                    <span class="icon" aria-hidden="true">menu</span>
+                </button>
+
+                <!-- Filtra en el momento las filas de la página que tengan la clase js-buscable (ver admin.js) -->
+                <div class="adm-search" role="search">
+                    <span class="icon" aria-hidden="true">search</span>
+                    <input type="search" id="admBuscar" placeholder="Buscar en esta página…"
+                           autocomplete="off" aria-label="Buscar en esta página"/>
+                    <kbd class="adm-kbd" aria-hidden="true">/</kbd>
+                </div>
+
+                <div class="adm-topbar-end">
+                    <div class="adm-user">
+                        <span class="adm-avatar" aria-hidden="true">#{loginBean.inicialesUsuarioLogueado}</span>
+                        <span class="adm-user-text">
+                            <span class="adm-user-name">#{loginBean.nombreUsuarioLogueado}</span>
+                            <span class="adm-user-role">Administrador</span>
+                        </span>
+                    </div>
+                    <h:form styleClass="adm-logout">
+                        <h:commandLink action="#{loginBean.cerrarSesion}" styleClass="adm-icon-btn"
+                                       title="Cerrar sesión" p:aria-label="Cerrar sesión">
+                            <span class="icon" aria-hidden="true">logout</span>
+                        </h:commandLink>
+                    </h:form>
+                </div>
+            </header>
+
+            <main class="adm-content">
+                <ui:insert name="content"/>
+            </main>
+        </div>
+    </div>
+
+    <!-- Cada 30 s vuelve a leer los contadores del menú (solicitudes y membresías pendientes) para que una
+         solicitud nueva aparezca como notificación sin recargar. Las páginas que ya se actualizan solas
+         (solicitudes) definen window.sigridPulsoPropio y lo hacen ellas. -->
+    <h:form id="pulsoMenu" styleClass="adm-pulso">
+        <h:commandScript name="sigridPulsoMenu" execute="@this" render=":admNav"/>
+    </h:form>
+    <script>
+        setInterval(function () {
+            if (!document.hidden &amp;&amp; !window.sigridPulsoPropio) {
+                sigridPulsoMenu();
+            }
+        }, 30000);
+    </script>
+
+    <h:outputScript library="scripts" name="admin.js" target="body"/>
+</h:body>
+</html>

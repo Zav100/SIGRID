@@ -1,0 +1,770 @@
+{
+  "main/java/com/sigrid/sigrid/JakartaRestConfiguration.java": {
+    "mtime": 1790302355.0,
+    "seen": 1790567881.380339,
+    "ast_hash": "cbb9308252b4dddec8172ea3e77303d8",
+    "semantic_hash": "cbb9308252b4dddec8172ea3e77303d8"
+  },
+  "main/java/com/sigrid/sigrid/bean/AdminDashboardBean.java": {
+    "mtime": 1790434972.0,
+    "seen": 1790567881.3803515,
+    "ast_hash": "af65240088c0ab8447486172fa50a99c",
+    "semantic_hash": "af65240088c0ab8447486172fa50a99c"
+  },
+  "main/java/com/sigrid/sigrid/bean/AdminNavBean.java": {
+    "mtime": 1790436890.0,
+    "seen": 1790567881.3803577,
+    "ast_hash": "91a910fd914b762962a90ed0f580d1af",
+    "semantic_hash": "91a910fd914b762962a90ed0f580d1af"
+  },
+  "main/java/com/sigrid/sigrid/bean/FooterBean.java": {
+    "mtime": 1790306831.0,
+    "seen": 1790567881.3803682,
+    "ast_hash": "183b1df0c195583b474ac63ff53a5dd0",
+    "semantic_hash": "183b1df0c195583b474ac63ff53a5dd0"
+  },
+  "main/java/com/sigrid/sigrid/bean/HomeBean.java": {
+    "mtime": 1790306818.0,
+    "seen": 1790567881.38037,
+    "ast_hash": "81977ecbf8a1d29a0df88bd806769c63",
+    "semantic_hash": "81977ecbf8a1d29a0df88bd806769c63"
+  },
+  "main/java/com/sigrid/sigrid/bean/LoginBean.java": {
+    "mtime": 1790446348.0,
+    "seen": 1790567881.380372,
+    "ast_hash": "136d0f4dca95b8c340422a108d8895ba",
+    "semantic_hash": "136d0f4dca95b8c340422a108d8895ba"
+  },
+  "main/java/com/sigrid/sigrid/bean/NavBean.java": {
+    "mtime": 1790306824.0,
+    "seen": 1790567881.380374,
+    "ast_hash": "4c1995d197c75de891565be2f89a382a",
+    "semantic_hash": "4c1995d197c75de891565be2f89a382a"
+  },
+  "main/java/com/sigrid/sigrid/dao/BaseDAO.java": {
+    "mtime": 1790304587.0,
+    "seen": 1790567881.3803806,
+    "ast_hash": "2dc1f674f9b98cb78039911bf23c0f3a",
+    "semantic_hash": "2dc1f674f9b98cb78039911bf23c0f3a"
+  },
+  "main/java/com/sigrid/sigrid/dao/CarnetDigitalDAO.java": {
+    "mtime": 1790304606.0,
+    "seen": 1790567881.3803828,
+    "ast_hash": "7ca890aa434f8d480b30a4e0b2417ad4",
+    "semantic_hash": "7ca890aa434f8d480b30a4e0b2417ad4"
+  },
+  "main/java/com/sigrid/sigrid/dao/CategoriaSocioDAO.java": {
+    "mtime": 1790304594.0,
+    "seen": 1790567881.3803844,
+    "ast_hash": "49570305c27315f22e93a422817a2548",
+    "semantic_hash": "49570305c27315f22e93a422817a2548"
+  },
+  "main/java/com/sigrid/sigrid/dao/ComprobantePagoDAO.java": {
+    "mtime": 1790304639.0,
+    "seen": 1790567881.3803866,
+    "ast_hash": "38c9b62e5ceb4e6135f32678690e6b4e",
+    "semantic_hash": "38c9b62e5ceb4e6135f32678690e6b4e"
+  },
+  "main/java/com/sigrid/sigrid/dao/HistorialReservaDAO.java": {
+    "mtime": 1790399669.0,
+    "seen": 1790567881.380388,
+    "ast_hash": "10291ccdad6e18e2c019521d543728aa",
+    "semantic_hash": "10291ccdad6e18e2c019521d543728aa"
+  },
+  "main/java/com/sigrid/sigrid/dao/InstalacionDAO.java": {
+    "mtime": 1790437462.0,
+    "seen": 1790567881.3803911,
+    "ast_hash": "75ad883161d7bf6eefd2645465f1f801",
+    "semantic_hash": "75ad883161d7bf6eefd2645465f1f801"
+  },
+  "main/java/com/sigrid/sigrid/dao/PagoDAO.java": {
+    "mtime": 1790304635.0,
+    "seen": 1790567881.3803933,
+    "ast_hash": "704cc72eceb66509e678491e0c2924ea",
+    "semantic_hash": "704cc72eceb66509e678491e0c2924ea"
+  },
+  "main/java/com/sigrid/sigrid/dao/ReservaDAO.java": {
+    "mtime": 1790446799.0,
+    "seen": 1790567881.380395,
+    "ast_hash": "a96af6cb3d7c48dfba99586a0ee41f71",
+    "semantic_hash": "a96af6cb3d7c48dfba99586a0ee41f71"
+  },
+  "main/java/com/sigrid/sigrid/dao/RolDAO.java": {
+    "mtime": 1790304591.0,
+    "seen": 1790567881.3803968,
+    "ast_hash": "d7a4f513b7dddca58ea18437d5c85d6c",
+    "semantic_hash": "d7a4f513b7dddca58ea18437d5c85d6c"
+  },
+  "main/java/com/sigrid/sigrid/dao/SocioDAO.java": {
+    "mtime": 1790393604.0,
+    "seen": 1790567881.3803983,
+    "ast_hash": "97ef2ad781de6461b8ba2f48c8fa6460",
+    "semantic_hash": "97ef2ad781de6461b8ba2f48c8fa6460"
+  },
+  "main/java/com/sigrid/sigrid/dao/SuscripcionSocioDAO.java": {
+    "mtime": 1790439629.0,
+    "seen": 1790567881.3804016,
+    "ast_hash": "7df3ea10907488c7b5da79ca07b7895b",
+    "semantic_hash": "7df3ea10907488c7b5da79ca07b7895b"
+  },
+  "main/java/com/sigrid/sigrid/dao/TarifaAlquilerDAO.java": {
+    "mtime": 1790434772.0,
+    "seen": 1790567881.3804035,
+    "ast_hash": "271bc1a17e4953cd536cf4ba37ceef82",
+    "semantic_hash": "271bc1a17e4953cd536cf4ba37ceef82"
+  },
+  "main/java/com/sigrid/sigrid/dao/TarifaMembresiaDAO.java": {
+    "mtime": 1790436660.0,
+    "seen": 1790567881.380405,
+    "ast_hash": "197457cc98fddff4f78201e5a0fb6deb",
+    "semantic_hash": "197457cc98fddff4f78201e5a0fb6deb"
+  },
+  "main/java/com/sigrid/sigrid/dao/TurnoDAO.java": {
+    "mtime": 1790434772.0,
+    "seen": 1790567881.3804069,
+    "ast_hash": "7a593ff92823a961daa1c8763ebc2d35",
+    "semantic_hash": "7a593ff92823a961daa1c8763ebc2d35"
+  },
+  "main/java/com/sigrid/sigrid/dao/UsuarioDAO.java": {
+    "mtime": 1790304590.0,
+    "seen": 1790567881.3804083,
+    "ast_hash": "cd3b2af67b6837f725b09a9980cc82e3",
+    "semantic_hash": "cd3b2af67b6837f725b09a9980cc82e3"
+  },
+  "main/java/com/sigrid/sigrid/dao/ValoracionReservaDAO.java": {
+    "mtime": 1790449344.0,
+    "seen": 1790567881.3804102,
+    "ast_hash": "fd591a757c4fc4a94c5f952623d6afda",
+    "semantic_hash": "fd591a757c4fc4a94c5f952623d6afda"
+  },
+  "main/java/com/sigrid/sigrid/dto/DatoDestacado.java": {
+    "mtime": 1790392972.0,
+    "seen": 1790567881.3804214,
+    "ast_hash": "7aa0fe0b696252ffe0dbe3260183f078",
+    "semantic_hash": "7aa0fe0b696252ffe0dbe3260183f078"
+  },
+  "main/java/com/sigrid/sigrid/dto/DiaCalendario.java": {
+    "mtime": 1790392972.0,
+    "seen": 1790567881.3804262,
+    "ast_hash": "99f06401a8432b5896376bf23e4eaf02",
+    "semantic_hash": "99f06401a8432b5896376bf23e4eaf02"
+  },
+  "main/java/com/sigrid/sigrid/dto/Enlace.java": {
+    "mtime": 1790392972.0,
+    "seen": 1790567881.3804297,
+    "ast_hash": "ea2df420729ff35bed8cf8fe7dc0e205",
+    "semantic_hash": "ea2df420729ff35bed8cf8fe7dc0e205"
+  },
+  "main/java/com/sigrid/sigrid/dto/EspacioPlano.java": {
+    "mtime": 1790434924.0,
+    "seen": 1790567881.3804314,
+    "ast_hash": "c5cbff348ab247b0fcff9b4318c0ac18",
+    "semantic_hash": "c5cbff348ab247b0fcff9b4318c0ac18"
+  },
+  "main/java/com/sigrid/sigrid/dto/EstadoInstalaciones.java": {
+    "mtime": 1790392973.0,
+    "seen": 1790567881.3804328,
+    "ast_hash": "3a6dc42081e27546e8cf85c69c2895a3",
+    "semantic_hash": "3a6dc42081e27546e8cf85c69c2895a3"
+  },
+  "main/java/com/sigrid/sigrid/dto/EventoCard.java": {
+    "mtime": 1790392973.0,
+    "seen": 1790567881.3804348,
+    "ast_hash": "efed6b66a0f0f3f4bb18e4c5a174521e",
+    "semantic_hash": "efed6b66a0f0f3f4bb18e4c5a174521e"
+  },
+  "main/java/com/sigrid/sigrid/dto/GaleriaItem.java": {
+    "mtime": 1790392973.0,
+    "seen": 1790567881.380438,
+    "ast_hash": "1876b207d950a856a0999f0833f67945",
+    "semantic_hash": "1876b207d950a856a0999f0833f67945"
+  },
+  "main/java/com/sigrid/sigrid/dto/GrupoMenu.java": {
+    "mtime": 1790392973.0,
+    "seen": 1790567881.3804395,
+    "ast_hash": "6fd43c34ed71e378e4e079b48b092a75",
+    "semantic_hash": "6fd43c34ed71e378e4e079b48b092a75"
+  },
+  "main/java/com/sigrid/sigrid/dto/InstalacionCard.java": {
+    "mtime": 1790392973.0,
+    "seen": 1790567881.3804493,
+    "ast_hash": "8c57be9c93c74e6bce0cd1611440e804",
+    "semantic_hash": "8c57be9c93c74e6bce0cd1611440e804"
+  },
+  "main/java/com/sigrid/sigrid/dto/ItemMenu.java": {
+    "mtime": 1790392973.0,
+    "seen": 1790567881.3804529,
+    "ast_hash": "a2d39d82241c499369ee0af061ea8cb0",
+    "semantic_hash": "a2d39d82241c499369ee0af061ea8cb0"
+  },
+  "main/java/com/sigrid/sigrid/dto/RedSocial.java": {
+    "mtime": 1790392973.0,
+    "seen": 1790567881.3804662,
+    "ast_hash": "68a9d2a8b40f559b7d1c3614258de3fb",
+    "semantic_hash": "68a9d2a8b40f559b7d1c3614258de3fb"
+  },
+  "main/java/com/sigrid/sigrid/dto/ReservaFila.java": {
+    "mtime": 1790392973.0,
+    "seen": 1790567881.380476,
+    "ast_hash": "ca3bb4b6f4a9b2ba85f7a26f8dfc9eca",
+    "semantic_hash": "ca3bb4b6f4a9b2ba85f7a26f8dfc9eca"
+  },
+  "main/java/com/sigrid/sigrid/repositorio/CarnetDigital.java": {
+    "mtime": 1790304498.0,
+    "seen": 1790567881.3804972,
+    "ast_hash": "a896aabab8c7d83713c13ffb92612726",
+    "semantic_hash": "a896aabab8c7d83713c13ffb92612726"
+  },
+  "main/java/com/sigrid/sigrid/repositorio/CategoriaSocio.java": {
+    "mtime": 1790304498.0,
+    "seen": 1790567881.3804986,
+    "ast_hash": "f6952592cc57dc38db8d1ab8935cbc38",
+    "semantic_hash": "f6952592cc57dc38db8d1ab8935cbc38"
+  },
+  "main/java/com/sigrid/sigrid/repositorio/ComprobantePago.java": {
+    "mtime": 1790304498.0,
+    "seen": 1790567881.3805,
+    "ast_hash": "0c91c5e5afa9ec55f8948ca4c5674eb0",
+    "semantic_hash": "0c91c5e5afa9ec55f8948ca4c5674eb0"
+  },
+  "main/java/com/sigrid/sigrid/repositorio/HistorialReserva.java": {
+    "mtime": 1790304498.0,
+    "seen": 1790567881.3805015,
+    "ast_hash": "6779da397cd02e1c33811b830134ab57",
+    "semantic_hash": "6779da397cd02e1c33811b830134ab57"
+  },
+  "main/java/com/sigrid/sigrid/repositorio/Instalacion.java": {
+    "mtime": 1790304498.0,
+    "seen": 1790567881.3805044,
+    "ast_hash": "f54c610e664ba0d027410f12aae4c74c",
+    "semantic_hash": "f54c610e664ba0d027410f12aae4c74c"
+  },
+  "main/java/com/sigrid/sigrid/repositorio/Pago.java": {
+    "mtime": 1790304498.0,
+    "seen": 1790567881.380506,
+    "ast_hash": "8d1915224a752b00a3bed0e5f0a93062",
+    "semantic_hash": "8d1915224a752b00a3bed0e5f0a93062"
+  },
+  "main/java/com/sigrid/sigrid/repositorio/Reserva.java": {
+    "mtime": 1790304498.0,
+    "seen": 1790567881.380508,
+    "ast_hash": "9f4f2a9ef15ed665b852fb75c3eafc2b",
+    "semantic_hash": "9f4f2a9ef15ed665b852fb75c3eafc2b"
+  },
+  "main/java/com/sigrid/sigrid/repositorio/Rol.java": {
+    "mtime": 1790304498.0,
+    "seen": 1790567881.3805099,
+    "ast_hash": "09fb140c491791a9a1c87faec5bcee2a",
+    "semantic_hash": "09fb140c491791a9a1c87faec5bcee2a"
+  },
+  "main/java/com/sigrid/sigrid/repositorio/Socio.java": {
+    "mtime": 1790304498.0,
+    "seen": 1790567881.3805118,
+    "ast_hash": "fe9a0ec7a1637273f58ae26d969eabf1",
+    "semantic_hash": "fe9a0ec7a1637273f58ae26d969eabf1"
+  },
+  "main/java/com/sigrid/sigrid/repositorio/SuscripcionSocio.java": {
+    "mtime": 1790304498.0,
+    "seen": 1790567881.3805153,
+    "ast_hash": "3e190c8a491da4e7d2b877c4316c7462",
+    "semantic_hash": "3e190c8a491da4e7d2b877c4316c7462"
+  },
+  "main/java/com/sigrid/sigrid/repositorio/TarifaAlquiler.java": {
+    "mtime": 1790436660.0,
+    "seen": 1790567881.380519,
+    "ast_hash": "ed8caaa2c99696f57a83c8b7546d7889",
+    "semantic_hash": "ed8caaa2c99696f57a83c8b7546d7889"
+  },
+  "main/java/com/sigrid/sigrid/repositorio/TarifaMembresia.java": {
+    "mtime": 1790436660.0,
+    "seen": 1790567881.380521,
+    "ast_hash": "298c5738da0e8d35aede340d388d4320",
+    "semantic_hash": "298c5738da0e8d35aede340d388d4320"
+  },
+  "main/java/com/sigrid/sigrid/repositorio/Turno.java": {
+    "mtime": 1790304498.0,
+    "seen": 1790567881.3805227,
+    "ast_hash": "827096b77fa319ed993ce300ea98807a",
+    "semantic_hash": "827096b77fa319ed993ce300ea98807a"
+  },
+  "main/java/com/sigrid/sigrid/repositorio/Usuario.java": {
+    "mtime": 1790304498.0,
+    "seen": 1790567881.3805249,
+    "ast_hash": "a506cc1a36524c3cd36dce611945c0c3",
+    "semantic_hash": "a506cc1a36524c3cd36dce611945c0c3"
+  },
+  "main/java/com/sigrid/sigrid/repositorio/ValoracionReserva.java": {
+    "mtime": 1790304498.0,
+    "seen": 1790567881.3805265,
+    "ast_hash": "02526fec6421f5b98c6ceeb15b893c11",
+    "semantic_hash": "02526fec6421f5b98c6ceeb15b893c11"
+  },
+  "main/java/com/sigrid/sigrid/resources/JakartaEE10Resource.java": {
+    "mtime": 1790302355.0,
+    "seen": 1790567881.3805282,
+    "ast_hash": "4e95a2ad7197f40b06e4a900f0aeb7f1",
+    "semantic_hash": "4e95a2ad7197f40b06e4a900f0aeb7f1"
+  },
+  "main/java/com/sigrid/sigrid/seguridad/AdminFilter.java": {
+    "mtime": 1790311980.0,
+    "seen": 1790567881.38053,
+    "ast_hash": "f59e277933fe9aeadf61d4ef3461a2e4",
+    "semantic_hash": "f59e277933fe9aeadf61d4ef3461a2e4"
+  },
+  "main/java/com/sigrid/sigrid/seguridad/SocioFilter.java": {
+    "mtime": 1790446348.0,
+    "seen": 1790567881.3805354,
+    "ast_hash": "a481b698d830bb3f800c0d2bb455e6f0",
+    "semantic_hash": "a481b698d830bb3f800c0d2bb455e6f0"
+  },
+  "main/java/com/sigrid/sigrid/servicio/DashboardServicio.java": {
+    "mtime": 1790434972.0,
+    "seen": 1790567881.3805404,
+    "ast_hash": "87694562bb1cccce525fa92b0419f6e5",
+    "semantic_hash": "87694562bb1cccce525fa92b0419f6e5"
+  },
+  "main/java/com/sigrid/sigrid/servicio/ReservaServicio.java": {
+    "mtime": 1790446144.0,
+    "seen": 1790567881.3805542,
+    "ast_hash": "9c47edb79e265a661f60133ff5d40593",
+    "semantic_hash": "9c47edb79e265a661f60133ff5d40593"
+  },
+  "main/java/com/sigrid/sigrid/servicio/UsuarioServicio.java": {
+    "mtime": 1790304673.0,
+    "seen": 1790567881.38056,
+    "ast_hash": "fdf922ea329071d44a72b974cc245ee2",
+    "semantic_hash": "fdf922ea329071d44a72b974cc245ee2"
+  },
+  "main/java/com/sigrid/sigrid/util/PasswordUtil.java": {
+    "mtime": 1790304669.0,
+    "seen": 1790567881.3805645,
+    "ast_hash": "8f3cf07fa5b9f17dc8161ee36af12339",
+    "semantic_hash": "8f3cf07fa5b9f17dc8161ee36af12339"
+  },
+  "main/webapp/resources/scripts/admin.js": {
+    "mtime": 1790444088.0,
+    "seen": 1790567881.3805666,
+    "ast_hash": "311a647949326fcaa5683e76996d408d",
+    "semantic_hash": "311a647949326fcaa5683e76996d408d"
+  },
+  "main/webapp/resources/scripts/script.js": {
+    "mtime": 1790304808.0,
+    "seen": 1790567881.3805683,
+    "ast_hash": "a0342d1c49f001b077aa5634f730d50f",
+    "semantic_hash": "a0342d1c49f001b077aa5634f730d50f"
+  },
+  "main/java/com/sigrid/sigrid/bean/AdminCalendarioBean.java": {
+    "mtime": 1790393066.0,
+    "seen": 1790567881.3803468,
+    "ast_hash": "0370ec9b013440642742bee8e43d6614",
+    "semantic_hash": "0370ec9b013440642742bee8e43d6614"
+  },
+  "main/java/com/sigrid/sigrid/bean/AdminCambiosBean.java": {
+    "mtime": 1790399790.0,
+    "seen": 1790567881.3803492,
+    "ast_hash": "8639a56d24b9cba29c70f765a905a394",
+    "semantic_hash": "8639a56d24b9cba29c70f765a905a394"
+  },
+  "main/java/com/sigrid/sigrid/bean/AdminInstalacionesBean.java": {
+    "mtime": 1790436848.0,
+    "seen": 1790567881.3803537,
+    "ast_hash": "1fb05e3fbe5085d5004fed5f6bb9cea6",
+    "semantic_hash": "1fb05e3fbe5085d5004fed5f6bb9cea6"
+  },
+  "main/java/com/sigrid/sigrid/bean/AdminMembresiasBean.java": {
+    "mtime": 1790436890.0,
+    "seen": 1790567881.3803551,
+    "ast_hash": "2417870eb092eaa24cc53554ff057bc7",
+    "semantic_hash": "2417870eb092eaa24cc53554ff057bc7"
+  },
+  "main/java/com/sigrid/sigrid/bean/AdminReportesBean.java": {
+    "mtime": 1790444088.0,
+    "seen": 1790567881.3803594,
+    "ast_hash": "5ab425621bef627fc95823a2f169d1d9",
+    "semantic_hash": "5ab425621bef627fc95823a2f169d1d9"
+  },
+  "main/java/com/sigrid/sigrid/bean/AdminReservasBean.java": {
+    "mtime": 1790444088.0,
+    "seen": 1790567881.3803613,
+    "ast_hash": "8d96653784563f42fd4b8eadcd480527",
+    "semantic_hash": "8d96653784563f42fd4b8eadcd480527"
+  },
+  "main/java/com/sigrid/sigrid/bean/AdminSociosBean.java": {
+    "mtime": 1790463617.0,
+    "seen": 1790567881.3803627,
+    "ast_hash": "cfe1974c8f9d724d5a99b603432f7834",
+    "semantic_hash": "cfe1974c8f9d724d5a99b603432f7834"
+  },
+  "main/java/com/sigrid/sigrid/bean/AdminSolicitudesBean.java": {
+    "mtime": 1790399022.0,
+    "seen": 1790567881.380365,
+    "ast_hash": "37a7e7e9563ec9ce2d9cb6c21f604692",
+    "semantic_hash": "37a7e7e9563ec9ce2d9cb6c21f604692"
+  },
+  "main/java/com/sigrid/sigrid/bean/AdminValoracionesBean.java": {
+    "mtime": 1790444088.0,
+    "seen": 1790567881.3803663,
+    "ast_hash": "af1c1f1b3f24c0866c455bbd59b31058",
+    "semantic_hash": "af1c1f1b3f24c0866c455bbd59b31058"
+  },
+  "main/java/com/sigrid/sigrid/bean/SocioBean.java": {
+    "mtime": 1790449344.0,
+    "seen": 1790567881.3803759,
+    "ast_hash": "0eb6d4576fb35aa099a26d527c37fb66",
+    "semantic_hash": "0eb6d4576fb35aa099a26d527c37fb66"
+  },
+  "main/java/com/sigrid/sigrid/bean/SocioNuevaReservaBean.java": {
+    "mtime": 1790446322.0,
+    "seen": 1790567881.3803773,
+    "ast_hash": "8d5a8dc92c4e5c85ecac046d903b599d",
+    "semantic_hash": "8d5a8dc92c4e5c85ecac046d903b599d"
+  },
+  "main/java/com/sigrid/sigrid/bean/SocioReservasBean.java": {
+    "mtime": 1790467415.0,
+    "seen": 1790567881.380379,
+    "ast_hash": "5eff815c678ad1226b51c770c038d10d",
+    "semantic_hash": "5eff815c678ad1226b51c770c038d10d"
+  },
+  "main/java/com/sigrid/sigrid/dao/HorarioAperturaDAO.java": {
+    "mtime": 1790434760.0,
+    "seen": 1790567881.3803897,
+    "ast_hash": "c20766fb10f3ed96cd202004e3a1f456",
+    "semantic_hash": "c20766fb10f3ed96cd202004e3a1f456"
+  },
+  "main/java/com/sigrid/sigrid/dao/SolicitudCambioReservaDAO.java": {
+    "mtime": 1790446097.0,
+    "seen": 1790567881.3804,
+    "ast_hash": "2b11e7def50fa088d80da5db4f240862",
+    "semantic_hash": "2b11e7def50fa088d80da5db4f240862"
+  },
+  "main/java/com/sigrid/sigrid/dto/Apertura.java": {
+    "mtime": 1790434907.0,
+    "seen": 1790567881.3804116,
+    "ast_hash": "30fa46f7917ea26281fe1073f501ff51",
+    "semantic_hash": "30fa46f7917ea26281fe1073f501ff51"
+  },
+  "main/java/com/sigrid/sigrid/dto/Aviso.java": {
+    "mtime": 1790446079.0,
+    "seen": 1790567881.3804133,
+    "ast_hash": "c54533d7f9dcb58a24de70c23fd6459b",
+    "semantic_hash": "c54533d7f9dcb58a24de70c23fd6459b"
+  },
+  "main/java/com/sigrid/sigrid/dto/CambioPedido.java": {
+    "mtime": 1790399682.0,
+    "seen": 1790567881.3804147,
+    "ast_hash": "0410b64109aa054820f0c9f9d32c6386",
+    "semantic_hash": "0410b64109aa054820f0c9f9d32c6386"
+  },
+  "main/java/com/sigrid/sigrid/dto/Conflictos.java": {
+    "mtime": 1790434907.0,
+    "seen": 1790567881.3804162,
+    "ast_hash": "b448d5cc43258757e1eddfb7590d05a3",
+    "semantic_hash": "b448d5cc43258757e1eddfb7590d05a3"
+  },
+  "main/java/com/sigrid/sigrid/dto/CreditoFila.java": {
+    "mtime": 1790399884.0,
+    "seen": 1790567881.3804178,
+    "ast_hash": "b55b3b113e10a45daeaa902d11438a6f",
+    "semantic_hash": "b55b3b113e10a45daeaa902d11438a6f"
+  },
+  "main/java/com/sigrid/sigrid/dto/Dato.java": {
+    "mtime": 1790443966.0,
+    "seen": 1790567881.380419,
+    "ast_hash": "19aaa460aeb6b4a5ed0423c00e85e408",
+    "semantic_hash": "19aaa460aeb6b4a5ed0423c00e85e408"
+  },
+  "main/java/com/sigrid/sigrid/dto/Demanda.java": {
+    "mtime": 1790434907.0,
+    "seen": 1790567881.3804228,
+    "ast_hash": "b769d9e586ac5d1bc3312c498ef802be",
+    "semantic_hash": "b769d9e586ac5d1bc3312c498ef802be"
+  },
+  "main/java/com/sigrid/sigrid/dto/DiaAgenda.java": {
+    "mtime": 1790392972.0,
+    "seen": 1790567881.3804245,
+    "ast_hash": "f82a400b156d8beae30cb3f2695cb81c",
+    "semantic_hash": "f82a400b156d8beae30cb3f2695cb81c"
+  },
+  "main/java/com/sigrid/sigrid/dto/DiaSocio.java": {
+    "mtime": 1790446097.0,
+    "seen": 1790567881.3804278,
+    "ast_hash": "5f4dfa1230ec85d86fc203912a4fc16c",
+    "semantic_hash": "5f4dfa1230ec85d86fc203912a4fc16c"
+  },
+  "main/java/com/sigrid/sigrid/dto/FichaInstalacion.java": {
+    "mtime": 1790434923.0,
+    "seen": 1790567881.3804362,
+    "ast_hash": "ea819f6986ee8df1c9cc9c34e9384bd3",
+    "semantic_hash": "ea819f6986ee8df1c9cc9c34e9384bd3"
+  },
+  "main/java/com/sigrid/sigrid/dto/HistorialTarifa.java": {
+    "mtime": 1790436722.0,
+    "seen": 1790567881.3804412,
+    "ast_hash": "9aa26b047d59d8109f641792051a9c98",
+    "semantic_hash": "9aa26b047d59d8109f641792051a9c98"
+  },
+  "main/java/com/sigrid/sigrid/dto/HorarioFila.java": {
+    "mtime": 1790434907.0,
+    "seen": 1790567881.3804429,
+    "ast_hash": "f85a95c2576f55f5e97f158cae7fcc01",
+    "semantic_hash": "f85a95c2576f55f5e97f158cae7fcc01"
+  },
+  "main/java/com/sigrid/sigrid/dto/IngresosMembresias.java": {
+    "mtime": 1790396296.0,
+    "seen": 1790567881.380445,
+    "ast_hash": "bb0dc9da2c9318c1eca0c6b6c2ffd28e",
+    "semantic_hash": "bb0dc9da2c9318c1eca0c6b6c2ffd28e"
+  },
+  "main/java/com/sigrid/sigrid/dto/InstalacionReservable.java": {
+    "mtime": 1790446079.0,
+    "seen": 1790567881.380451,
+    "ast_hash": "6c2419258cb87cf7b719b65052ff4ddb",
+    "semantic_hash": "6c2419258cb87cf7b719b65052ff4ddb"
+  },
+  "main/java/com/sigrid/sigrid/dto/MiReserva.java": {
+    "mtime": 1790467368.0,
+    "seen": 1790567881.3804543,
+    "ast_hash": "d4d18ec24068c6e4640519bfac47803b",
+    "semantic_hash": "d4d18ec24068c6e4640519bfac47803b"
+  },
+  "main/java/com/sigrid/sigrid/dto/PasoSeguimiento.java": {
+    "mtime": 1790448899.0,
+    "seen": 1790567881.380456,
+    "ast_hash": "d88971842c458c92c42c262919316aa9",
+    "semantic_hash": "d88971842c458c92c42c262919316aa9"
+  },
+  "main/java/com/sigrid/sigrid/dto/PerfilSocio.java": {
+    "mtime": 1790446079.0,
+    "seen": 1790567881.3804576,
+    "ast_hash": "35ee0d20e72ace4ecb029e62c22f4f5d",
+    "semantic_hash": "35ee0d20e72ace4ecb029e62c22f4f5d"
+  },
+  "main/java/com/sigrid/sigrid/dto/PrecioFila.java": {
+    "mtime": 1790434907.0,
+    "seen": 1790567881.3804593,
+    "ast_hash": "97e0e2cc5b63052cc21a419ad2792ca5",
+    "semantic_hash": "97e0e2cc5b63052cc21a419ad2792ca5"
+  },
+  "main/java/com/sigrid/sigrid/dto/PromedioInstalacion.java": {
+    "mtime": 1790439128.0,
+    "seen": 1790567881.3804607,
+    "ast_hash": "21d0c29c8d404414e29196e81cf3a4c1",
+    "semantic_hash": "21d0c29c8d404414e29196e81cf3a4c1"
+  },
+  "main/java/com/sigrid/sigrid/dto/RankingItem.java": {
+    "mtime": 1790398451.0,
+    "seen": 1790567881.3804626,
+    "ast_hash": "ab035c3059f395c8dbd10341c3477ffa",
+    "semantic_hash": "ab035c3059f395c8dbd10341c3477ffa"
+  },
+  "main/java/com/sigrid/sigrid/dto/RecaudacionDiaria.java": {
+    "mtime": 1790399153.0,
+    "seen": 1790567881.380464,
+    "ast_hash": "7b9474128f914e882f2846cfb81d7d73",
+    "semantic_hash": "7b9474128f914e882f2846cfb81d7d73"
+  },
+  "main/java/com/sigrid/sigrid/dto/ReporteAlerta.java": {
+    "mtime": 1790439629.0,
+    "seen": 1790567881.3804677,
+    "ast_hash": "25e05e601097bf8cbc3effebea956c05",
+    "semantic_hash": "25e05e601097bf8cbc3effebea956c05"
+  },
+  "main/java/com/sigrid/sigrid/dto/ReporteBarra.java": {
+    "mtime": 1790439629.0,
+    "seen": 1790567881.380469,
+    "ast_hash": "92fdf59c8a9199c21b5cc2e4195f1d1c",
+    "semantic_hash": "92fdf59c8a9199c21b5cc2e4195f1d1c"
+  },
+  "main/java/com/sigrid/sigrid/dto/ReporteCalor.java": {
+    "mtime": 1790439629.0,
+    "seen": 1790567881.3804703,
+    "ast_hash": "079af328c2ee488d1160ca0c65468c16",
+    "semantic_hash": "079af328c2ee488d1160ca0c65468c16"
+  },
+  "main/java/com/sigrid/sigrid/dto/ReporteItem.java": {
+    "mtime": 1790439629.0,
+    "seen": 1790567881.3804712,
+    "ast_hash": "13bdc78b50fca5507ac08c30e55e1fa6",
+    "semantic_hash": "13bdc78b50fca5507ac08c30e55e1fa6"
+  },
+  "main/java/com/sigrid/sigrid/dto/ReporteKpi.java": {
+    "mtime": 1790439629.0,
+    "seen": 1790567881.3804727,
+    "ast_hash": "fdeb10f99f816a22bfae9ad61c344f2d",
+    "semantic_hash": "fdeb10f99f816a22bfae9ad61c344f2d"
+  },
+  "main/java/com/sigrid/sigrid/dto/ReprogramadaFila.java": {
+    "mtime": 1790399682.0,
+    "seen": 1790567881.3804739,
+    "ast_hash": "6598463fd681fa995d621dd4b76bdd3d",
+    "semantic_hash": "6598463fd681fa995d621dd4b76bdd3d"
+  },
+  "main/java/com/sigrid/sigrid/dto/ReservaCalendario.java": {
+    "mtime": 1790392973.0,
+    "seen": 1790567881.3804748,
+    "ast_hash": "a29aec112a01c9d8e2af587277e58a5e",
+    "semantic_hash": "a29aec112a01c9d8e2af587277e58a5e"
+  },
+  "main/java/com/sigrid/sigrid/dto/ReservaListado.java": {
+    "mtime": 1790399131.0,
+    "seen": 1790567881.3804777,
+    "ast_hash": "f422e2e76bfbbaba5d39062d03cde557",
+    "semantic_hash": "f422e2e76bfbbaba5d39062d03cde557"
+  },
+  "main/java/com/sigrid/sigrid/dto/SocioDetalle.java": {
+    "mtime": 1790443966.0,
+    "seen": 1790567881.3804796,
+    "ast_hash": "cd60fad23c7a2c174ac1bb05e2206f97",
+    "semantic_hash": "cd60fad23c7a2c174ac1bb05e2206f97"
+  },
+  "main/java/com/sigrid/sigrid/dto/SocioEdicion.java": {
+    "mtime": 1790463564.0,
+    "seen": 1790567881.380481,
+    "ast_hash": "03630896b80f3d28f8cd9f724d50eee2",
+    "semantic_hash": "03630896b80f3d28f8cd9f724d50eee2"
+  },
+  "main/java/com/sigrid/sigrid/dto/SocioFila.java": {
+    "mtime": 1790393663.0,
+    "seen": 1790567881.3804827,
+    "ast_hash": "eeb4c590d72b48d7ed199dc0e9b3c304",
+    "semantic_hash": "eeb4c590d72b48d7ed199dc0e9b3c304"
+  },
+  "main/java/com/sigrid/sigrid/dto/SolicitudFila.java": {
+    "mtime": 1790398899.0,
+    "seen": 1790567881.3804858,
+    "ast_hash": "8d6b5164d6bc6299d956cb9b0b94d4aa",
+    "semantic_hash": "8d6b5164d6bc6299d956cb9b0b94d4aa"
+  },
+  "main/java/com/sigrid/sigrid/dto/SuscripcionFila.java": {
+    "mtime": 1790394586.0,
+    "seen": 1790567881.3804896,
+    "ast_hash": "e799f02c2778435ab3e4fa6d8659b956",
+    "semantic_hash": "e799f02c2778435ab3e4fa6d8659b956"
+  },
+  "main/java/com/sigrid/sigrid/dto/TarifaFila.java": {
+    "mtime": 1790394586.0,
+    "seen": 1790567881.3804915,
+    "ast_hash": "a33c6740a3e39c6aaed6d5403eb9f098",
+    "semantic_hash": "a33c6740a3e39c6aaed6d5403eb9f098"
+  },
+  "main/java/com/sigrid/sigrid/dto/TurnoDisponible.java": {
+    "mtime": 1790446079.0,
+    "seen": 1790567881.3804934,
+    "ast_hash": "d566bf46ac704f361f88fde98cb8d12d",
+    "semantic_hash": "d566bf46ac704f361f88fde98cb8d12d"
+  },
+  "main/java/com/sigrid/sigrid/dto/ValoracionFila.java": {
+    "mtime": 1790437462.0,
+    "seen": 1790567881.380495,
+    "ast_hash": "e7c89ebdd6414704f40e8628b936399f",
+    "semantic_hash": "e7c89ebdd6414704f40e8628b936399f"
+  },
+  "main/java/com/sigrid/sigrid/repositorio/HorarioApertura.java": {
+    "mtime": 1790434753.0,
+    "seen": 1790567881.3805027,
+    "ast_hash": "fc4e52422f50ff422acfd1c7a41e8ee2",
+    "semantic_hash": "fc4e52422f50ff422acfd1c7a41e8ee2"
+  },
+  "main/java/com/sigrid/sigrid/repositorio/SolicitudCambioReserva.java": {
+    "mtime": 1790400281.0,
+    "seen": 1790567881.3805132,
+    "ast_hash": "0fe1030ba738ff015e7a240e03b4c283",
+    "semantic_hash": "0fe1030ba738ff015e7a240e03b4c283"
+  },
+  "main/java/com/sigrid/sigrid/repositorio/Tarifa.java": {
+    "mtime": 1790436660.0,
+    "seen": 1790567881.3805168,
+    "ast_hash": "c759cc12a6703379bdc4ba08e594b781",
+    "semantic_hash": "c759cc12a6703379bdc4ba08e594b781"
+  },
+  "main/java/com/sigrid/sigrid/seguridad/CodificacionFilter.java": {
+    "mtime": 1790449446.0,
+    "seen": 1790567881.3805318,
+    "ast_hash": "2e63a3ab22d87e9bbfaa20dc29777571",
+    "semantic_hash": "2e63a3ab22d87e9bbfaa20dc29777571"
+  },
+  "main/java/com/sigrid/sigrid/seguridad/ComprobanteServlet.java": {
+    "mtime": 1790446347.0,
+    "seen": 1790567881.3805335,
+    "ast_hash": "d31e62b0616964ac86524593ab84716c",
+    "semantic_hash": "d31e62b0616964ac86524593ab84716c"
+  },
+  "main/java/com/sigrid/sigrid/servicio/CalendarioServicio.java": {
+    "mtime": 1790393049.0,
+    "seen": 1790567881.3805368,
+    "ast_hash": "c95615dc2d1c2133e0db3d4d3768c83f",
+    "semantic_hash": "c95615dc2d1c2133e0db3d4d3768c83f"
+  },
+  "main/java/com/sigrid/sigrid/servicio/CambiosReservaServicio.java": {
+    "mtime": 1790400281.0,
+    "seen": 1790567881.3805387,
+    "ast_hash": "20279384348f270aff08adac22c10c16",
+    "semantic_hash": "20279384348f270aff08adac22c10c16"
+  },
+  "main/java/com/sigrid/sigrid/servicio/HorarioServicio.java": {
+    "mtime": 1790434961.0,
+    "seen": 1790567881.3805423,
+    "ast_hash": "8d0ff77891d4b1a45f03b4d94f2d68f2",
+    "semantic_hash": "8d0ff77891d4b1a45f03b4d94f2d68f2"
+  },
+  "main/java/com/sigrid/sigrid/servicio/InstalacionesServicio.java": {
+    "mtime": 1790436722.0,
+    "seen": 1790567881.380544,
+    "ast_hash": "602ef17571a8b2c3a66436622581995f",
+    "semantic_hash": "602ef17571a8b2c3a66436622581995f"
+  },
+  "main/java/com/sigrid/sigrid/servicio/MembresiaJob.java": {
+    "mtime": 1790446348.0,
+    "seen": 1790567881.3805459,
+    "ast_hash": "7725ec6392b5f6ade02a7671313af2d5",
+    "semantic_hash": "7725ec6392b5f6ade02a7671313af2d5"
+  },
+  "main/java/com/sigrid/sigrid/servicio/MembresiasServicio.java": {
+    "mtime": 1790396282.0,
+    "seen": 1790567881.3805473,
+    "ast_hash": "d51265548e5c053a197841687b1ca768",
+    "semantic_hash": "d51265548e5c053a197841687b1ca768"
+  },
+  "main/java/com/sigrid/sigrid/servicio/PanelSocioServicio.java": {
+    "mtime": 1790467393.0,
+    "seen": 1790567881.3805492,
+    "ast_hash": "047ea5ea1243edd78d350b613df20dee",
+    "semantic_hash": "047ea5ea1243edd78d350b613df20dee"
+  },
+  "main/java/com/sigrid/sigrid/servicio/ReglaReservaException.java": {
+    "mtime": 1790446097.0,
+    "seen": 1790567881.3805506,
+    "ast_hash": "2e0c8d81b71b45cc4c9732ccca8f72e3",
+    "semantic_hash": "2e0c8d81b71b45cc4c9732ccca8f72e3"
+  },
+  "main/java/com/sigrid/sigrid/servicio/ReportesServicio.java": {
+    "mtime": 1790439912.0,
+    "seen": 1790567881.3805525,
+    "ast_hash": "69389ca081068943007c729c1ff166f7",
+    "semantic_hash": "69389ca081068943007c729c1ff166f7"
+  },
+  "main/java/com/sigrid/sigrid/servicio/SociosServicio.java": {
+    "mtime": 1790463573.0,
+    "seen": 1790567881.3805563,
+    "ast_hash": "ef14ba418c1734f81cb510d12c4539ad",
+    "semantic_hash": "ef14ba418c1734f81cb510d12c4539ad"
+  },
+  "main/java/com/sigrid/sigrid/servicio/TarifasServicio.java": {
+    "mtime": 1790436711.0,
+    "seen": 1790567881.380558,
+    "ast_hash": "05d039b8db4ea28af6b0024c73cd60bf",
+    "semantic_hash": "05d039b8db4ea28af6b0024c73cd60bf"
+  },
+  "main/java/com/sigrid/sigrid/servicio/ValoracionesServicio.java": {
+    "mtime": 1790437660.0,
+    "seen": 1790567881.3805614,
+    "ast_hash": "dc1ab06ee88b150580b8b72a23631501",
+    "semantic_hash": "dc1ab06ee88b150580b8b72a23631501"
+  },
+  "main/java/com/sigrid/sigrid/util/ComprobanteArchivos.java": {
+    "mtime": 1790446144.0,
+    "seen": 1790567881.3805628,
+    "ast_hash": "76bdcc915e309b198957010acf10954a",
+    "semantic_hash": "76bdcc915e309b198957010acf10954a"
+  }
+}

@@ -1,0 +1,518 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:h="jakarta.faces.html"
+                xmlns:f="jakarta.faces.core"
+                xmlns:p="jakarta.faces.passthrough"
+                xmlns:ui="jakarta.faces.facelets"
+                template="/templates/admin-dashboard.xhtml">
+
+    <ui:define name="titulo">
+        Instalaciones | Panel de administración
+    </ui:define>
+
+    <ui:define name="head">
+        <h:outputStylesheet library="css" name="instalaciones.css"/>
+    </ui:define>
+
+    <ui:define name="content">
+
+        <!-- ============ ENCABEZADO ============ -->
+        <header class="adm-page-head">
+            <div>
+                <h1 class="adm-page-title">Instalaciones</h1>
+            </div>
+        </header>
+
+        <!-- Indicadores; se vuelven a dibujar al sacar de servicio o reactivar una instalación -->
+        <h:panelGroup id="resumen" layout="block" styleClass="adm-kpis ins-kpis">
+            <article class="adm-kpi">
+                <div class="adm-kpi-head">
+                    <span class="adm-kpi-icon"><span class="icon" aria-hidden="true">stadium</span></span>
+                    <h2 class="adm-kpi-label">Habilitadas</h2>
+                </div>
+                <p class="adm-kpi-value">#{adminInstalacionesBean.estados.habilitadas}</p>
+                <p class="adm-kpi-sub">de #{adminInstalacionesBean.estados.total} instalaciones<ui:fragment rendered="#{adminInstalacionesBean.estados.deshabilitadas gt 0}"> · #{adminInstalacionesBean.estados.deshabilitadas} de baja</ui:fragment></p>
+            </article>
+
+            <article class="adm-kpi">
+                <div class="adm-kpi-head">
+                    <span class="adm-kpi-icon #{adminInstalacionesBean.estados.mantenimiento gt 0 ? 'is-alert' : ''}"><span class="icon" aria-hidden="true">build</span></span>
+                    <h2 class="adm-kpi-label">En mantenimiento</h2>
+                </div>
+                <p class="adm-kpi-value">#{adminInstalacionesBean.estados.mantenimiento}</p>
+                <p class="adm-kpi-sub">#{adminInstalacionesBean.enMantenimiento}</p>
+            </article>
+
+            <article class="adm-kpi">
+                <div class="adm-kpi-head">
+                    <span class="adm-kpi-icon"><span class="icon" aria-hidden="true">emoji_events</span></span>
+                    <h2 class="adm-kpi-label">Más solicitada</h2>
+                </div>
+                <ui:fragment rendered="#{not empty adminInstalacionesBean.masSolicitada}">
+                    <p class="adm-kpi-value ins-kpi-name">#{adminInstalacionesBean.masSolicitada.etiqueta}</p>
+                    <p class="adm-kpi-sub">#{adminInstalacionesBean.masSolicitada.cantidad} reservas · #{adminInstalacionesBean.participacion} % del total · últimos #{adminInstalacionesBean.diasDemanda} días</p>
+                </ui:fragment>
+                <ui:fragment rendered="#{empty adminInstalacionesBean.masSolicitada}">
+                    <p class="adm-kpi-value ins-kpi-name">Sin reservas</p>
+                    <p class="adm-kpi-sub">en los últimos #{adminInstalacionesBean.diasDemanda} días</p>
+                </ui:fragment>
+            </article>
+        </h:panelGroup>
+
+        <div class="adm-layout ins-layout">
+
+            <!-- ============ COLUMNA PRINCIPAL ============ -->
+            <div class="adm-col">
+
+                <!-- Plano del predio: tocar un espacio abre su ficha. Se puede ver por estado de hoy o por ocupación. -->
+                <h:panelGroup id="mapa" layout="block" styleClass="adm-card adm-plan-card">
+                    <h:form id="planoForm">
+                        <header class="adm-card-head ins-plano-head">
+                            <h2 class="adm-card-title">Plano de instalaciones</h2>
+                            <div class="ins-modos" role="group" aria-label="Qué mostrar en el plano">
+                                <h:commandLink styleClass="ins-modo #{adminInstalacionesBean.porOcupacion ? '' : 'is-active'}"
+                                               action="#{adminInstalacionesBean.elegirModo('estado')}">
+                                    <f:ajax execute="@this" render=":mapa"/>Estado de hoy
+                                </h:commandLink>
+                                <h:commandLink styleClass="ins-modo #{adminInstalacionesBean.porOcupacion ? 'is-active' : ''}"
+                                               action="#{adminInstalacionesBean.elegirModo('ocupacion')}">
+                                    <f:ajax execute="@this" render=":mapa"/>Ocupación · #{adminInstalacionesBean.diasDemanda} días
+                                </h:commandLink>
+                            </div>
+                        </header>
+
+                        <div class="adm-plan">
+                            <ui:repeat var="e" value="#{adminInstalacionesBean.plano}">
+                                <h:commandLink styleClass="adm-space adm-space-#{e.clave} is-#{e.estado} ins-space #{e.id eq adminInstalacionesBean.seleccionada ? 'is-sel' : ''}"
+                                               disabled="#{not e.seleccionable}"
+                                               action="#{adminInstalacionesBean.seleccionar(e.id)}"
+                                               title="#{e.nombre}: #{e.detalle}" p:aria-label="#{e.nombre}: #{e.detalle}">
+                                    <f:ajax execute="@this" render=":mapa :ficha :precios"/>
+                                    <ui:fragment rendered="#{e.clave eq 'pileta'}">
+                                        <!-- la pileta tiene forma de cruz: el contorno se dibuja con un polígono -->
+                                        <svg class="adm-space-shape" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
+                                            <polygon points="10.7,0 89.3,0 89.3,10.9 100,10.9 100,89.1 89.3,89.1 89.3,100 10.7,100 10.7,89.1 0,89.1 0,10.9 10.7,10.9"/>
+                                        </svg>
+                                    </ui:fragment>
+                                    <span class="icon adm-space-icon" aria-hidden="true">#{e.icono}</span>
+                                    <span class="adm-space-name">#{e.nombre}</span>
+                                    <span class="adm-space-info">#{e.detalle}</span>
+                                </h:commandLink>
+                            </ui:repeat>
+                        </div>
+                    </h:form>
+
+                    <ul class="adm-cal-legend">
+                        <ui:fragment rendered="#{not adminInstalacionesBean.porOcupacion}">
+                            <li><i class="adm-key adm-key-ok"></i>Con reservas o abierta</li>
+                            <li><i class="adm-key adm-key-warn"></i>Con solicitudes por confirmar</li>
+                            <li><i class="adm-key adm-key-free"></i>Libre o cerrada</li>
+                            <li><i class="adm-key adm-key-off"></i>No disponible</li>
+                        </ui:fragment>
+                        <ui:fragment rendered="#{adminInstalacionesBean.porOcupacion}">
+                            <li><i class="adm-key adm-key-ok"></i>25 % o más ocupada</li>
+                            <li><i class="adm-key adm-key-free"></i>Menos de 25 % o acceso libre</li>
+                            <li><i class="adm-key adm-key-off"></i>No disponible</li>
+                        </ui:fragment>
+                    </ul>
+                </h:panelGroup>
+
+                <!-- Lo que paga cada tipo de socio por reservar (tarifa vigente hoy). Se cambia desde la ficha de cada instalación. -->
+                <h:panelGroup id="precios" layout="block" styleClass="adm-card">
+                    <header class="adm-card-head">
+                        <h2 class="adm-card-title">Precios de reserva por tipo de socio</h2>
+                    </header>
+                    <h:form id="preciosForm">
+                        <div class="adm-table-wrap">
+                            <table class="adm-table ins-precios">
+                                <thead>
+                                    <tr>
+                                        <th scope="col">Instalación</th>
+                                        <ui:repeat var="tipo" value="#{adminInstalacionesBean.tipos}">
+                                            <th scope="col" class="ins-num">#{tipo}</th>
+                                        </ui:repeat>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <ui:repeat var="fila" value="#{adminInstalacionesBean.precios}">
+                                        <tr class="js-buscable #{fila.idInstalacion eq adminInstalacionesBean.seleccionada ? 'is-sel' : ''}">
+                                            <td>
+                                                <h:commandLink styleClass="ins-nombre" action="#{adminInstalacionesBean.seleccionar(fila.idInstalacion)}"
+                                                               title="Ver la ficha de #{fila.nombre}">
+                                                    <f:ajax execute="@this" render=":mapa :ficha :precios"/>
+                                                    <span class="icon" aria-hidden="true">#{fila.icono}</span>#{fila.nombre}
+                                                </h:commandLink>
+                                                <ui:fragment rendered="#{not fila.ordenOk}">
+                                                    <span class="adm-chip adm-chip-warn ins-revisar"
+                                                          title="El alumno debería pagar menos que todos y el externo más que todos">Revisar precios</span>
+                                                </ui:fragment>
+                                            </td>
+                                            <ui:fragment rendered="#{fila.sinReserva}">
+                                                <td colspan="#{adminInstalacionesBean.tipos.size()}" class="ins-sin-reserva">
+                                                    Acceso libre: no se reserva. Se entra mientras esté abierta.
+                                                </td>
+                                            </ui:fragment>
+                                            <ui:fragment rendered="#{not fila.sinReserva}">
+                                                <ui:repeat var="precio" value="#{fila.precios}">
+                                                    <td class="ins-num">#{empty precio ? 'Sin cargar' : precio}</td>
+                                                </ui:repeat>
+                                            </ui:fragment>
+                                        </tr>
+                                    </ui:repeat>
+                                </tbody>
+                            </table>
+                        </div>
+                    </h:form>
+                </h:panelGroup>
+            </div>
+
+            <!-- ============ COLUMNA LATERAL ============ -->
+            <div class="adm-col adm-col-side">
+
+                <!-- Ficha de la instalación elegida: datos, demanda y acciones -->
+                <h:panelGroup id="ficha" layout="block" styleClass="adm-card ins-ficha"
+                              p:data-abrir="#{adminInstalacionesBean.abrir}">
+
+                    <ui:fragment rendered="#{empty adminInstalacionesBean.ficha}">
+                        <div class="adm-empty">
+                            <span class="icon" aria-hidden="true">stadium</span>
+                            <p>Todavía no hay instalaciones cargadas.</p>
+                        </div>
+                    </ui:fragment>
+
+                    <ui:fragment rendered="#{not empty adminInstalacionesBean.ficha}">
+                        <header class="ins-ficha-head">
+                            <span class="adm-item-icon"><span class="icon" aria-hidden="true">#{adminInstalacionesBean.ficha.icono}</span></span>
+                            <div class="ins-ficha-titulo">
+                                <h2 class="adm-card-title">#{adminInstalacionesBean.ficha.nombre}</h2>
+                                <span class="adm-cell-sub">#{adminInstalacionesBean.ficha.disciplina} · #{adminInstalacionesBean.ficha.reservable ? 'se reserva por turnos' : 'acceso libre'}</span>
+                            </div>
+                            <span class="adm-chip adm-chip-#{adminInstalacionesBean.ficha.estadoClase}">#{adminInstalacionesBean.ficha.estadoTexto}</span>
+                        </header>
+
+                        <!-- resultado de la última acción -->
+                        <h:messages globalOnly="true" layout="list" styleClass="adm-flashes"
+                                    infoClass="adm-flash adm-flash-ok" warnClass="adm-flash adm-flash-warn"
+                                    errorClass="adm-flash adm-flash-off"/>
+
+                        <!-- por qué está fuera de servicio y hasta cuándo -->
+                        <ui:fragment rendered="#{not adminInstalacionesBean.ficha.habilitada}">
+                            <div class="ins-aviso ins-aviso-#{adminInstalacionesBean.ficha.estadoClase}">
+                                <ui:fragment rendered="#{not empty adminInstalacionesBean.ficha.motivoBaja}">
+                                    <strong>#{adminInstalacionesBean.ficha.motivoBaja}</strong>
+                                </ui:fragment>
+                                <span>#{adminInstalacionesBean.ficha.bajaDetalle}</span>
+                                <ui:fragment rendered="#{adminInstalacionesBean.ficha.reactivacionVencida}">
+                                    <span class="adm-chip adm-chip-off">Reactivación vencida</span>
+                                </ui:fragment>
+                            </div>
+                        </ui:fragment>
+
+                        <p class="ins-desc">
+                            <ui:fragment rendered="#{empty adminInstalacionesBean.ficha.descripcion}">Sin descripción.</ui:fragment>
+                            #{adminInstalacionesBean.ficha.descripcion}
+                        </p>
+                        <p class="ins-capacidad">
+                            <span class="icon" aria-hidden="true">group</span>
+                            <ui:fragment rendered="#{empty adminInstalacionesBean.ficha.capacidad}">Capacidad sin límite definido</ui:fragment>
+                            <ui:fragment rendered="#{not empty adminInstalacionesBean.ficha.capacidad}">Capacidad: #{adminInstalacionesBean.ficha.capacidad} personas</ui:fragment>
+                        </p>
+
+                        <!-- Instalación que se reserva: demanda, turnos y próximas reservas -->
+                        <ui:fragment rendered="#{adminInstalacionesBean.ficha.reservable}">
+                            <div class="ins-stats" aria-label="Últimos #{adminInstalacionesBean.diasDemanda} días">
+                                <div><strong>#{adminInstalacionesBean.ficha.reservas}</strong><span>reservas</span></div>
+                                <div><strong>#{adminInstalacionesBean.ficha.ocupacion} %</strong><span>ocupación</span></div>
+                                <div><strong>#{adminInstalacionesBean.ficha.ingresos}</strong><span>cobrado</span></div>
+                            </div>
+                            <p class="ins-etiqueta">Últimos #{adminInstalacionesBean.diasDemanda} días</p>
+
+                            <h3 class="ins-sub">Turnos</h3>
+                            <ul class="ins-turnos">
+                                <ui:repeat var="turno" value="#{adminInstalacionesBean.ficha.turnos}">
+                                    <li>#{turno}</li>
+                                </ui:repeat>
+                            </ul>
+
+                            <h3 class="ins-sub">Próximas reservas</h3>
+                            <ui:fragment rendered="#{empty adminInstalacionesBean.ficha.proximas}">
+                                <p class="ins-vacio">No hay reservas por delante.</p>
+                            </ui:fragment>
+                            <ul class="adm-list">
+                                <ui:repeat var="fila" value="#{adminInstalacionesBean.ficha.proximas}">
+                                    <li class="adm-item">
+                                        <span class="adm-item-main">
+                                            <span class="adm-cell-main">#{fila.socio}</span>
+                                            <span class="adm-cell-sub">#{fila.estadoTexto}</span>
+                                        </span>
+                                        <span class="adm-item-when">
+                                            <span class="adm-cell-main">#{fila.cuando}</span>
+                                            <span class="adm-cell-sub">#{fila.horario}</span>
+                                        </span>
+                                    </li>
+                                </ui:repeat>
+                            </ul>
+                        </ui:fragment>
+
+                        <!-- Instalación de acceso libre (la pileta): no se reserva, tiene horario de apertura -->
+                        <ui:fragment rendered="#{not adminInstalacionesBean.ficha.reservable}">
+                            <div class="ins-abierta #{adminInstalacionesBean.ficha.abierta ? 'is-abierta' : ''}">
+                                <span class="icon" aria-hidden="true">pool</span>
+                                <span>#{adminInstalacionesBean.ficha.apertura}</span>
+                            </div>
+                            <p class="ins-regla">No se reserva: la gente va cuando quiere mientras esté abierta y no hay límite de tiempo por persona.</p>
+
+                            <h3 class="ins-sub">Horario de apertura</h3>
+                            <ui:fragment rendered="#{empty adminInstalacionesBean.ficha.horarios}">
+                                <p class="ins-vacio">Todavía no tiene franjas cargadas: figura cerrada.</p>
+                            </ui:fragment>
+                            <h:form id="franjasForm">
+                                <ul class="ins-horarios">
+                                    <ui:repeat var="franja" value="#{adminInstalacionesBean.ficha.horarios}">
+                                        <li>
+                                            <span class="ins-horario-dias">#{franja.dias}</span>
+                                            <span class="ins-horario-horas">#{franja.horario}</span>
+                                            <h:commandLink styleClass="adm-icon-btn ins-quitar" title="Quitar esta franja"
+                                                           action="#{adminInstalacionesBean.quitarFranja(franja.ids)}"
+                                                           p:aria-label="Quitar la franja #{franja.dias} #{franja.horario}"
+                                                           onclick="return confirm('¿Quitar esta franja de apertura?')">
+                                                <f:ajax execute="@this" render=":ficha :mapa"/>
+                                                <span class="icon" aria-hidden="true">close</span>
+                                            </h:commandLink>
+                                        </li>
+                                    </ui:repeat>
+                                </ul>
+                            </h:form>
+                        </ui:fragment>
+
+                        <!-- reservas que se pisan con sacar la instalación de servicio -->
+                        <ui:fragment rendered="#{not adminInstalacionesBean.conflictos.vacio}">
+                            <div class="ins-conflictos" role="alert">
+                                <h3><span class="icon" aria-hidden="true">warning</span>Hay #{adminInstalacionesBean.conflictos.total} #{adminInstalacionesBean.conflictos.total eq 1 ? 'reserva' : 'reservas'} en ese período</h3>
+                                <p>
+                                    #{adminInstalacionesBean.conflictos.confirmadas} #{adminInstalacionesBean.conflictos.confirmadas eq 1 ? 'confirmada' : 'confirmadas'} ·
+                                    #{adminInstalacionesBean.conflictos.esperandoPago} esperando el pago ·
+                                    #{adminInstalacionesBean.conflictos.porConfirmar} por confirmar.
+                                    Las confirmadas se cancelan con 30 días de crédito para reprogramar; las que esperan el pago se liberan; las que ya tienen
+                                    comprobante hay que resolverlas antes en
+                                    <h:link rendered="#{adminNavBean.existe('/admin/solicitudes-dashboard-admin')}"
+                                            outcome="/admin/solicitudes-dashboard-admin">Solicitudes pendientes</h:link>.
+                                </p>
+                                <ul>
+                                    <ui:repeat var="fila" value="#{adminInstalacionesBean.conflictos.reservas}">
+                                        <li>
+                                            <span class="adm-cell-time">#{fila.cuando} · #{fila.horario}</span>
+                                            <span class="adm-chip adm-chip-#{fila.estadoClase}">#{fila.estadoTexto}</span>
+                                            <span class="ins-c-socio">#{fila.socio}</span>
+                                        </li>
+                                    </ui:repeat>
+                                </ul>
+                            </div>
+                        </ui:fragment>
+
+                        <!-- ============ ACCIONES ============ -->
+                        <div class="ins-acciones">
+
+                            <!-- Horario de apertura: franjas semanales y días específicos -->
+                            <ui:fragment rendered="#{not adminInstalacionesBean.ficha.reservable and not adminInstalacionesBean.ficha.dadaDeBaja}">
+                                <details class="adm-accion" data-panel="semanal">
+                                    <summary><span class="icon" aria-hidden="true">add</span>Agregar franja semanal</summary>
+                                    <h:form id="semanalForm" onkeydown="if (event.key === 'Enter' &amp;&amp; event.target.tagName === 'INPUT') return false;">
+                                        <div class="adm-campo">
+                                            <span>Días</span>
+                                            <h:selectManyCheckbox value="#{adminInstalacionesBean.diasElegidos}" styleClass="ins-dias">
+                                                <f:selectItems value="#{adminInstalacionesBean.dias}"/>
+                                            </h:selectManyCheckbox>
+                                        </div>
+                                        <div class="adm-fila">
+                                            <label class="adm-campo"><span>Abre</span>
+                                                <h:inputText value="#{adminInstalacionesBean.aperturaSemanal}" styleClass="adm-input" p:type="time"/>
+                                            </label>
+                                            <label class="adm-campo"><span>Cierra</span>
+                                                <h:inputText value="#{adminInstalacionesBean.cierreSemanal}" styleClass="adm-input" p:type="time"/>
+                                            </label>
+                                        </div>
+                                        <h:commandLink styleClass="adm-act adm-act-ok" action="#{adminInstalacionesBean.agregarSemanal}">
+                                            <f:ajax execute="@form" render=":ficha :mapa"/>
+                                            <span class="icon" aria-hidden="true">check</span>Agregar
+                                        </h:commandLink>
+                                    </h:form>
+                                </details>
+
+                                <details class="adm-accion" data-panel="fecha">
+                                    <summary><span class="icon" aria-hidden="true">add</span>Agregar un día específico</summary>
+                                    <h:form id="fechaForm" onkeydown="if (event.key === 'Enter' &amp;&amp; event.target.tagName === 'INPUT') return false;">
+                                        <label class="adm-campo"><span>Día</span>
+                                            <h:inputText value="#{adminInstalacionesBean.fechaFranja}" styleClass="adm-input" p:type="date"
+                                                         p:min="#{adminInstalacionesBean.hoy}"/>
+                                        </label>
+                                        <div class="adm-fila">
+                                            <label class="adm-campo"><span>Abre</span>
+                                                <h:inputText value="#{adminInstalacionesBean.aperturaFecha}" styleClass="adm-input" p:type="time"/>
+                                            </label>
+                                            <label class="adm-campo"><span>Cierra</span>
+                                                <h:inputText value="#{adminInstalacionesBean.cierreFecha}" styleClass="adm-input" p:type="time"/>
+                                            </label>
+                                        </div>
+                                        <h:commandLink styleClass="adm-act adm-act-ok" action="#{adminInstalacionesBean.agregarDeFecha}">
+                                            <f:ajax execute="@form" render=":ficha :mapa"/>
+                                            <span class="icon" aria-hidden="true">check</span>Agregar
+                                        </h:commandLink>
+                                    </h:form>
+                                </details>
+                            </ui:fragment>
+
+                            <!-- Editar descripción y capacidad -->
+                            <details class="adm-accion" data-panel="editar">
+                                <summary><span class="icon" aria-hidden="true">edit</span>Editar datos</summary>
+                                <h:form id="editarForm" onkeydown="if (event.key === 'Enter' &amp;&amp; event.target.tagName === 'INPUT') return false;">
+                                    <label class="adm-campo"><span>Descripción</span>
+                                        <h:inputTextarea value="#{adminInstalacionesBean.descripcion}" rows="3" styleClass="adm-input"/>
+                                    </label>
+                                    <label class="adm-campo"><span>Capacidad (personas)</span>
+                                        <h:inputText value="#{adminInstalacionesBean.capacidad}" styleClass="adm-input" p:type="number" p:min="1"
+                                                     p:placeholder="Sin límite definido"/>
+                                    </label>
+                                    <h:commandLink styleClass="adm-act adm-act-ok" action="#{adminInstalacionesBean.editar}">
+                                        <f:ajax execute="@form" render=":ficha"/>
+                                        <span class="icon" aria-hidden="true">check</span>Guardar
+                                    </h:commandLink>
+                                </h:form>
+                            </details>
+
+                            <!-- Precios de reserva por tipo de socio: se agrega un precio nuevo con su fecha de vigencia -->
+                            <ui:fragment rendered="#{adminInstalacionesBean.ficha.reservable and not adminInstalacionesBean.ficha.dadaDeBaja}">
+                                <details class="adm-accion" data-panel="precios">
+                                    <summary><span class="icon" aria-hidden="true">sell</span>Cambiar precios</summary>
+                                    <h:form id="preciosCambioForm" onkeydown="if (event.key === 'Enter' &amp;&amp; event.target.tagName === 'INPUT') return false;">
+                                        <ui:repeat var="c" value="#{adminInstalacionesBean.categorias}">
+                                            <label class="adm-campo"><span>#{c.nombreCategoria}</span>
+                                                <h:inputText value="#{adminInstalacionesBean.preciosNuevos[c.idCategoriaSocio]}" styleClass="adm-input"
+                                                             p:type="number" p:min="1" p:step="0.01"/>
+                                            </label>
+                                        </ui:repeat>
+                                        <label class="adm-campo"><span>Rige desde</span>
+                                            <h:inputText value="#{adminInstalacionesBean.desdePrecios}" styleClass="adm-input" p:type="date"
+                                                         p:min="#{adminInstalacionesBean.hoy}"/>
+                                        </label>
+                                        <p class="ins-vacio">El alumno paga siempre menos y el externo siempre más. Se guarda como precio nuevo: el anterior queda en el historial.</p>
+                                        <h:commandLink styleClass="adm-act adm-act-ok" action="#{adminInstalacionesBean.cambiarPrecios}">
+                                            <f:ajax execute="@form" render=":ficha :precios"/>
+                                            <span class="icon" aria-hidden="true">check</span>Guardar precios
+                                        </h:commandLink>
+                                    </h:form>
+                                </details>
+                                <details class="adm-accion" data-panel="historial">
+                                    <summary><span class="icon" aria-hidden="true">schedule</span>Precios anteriores</summary>
+                                    <ui:fragment rendered="#{empty adminInstalacionesBean.historialPrecios}">
+                                        <p class="ins-vacio adm-historial-vacio">Todavía no hay precios cargados.</p>
+                                    </ui:fragment>
+                                    <ul class="adm-historial">
+                                        <ui:repeat var="h" value="#{adminInstalacionesBean.historialPrecios}">
+                                            <li>
+                                                <strong>#{h.cuando}<ui:fragment rendered="#{h.programado}"><span class="adm-chip adm-chip-warn">Programado</span></ui:fragment></strong>
+                                                <span>#{h.cambios}</span>
+                                            </li>
+                                        </ui:repeat>
+                                    </ul>
+                                </details>
+                            </ui:fragment>
+
+                            <!-- Mantenimiento (temporal) -->
+                            <ui:fragment rendered="#{adminInstalacionesBean.ficha.habilitada}">
+                                <details class="adm-accion" data-panel="mant">
+                                    <summary><span class="icon" aria-hidden="true">build</span>Poner en mantenimiento</summary>
+                                    <h:form id="mantForm" onkeydown="if (event.key === 'Enter' &amp;&amp; event.target.tagName === 'INPUT') return false;">
+                                        <label class="adm-campo"><span>Motivo</span>
+                                            <h:inputText value="#{adminInstalacionesBean.motivo}" styleClass="adm-input" maxlength="255"
+                                                         p:placeholder="Ej.: riego y nivelación del césped"/>
+                                        </label>
+                                        <label class="adm-campo"><span>Reactivación estimada (opcional)</span>
+                                            <h:inputText value="#{adminInstalacionesBean.hasta}" styleClass="adm-input" p:type="date"
+                                                         p:min="#{adminInstalacionesBean.hoy}"/>
+                                        </label>
+                                        <ui:fragment rendered="#{adminInstalacionesBean.ficha.reservable}">
+                                            <label class="ins-check">
+                                                <h:selectBooleanCheckbox value="#{adminInstalacionesBean.cancelarReservas}"/>
+                                                <span>Si hay reservas en ese período, cancelarlas (las confirmadas quedan con crédito de 30 días)</span>
+                                            </label>
+                                        </ui:fragment>
+                                        <h:commandLink styleClass="adm-act adm-act-ok" action="#{adminInstalacionesBean.ponerEnMantenimiento}">
+                                            <f:ajax execute="@form" render=":ficha :mapa :resumen"/>
+                                            <span class="icon" aria-hidden="true">build</span>Poner en mantenimiento
+                                        </h:commandLink>
+                                    </h:form>
+                                </details>
+                            </ui:fragment>
+
+                            <!-- Reactivar -->
+                            <ui:fragment rendered="#{adminInstalacionesBean.ficha.enMantenimiento}">
+                                <h:form id="reactivarForm">
+                                    <h:commandLink styleClass="adm-act adm-act-ok ins-reactivar" action="#{adminInstalacionesBean.reactivar}"
+                                                   onclick="return confirm('¿Volver a habilitar esta instalación?')">
+                                        <f:ajax execute="@this" render=":ficha :mapa :resumen"/>
+                                        <span class="icon" aria-hidden="true">check_circle</span>Reactivar instalación
+                                    </h:commandLink>
+                                </h:form>
+                            </ui:fragment>
+
+                            <!-- Baja definitiva -->
+                            <ui:fragment rendered="#{not adminInstalacionesBean.ficha.dadaDeBaja}">
+                                <details class="adm-accion ins-accion-baja" data-panel="baja">
+                                    <summary><span class="icon" aria-hidden="true">block</span>Dar de baja definitiva</summary>
+                                    <h:form id="bajaForm" onkeydown="if (event.key === 'Enter' &amp;&amp; event.target.tagName === 'INPUT') return false;">
+                                        <p class="ins-peligro">La baja no se revierte desde el sistema. Para una pausa usá el mantenimiento.</p>
+                                        <label class="adm-campo"><span>Motivo</span>
+                                            <h:inputText value="#{adminInstalacionesBean.motivoBaja}" styleClass="adm-input" maxlength="255"/>
+                                        </label>
+                                        <ui:fragment rendered="#{adminInstalacionesBean.ficha.reservable}">
+                                            <label class="ins-check">
+                                                <h:selectBooleanCheckbox value="#{adminInstalacionesBean.cancelarReservasBaja}"/>
+                                                <span>Si tiene reservas por delante, cancelarlas (las confirmadas quedan con crédito de 30 días)</span>
+                                            </label>
+                                        </ui:fragment>
+                                        <h:commandLink styleClass="adm-act adm-act-off" action="#{adminInstalacionesBean.darDeBaja}"
+                                                       onclick="return confirm('¿Dar de baja esta instalación de forma definitiva?')">
+                                            <f:ajax execute="@form" render=":ficha :mapa :resumen"/>
+                                            <span class="icon" aria-hidden="true">block</span>Dar de baja
+                                        </h:commandLink>
+                                    </h:form>
+                                </details>
+                            </ui:fragment>
+                        </div>
+                    </ui:fragment>
+                </h:panelGroup>
+
+                <!-- Instalaciones más solicitadas: reservas activas de los últimos días. La pileta no se reserva y no entra. -->
+                <h:panelGroup id="ranking" layout="block" styleClass="adm-card">
+                    <header class="adm-card-head">
+                        <h2 class="adm-card-title">
+                            Más solicitadas
+                            <span class="adm-count">#{adminInstalacionesBean.diasDemanda} días</span>
+                        </h2>
+                    </header>
+
+                    <ui:fragment rendered="#{adminInstalacionesBean.totalReservas eq 0}">
+                        <div class="adm-empty">
+                            <span class="icon" aria-hidden="true">bar_chart</span>
+                            <p>Todavía no hubo reservas en este período.</p>
+                        </div>
+                    </ui:fragment>
+
+                    <ol class="ins-rank">
+                        <ui:repeat var="r" value="#{adminInstalacionesBean.ranking}" varStatus="s">
+                            <li class="js-buscable #{s.first and r.cantidad gt 0 ? 'is-top' : ''}">
+                                <span class="icon" aria-hidden="true">#{r.icono}</span>
+                                <span class="ins-rank-name">#{r.etiqueta}</span>
+                                <strong>#{r.cantidad}</strong>
+                                <span class="ins-rank-bar" aria-hidden="true"><span style="width: #{r.porcentaje}%"></span></span>
+                            </li>
+                        </ui:repeat>
+                    </ol>
+                </h:panelGroup>
+            </div>
+        </div>
+
+    </ui:define>
+
+</ui:composition>

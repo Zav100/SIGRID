@@ -1,0 +1,407 @@
+/* =====================================================================
+   SIGRID · Estilos del calendario del administrador (prefijo .cal-)
+   Se carga DESPUÉS de admin.css (desde la sección, vía "head"): el armazón, las cards, los chips y los puntitos son .adm-*.
+   Lo que ya pasó va siempre en gris ("muted"); lo que viene lleva los colores de estado.
+   ===================================================================== */
+
+.adm-dot-muted {
+  background: #BDB6B1;
+}
+
+/* ============ CONTADORES DEL MES ============ */
+.cal-perks {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.cal-perk {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  grid-template-areas: "icon value" "label label" "sub sub";
+  align-items: center;
+  column-gap: 12px;
+  padding: 14px 16px;
+  border: 1px solid var(--adm-line);
+  border-radius: 16px;
+  background: var(--adm-card);
+  box-shadow: 0 1px 2px rgba(41, 39, 39, .03);
+}
+
+.cal-perk-icon {
+  grid-area: icon;
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  background: var(--adm-soft);
+  color: var(--adm-ink-2);
+}
+
+.cal-perk-icon .icon {
+  font-size: 20px;
+}
+
+.cal-perk-icon.is-ok {
+  background: var(--adm-ok-bg);
+  color: var(--adm-ok);
+}
+
+.cal-perk-icon.is-warn {
+  background: var(--adm-warn-bg);
+  color: var(--adm-warn);
+}
+
+.cal-perk-icon.is-off {
+  background: var(--adm-off-bg);
+  color: var(--adm-off);
+}
+
+.cal-perk-value {
+  grid-area: value;
+  font-size: 1.8rem;
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: -.02em;
+  font-variant-numeric: tabular-nums;
+}
+
+.cal-perk-label {
+  grid-area: label;
+  margin-top: 10px;
+  font-size: .82rem;
+  font-weight: 600;
+}
+
+.cal-perk-sub {
+  grid-area: sub;
+  font-size: .72rem;
+  color: var(--adm-ink-3);
+}
+
+/* ============ CALENDARIO DEL MES ============ */
+.cal-big {
+  padding: 18px 20px 16px;
+}
+
+.cal-big-week,
+.cal-big-grid {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+}
+
+.cal-big-week span {
+  padding: 6px 0 8px;
+  text-align: center;
+  font-size: .72rem;
+  font-weight: 600;
+  color: var(--adm-ink-3);
+}
+
+/* las líneas entre días son el fondo que asoma por el gap de 1px */
+.cal-big-grid {
+  gap: 1px;
+  border: 1px solid var(--adm-line);
+  border-radius: 14px;
+  background: var(--adm-line);
+  overflow: hidden;
+}
+
+.cal-day {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 4px;
+  min-height: 112px;
+  min-width: 0;
+  padding: 6px;
+  background: var(--adm-card);
+  transition: background .12s ease;
+}
+
+.cal-day:hover {
+  background: #FAF8F6;
+}
+
+.cal-day.is-sel {
+  background: #FAF8F6;
+  box-shadow: inset 0 0 0 2px var(--adm-ink-3);
+}
+
+.cal-day.is-out {
+  background: #FBFAF8;
+}
+
+.cal-day.is-out .cal-day-num,
+.cal-day.is-out .cal-evs {
+  opacity: .5;
+}
+
+.cal-day-num {
+  display: grid;
+  place-items: center;
+  align-self: flex-start;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  font-size: .8rem;
+  font-weight: 500;
+}
+
+.cal-day.is-past .cal-day-num {
+  color: var(--adm-ink-3);
+}
+
+/* hoy: aro bordó; el día elegido: círculo relleno (bordó si además es hoy), como en el panel del administrador */
+.cal-day.is-hoy .cal-day-num {
+  box-shadow: inset 0 0 0 1.5px var(--adm-accent);
+  color: var(--adm-accent);
+  font-weight: 700;
+}
+
+.cal-day.is-sel .cal-day-num {
+  background: var(--adm-ink);
+  box-shadow: none;
+  color: var(--white);
+}
+
+.cal-day.is-hoy.is-sel .cal-day-num {
+  background: var(--adm-accent);
+}
+
+.cal-evs {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+
+/* etiqueta de una reserva dentro de la celda */
+.cal-ev {
+  display: block;
+  padding: 2px 6px 2px 7px;
+  border-left: 3px solid var(--ev-dot);
+  border-radius: 5px;
+  background: var(--ev-bg);
+  color: var(--ev-ink);
+  font-size: .68rem;
+  font-weight: 500;
+  line-height: 1.35;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2; /* "18:00 Cancha de Fútbol 11" en dos renglones si no entra en uno */
+  line-clamp: 2;
+}
+
+.cal-ev b {
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.cal-ev-ok {
+  --ev-bg: var(--adm-ok-bg);
+  --ev-ink: var(--adm-ok);
+  --ev-dot: var(--adm-ok-dot);
+}
+
+.cal-ev-warn {
+  --ev-bg: var(--adm-warn-bg);
+  --ev-ink: var(--adm-warn);
+  --ev-dot: var(--adm-warn-dot);
+}
+
+.cal-ev-off {
+  --ev-bg: var(--adm-off-bg);
+  --ev-ink: var(--adm-off);
+  --ev-dot: var(--adm-off-dot);
+}
+
+.cal-ev-muted {
+  --ev-bg: var(--adm-soft);
+  --ev-ink: var(--adm-ink-3);
+  --ev-dot: #BDB6B1;
+}
+
+.cal-more {
+  padding-left: 3px;
+  font-size: .68rem;
+  font-weight: 600;
+  color: var(--adm-ink-3);
+}
+
+.cal-dots {
+  display: none;
+}
+
+/* ============ DETALLE DEL DÍA ============ */
+.cal-res-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.cal-res {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--adm-line);
+}
+
+.cal-res:first-child {
+  padding-top: 0;
+}
+
+.cal-res:last-child {
+  padding-bottom: 0;
+  border-bottom: 0;
+}
+
+/* el ícono toma el color del estado; si ya pasó queda gris */
+.cal-res.is-ok .adm-item-icon,
+.cal-hist-item.is-ok .adm-item-icon {
+  background: var(--adm-ok-bg);
+  color: var(--adm-ok);
+}
+
+.cal-res.is-warn .adm-item-icon,
+.cal-hist-item.is-warn .adm-item-icon {
+  background: var(--adm-warn-bg);
+  color: var(--adm-warn);
+}
+
+.cal-res.is-off .adm-item-icon,
+.cal-hist-item.is-off .adm-item-icon {
+  background: var(--adm-off-bg);
+  color: var(--adm-off);
+}
+
+.cal-res-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.cal-res-body > span {
+  display: block;
+}
+
+.cal-res-time {
+  margin: 6px 0 2px;
+  font-size: .84rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.cal-res-socio {
+  font-size: .8rem;
+  color: var(--adm-ink-2);
+}
+
+.cal-res.is-muted .cal-res-time,
+.cal-res.is-muted .adm-cell-main {
+  color: var(--adm-ink-2);
+}
+
+.cal-res-side {
+  display: flex;
+  flex: none;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 6px;
+}
+
+/* ============ HISTORIAL ============ */
+.cal-hist {
+  max-height: 400px;
+  margin: 0 -8px;
+  padding: 0 8px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+}
+
+.cal-hist-title {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  padding: 4px 0 6px;
+  background: var(--adm-card);
+  font-size: .68rem;
+  font-weight: 600;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--adm-ink-3);
+}
+
+.cal-hist-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 0 -8px;
+  padding: 8px;
+  border-radius: 12px;
+  transition: background .12s ease;
+}
+
+.cal-hist-item:hover {
+  background: var(--adm-soft);
+}
+
+.cal-hist-item .adm-item-icon {
+  width: 36px;
+  height: 36px;
+}
+
+.cal-hist-item .adm-item-icon .icon {
+  font-size: 19px;
+}
+
+.cal-hist-item .adm-chip {
+  padding: 3px 8px;
+  font-size: .68rem;
+}
+
+/* lo que ya pasó, más apagado */
+.cal-hist-item.is-muted .adm-cell-main {
+  font-weight: 500;
+  color: var(--adm-ink-2);
+}
+
+/* ============ RESPONSIVE ============ */
+@media (max-width: 900px) {
+  .cal-perks {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+/* celular: no entran las etiquetas dentro de la celda, quedan los puntitos */
+@media (max-width: 720px) {
+  .cal-big {
+    padding: 14px 10px 12px;
+  }
+
+  .cal-day {
+    align-items: center;
+    min-height: 54px;
+    padding: 4px 0;
+  }
+
+  .cal-day-num {
+    align-self: center;
+  }
+
+  .cal-evs {
+    display: none;
+  }
+
+  .cal-dots {
+    display: flex;
+    justify-content: center;
+    gap: 3px;
+    height: 6px;
+  }
+
+  .cal-big-week span {
+    font-size: .64rem;
+  }
+}

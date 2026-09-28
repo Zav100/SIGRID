@@ -1,0 +1,351 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:h="jakarta.faces.html"
+                xmlns:f="jakarta.faces.core"
+                xmlns:p="jakarta.faces.passthrough"
+                xmlns:ui="jakarta.faces.facelets"
+                template="/templates/admin-dashboard.xhtml">
+
+    <ui:define name="titulo">
+        Membresías | Panel de administración
+    </ui:define>
+
+    <ui:define name="head">
+        <h:outputStylesheet library="css" name="membresias.css"/>
+    </ui:define>
+
+    <ui:define name="content">
+
+        <!-- ============ ENCABEZADO ============ -->
+        <header class="adm-page-head">
+            <div>
+                <h1 class="adm-page-title">Membresías</h1>
+            </div>
+        </header>
+
+        <div class="adm-layout mem-top">
+
+            <!-- ============ COLUMNA PRINCIPAL ============ -->
+            <div class="adm-col">
+
+                <!-- Ingresos e indicadores; se vuelven a dibujar al aceptar, denegar o cancelar -->
+                <h:panelGroup id="resumen" layout="block" styleClass="mem-summary">
+
+                    <section class="adm-card mem-hero" aria-label="Ingresos por membresías">
+                        <div class="mem-hero-main">
+                            <span class="mem-hero-icon"><span class="icon" aria-hidden="true">payments</span></span>
+                            <p class="mem-hero-label">Cobrado este mes</p>
+                            <p class="mem-money">#{adminMembresiasBean.ingresos.totalMes}</p>
+                            <span class="adm-chip adm-chip-#{adminMembresiasBean.ingresos.tendencia eq 'up' ? 'ok' : adminMembresiasBean.ingresos.tendencia eq 'down' ? 'off' : 'muted'}">#{adminMembresiasBean.ingresos.comparacion}</span>
+                        </div>
+                        <div class="mem-hero-chart">
+                            <p class="mem-hero-label">Últimos 6 meses</p>
+                            <ul class="mem-bars">
+                                <ui:repeat var="mes" value="#{adminMembresiasBean.ingresos.meses}">
+                                    <li class="mem-bar #{mes.actual ? 'is-now' : ''}" title="#{mes.etiqueta}: #{mes.monto}">
+                                        <span class="mem-bar-value">#{mes.monto}</span>
+                                        <span class="mem-bar-track"><span style="height: #{mes.porcentaje}%"></span></span>
+                                        <span class="mem-bar-name">#{mes.etiqueta}</span>
+                                    </li>
+                                </ui:repeat>
+                            </ul>
+                        </div>
+                    </section>
+
+                    <div class="mem-stats">
+                        <article class="mem-stat is-warn">
+                            <div class="mem-stat-top">
+                                <h2 class="mem-stat-label">Por validar</h2>
+                                <span class="icon" aria-hidden="true">pending_actions</span>
+                            </div>
+                            <p class="mem-stat-value">#{adminMembresiasBean.porValidar}</p>
+                            <p class="mem-stat-sub">#{adminMembresiasBean.montoPorValidar} en comprobantes</p>
+                        </article>
+                        <article class="mem-stat is-ok">
+                            <div class="mem-stat-top">
+                                <h2 class="mem-stat-label">Vigentes</h2>
+                                <span class="icon" aria-hidden="true">check_circle</span>
+                            </div>
+                            <p class="mem-stat-value">#{adminMembresiasBean.vigentes}</p>
+                            <p class="mem-stat-sub">#{adminMembresiasBean.porVencer.size()} vencen en #{adminMembresiasBean.diasPorVencer} días</p>
+                        </article>
+                        <article class="mem-stat is-off">
+                            <div class="mem-stat-top">
+                                <h2 class="mem-stat-label">Vencidas</h2>
+                                <span class="icon" aria-hidden="true">event_busy</span>
+                            </div>
+                            <p class="mem-stat-value">#{adminMembresiasBean.vencidas}</p>
+                            <p class="mem-stat-sub">carnet congelado si no renovó</p>
+                        </article>
+                    </div>
+
+                    <!-- Lo cobrado este mes, repartido por tipo de socio -->
+                    <section class="adm-card mem-mix" aria-labelledby="tMix">
+                        <header class="adm-card-head">
+                            <h2 class="adm-card-title" id="tMix">Ingresos del mes por tipo de socio</h2>
+                        </header>
+                        <ui:fragment rendered="#{adminMembresiasBean.ingresos.conIngresos}">
+                            <div class="mem-mix-bar" role="img" aria-label="Reparto de lo cobrado este mes por tipo de socio">
+                                <ui:repeat var="t" value="#{adminMembresiasBean.ingresos.porTipo}">
+                                    <ui:fragment rendered="#{t.porcentaje gt 0}">
+                                        <span class="mem-mix-seg mem-mix-#{t.indice}" style="flex-grow: #{t.porcentaje}"
+                                              title="#{t.nombre}: #{t.monto}"></span>
+                                    </ui:fragment>
+                                </ui:repeat>
+                            </div>
+                            <ul class="mem-mix-legend">
+                                <ui:repeat var="t" value="#{adminMembresiasBean.ingresos.porTipo}">
+                                    <li>
+                                        <i class="mem-mix-dot mem-mix-#{t.indice}"></i>
+                                        <span class="mem-mix-name">#{t.nombre}</span>
+                                        <strong>#{t.monto}</strong>
+                                        <span class="mem-mix-pct">#{t.porcentaje} %</span>
+                                    </li>
+                                </ui:repeat>
+                            </ul>
+                        </ui:fragment>
+                        <ui:fragment rendered="#{not adminMembresiasBean.ingresos.conIngresos}">
+                            <p class="mem-mix-empty">Todavía no se cobró ninguna membresía este mes.</p>
+                        </ui:fragment>
+                    </section>
+                </h:panelGroup>
+            </div>
+
+            <!-- ============ COLUMNA LATERAL ============ -->
+            <h:panelGroup id="lateral" layout="block" styleClass="adm-col adm-col-side"
+                          p:data-abrir="#{adminMembresiasBean.abrir}">
+
+                <!-- Cuota mensual vigente de cada tipo de socio; se cambia desde acá (un precio nuevo con su fecha de vigencia) -->
+                <section class="adm-card" aria-labelledby="tTarifas">
+                    <header class="adm-card-head">
+                        <h2 class="adm-card-title" id="tTarifas">Cuota mensual vigente</h2>
+                    </header>
+                    <ul class="mem-tarifas">
+                        <ui:repeat var="t" value="#{adminMembresiasBean.tarifas}">
+                            <li>
+                                <span>#{t.tipo}</span>
+                                <strong>#{empty t.precio ? 'Sin cargar' : t.precio}</strong>
+                            </li>
+                        </ui:repeat>
+                    </ul>
+
+                    <div class="mem-cuotas-acciones">
+                        <!-- resultado del cambio: fuera del desplegable, que se cierra al guardar -->
+                        <h:messages for=":cuotasForm" layout="list" styleClass="adm-flashes"
+                                    infoClass="adm-flash adm-flash-ok" warnClass="adm-flash adm-flash-warn"
+                                    errorClass="adm-flash adm-flash-off"/>
+                        <details class="adm-accion" data-panel="cuotas">
+                            <summary><span class="icon" aria-hidden="true">sell</span>Cambiar cuotas</summary>
+                            <h:form id="cuotasForm" onkeydown="if (event.key === 'Enter' &amp;&amp; event.target.tagName === 'INPUT') return false;">
+                                <ui:repeat var="c" value="#{adminMembresiasBean.categorias}">
+                                    <label class="adm-campo"><span>#{c.nombreCategoria}</span>
+                                        <h:inputText value="#{adminMembresiasBean.cuotasNuevas[c.idCategoriaSocio]}" styleClass="adm-input"
+                                                     p:type="number" p:min="1" p:step="0.01"/>
+                                    </label>
+                                </ui:repeat>
+                                <label class="adm-campo"><span>Rige desde</span>
+                                    <h:inputText value="#{adminMembresiasBean.desdeCuotas}" styleClass="adm-input" p:type="date"
+                                                 p:min="#{adminMembresiasBean.hoyIso}"/>
+                                </label>
+                                <h:commandLink styleClass="adm-act adm-act-ok" action="#{adminMembresiasBean.cambiarCuotas}">
+                                    <f:ajax execute="@form" render=":lateral"/>
+                                    <span class="icon" aria-hidden="true">check</span>Guardar cuotas
+                                </h:commandLink>
+                            </h:form>
+                        </details>
+                        <details class="adm-accion" data-panel="cuotas-historial">
+                            <summary><span class="icon" aria-hidden="true">schedule</span>Cuotas anteriores</summary>
+                            <ul class="adm-historial">
+                                <ui:repeat var="h" value="#{adminMembresiasBean.historialCuotas}">
+                                    <li>
+                                        <strong>#{h.cuando}<ui:fragment rendered="#{h.programado}"><span class="adm-chip adm-chip-warn">Programada</span></ui:fragment></strong>
+                                        <span>#{h.cambios}</span>
+                                    </li>
+                                </ui:repeat>
+                            </ul>
+                        </details>
+                    </div>
+                </section>
+
+                <!-- Vigentes que vencen esta semana: son las próximas en congelar el carnet -->
+                <section class="adm-card" aria-labelledby="tPorVencer">
+                    <header class="adm-card-head">
+                        <h2 class="adm-card-title" id="tPorVencer">
+                            Vencen esta semana
+                            <span class="adm-count">#{adminMembresiasBean.porVencer.size()}</span>
+                        </h2>
+                    </header>
+
+                    <ui:fragment rendered="#{empty adminMembresiasBean.porVencer}">
+                        <div class="adm-empty">
+                            <span class="icon" aria-hidden="true">task_alt</span>
+                            <p>Ninguna membresía vence en los próximos #{adminMembresiasBean.diasPorVencer} días.</p>
+                        </div>
+                    </ui:fragment>
+
+                    <ul class="adm-list">
+                        <ui:repeat var="m" value="#{adminMembresiasBean.porVencer}">
+                            <li class="adm-item">
+                                <span class="adm-avatar" aria-hidden="true">#{m.iniciales}</span>
+                                <span class="adm-item-main">
+                                    <span class="adm-cell-main">#{m.socio}</span>
+                                    <span class="adm-cell-sub">#{m.tipo}</span>
+                                </span>
+                                <span class="adm-item-when">
+                                    <span class="adm-cell-main mem-pronto">#{m.nota}</span>
+                                    <span class="adm-cell-sub">#{m.vence}</span>
+                                </span>
+                            </li>
+                        </ui:repeat>
+                    </ul>
+                </section>
+            </h:panelGroup>
+        </div>
+
+        <!-- Membresías: una fila por renovación. Las pendientes con comprobante van primero y se resuelven acá. -->
+        <section class="adm-card mem-list" aria-labelledby="tMembresias">
+            <header class="adm-card-head">
+                <h2 class="adm-card-title" id="tMembresias">Historial de membresías</h2>
+            </header>
+
+            <h:form id="filtros" styleClass="mem-toolbar">
+                <div class="adm-search mem-search" role="search">
+                    <span class="icon" aria-hidden="true">search</span>
+                    <h:inputText value="#{adminMembresiasBean.busqueda}" autocomplete="off"
+                                 p:placeholder="Buscar por nombre o DNI…" p:aria-label="Buscar membresías"
+                                 onkeydown="if (event.key === 'Enter') return false;">
+                        <f:ajax event="keyup" delay="300" listener="#{adminMembresiasBean.filtrar}" render=":lista"/>
+                    </h:inputText>
+                </div>
+
+                <h:selectOneMenu value="#{adminMembresiasBean.tipo}" styleClass="mem-select"
+                                 p:aria-label="Filtrar por tipo de socio">
+                    <f:selectItem itemValue="" itemLabel="Todos los tipos"/>
+                    <f:selectItems value="#{adminMembresiasBean.tipos}"/>
+                    <f:ajax listener="#{adminMembresiasBean.filtrar}" render=":lista"/>
+                </h:selectOneMenu>
+
+                <ui:include src="/templates/boton-pdf.xhtml">
+                    <ui:param name="clase" value="mem-btn"/>
+                </ui:include>
+            </h:form>
+
+            <h:panelGroup id="lista" layout="block">
+
+                <!-- pestañas de estado, con cuántas hay de cada una -->
+                <h:form id="pestanas" styleClass="mem-tabs">
+                    <h:commandLink styleClass="mem-tab #{empty adminMembresiasBean.estado ? 'is-active' : ''}"
+                                   action="#{adminMembresiasBean.elegirEstado('')}">
+                        <f:ajax execute="@this" render=":lista"/>Todas <b>#{adminMembresiasBean.total}</b>
+                    </h:commandLink>
+                    <h:commandLink styleClass="mem-tab #{adminMembresiasBean.estado eq 'PENDIENTE_PAGO' ? 'is-active' : ''}"
+                                   action="#{adminMembresiasBean.elegirEstado('PENDIENTE_PAGO')}">
+                        <f:ajax execute="@this" render=":lista"/>Pendientes <b>#{adminMembresiasBean.pendientes}</b>
+                    </h:commandLink>
+                    <h:commandLink styleClass="mem-tab #{adminMembresiasBean.estado eq 'VIGENTE' ? 'is-active' : ''}"
+                                   action="#{adminMembresiasBean.elegirEstado('VIGENTE')}">
+                        <f:ajax execute="@this" render=":lista"/>Vigentes <b>#{adminMembresiasBean.vigentes}</b>
+                    </h:commandLink>
+                    <h:commandLink styleClass="mem-tab #{adminMembresiasBean.estado eq 'VENCIDA' ? 'is-active' : ''}"
+                                   action="#{adminMembresiasBean.elegirEstado('VENCIDA')}">
+                        <f:ajax execute="@this" render=":lista"/>Vencidas <b>#{adminMembresiasBean.vencidas}</b>
+                    </h:commandLink>
+                    <h:commandLink styleClass="mem-tab #{adminMembresiasBean.estado eq 'CANCELADA' ? 'is-active' : ''}"
+                                   action="#{adminMembresiasBean.elegirEstado('CANCELADA')}">
+                        <f:ajax execute="@this" render=":lista"/>Canceladas <b>#{adminMembresiasBean.canceladas}</b>
+                    </h:commandLink>
+                </h:form>
+
+                <!-- resultado de la última acción -->
+                <h:messages globalOnly="true" layout="list" styleClass="adm-flashes"
+                            infoClass="adm-flash adm-flash-ok" warnClass="adm-flash adm-flash-warn"
+                            errorClass="adm-flash adm-flash-off"/>
+
+                <ui:fragment rendered="#{empty adminMembresiasBean.filtradas}">
+                    <div class="adm-empty">
+                        <span class="icon" aria-hidden="true">payments</span>
+                        <p>#{adminMembresiasBean.total eq 0 ? 'Todavía no hay membresías.' : 'Ninguna membresía coincide con el filtro.'}</p>
+                    </div>
+                </ui:fragment>
+
+                <ui:fragment rendered="#{not empty adminMembresiasBean.filtradas}">
+                    <h:form id="filas">
+                        <div class="adm-table-wrap">
+                            <table class="adm-table">
+                                <thead>
+                                    <tr>
+                                        <th scope="col">Socio</th>
+                                        <th scope="col">Período</th>
+                                        <th scope="col" class="mem-num">Monto</th>
+                                        <th scope="col">Estado</th>
+                                        <th scope="col" class="adm-col-actions">Acción</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <ui:repeat var="m" value="#{adminMembresiasBean.filtradas}">
+                                        <tr class="#{m.conComprobante ? 'mem-row-pend' : ''}">
+                                            <td>
+                                                <div class="mem-who">
+                                                    <span class="adm-avatar" aria-hidden="true">#{m.iniciales}</span>
+                                                    <span>
+                                                        <span class="adm-cell-main">#{m.socio}</span>
+                                                        <span class="adm-cell-sub">#{m.tipo} · DNI #{m.dni}</span>
+                                                    </span>
+                                                </div>
+                                            </td>
+                                            <td class="adm-nowrap">
+                                                <ui:fragment rendered="#{empty m.inicio}"><span class="adm-cell-sub">Sin iniciar</span></ui:fragment>
+                                                <ui:fragment rendered="#{not empty m.inicio}">
+                                                    <span class="mem-periodo">#{m.inicio}</span>
+                                                    <span class="adm-cell-sub #{m.porVencer ? 'mem-pronto' : ''}">hasta #{m.vence}</span>
+                                                </ui:fragment>
+                                            </td>
+                                            <td class="mem-num">#{empty m.monto ? '—' : m.monto}</td>
+                                            <td>
+                                                <span class="adm-chip adm-chip-#{m.estadoClase}">#{m.estadoTexto}</span>
+                                                <span class="adm-cell-sub mem-nota #{m.porVencer ? 'mem-pronto' : ''}">#{m.nota}</span>
+                                            </td>
+                                            <td class="adm-col-actions">
+                                                <div class="adm-actions">
+                                                    <ui:fragment rendered="#{m.conComprobante}">
+                                                        <h:commandLink styleClass="adm-act adm-act-ok"
+                                                                       action="#{adminMembresiasBean.aceptar(m.idSuscripcion)}"
+                                                                       title="Aceptar el comprobante"
+                                                                       p:aria-label="Aceptar la membresía de #{m.socio}">
+                                                            <f:ajax execute="@this" render=":lista :resumen :lateral :admNav"/>
+                                                            <span class="icon" aria-hidden="true">check</span>Aceptar
+                                                        </h:commandLink>
+                                                        <h:commandLink styleClass="adm-act adm-act-off"
+                                                                       action="#{adminMembresiasBean.denegar(m.idSuscripcion)}"
+                                                                       title="Denegar el comprobante"
+                                                                       p:aria-label="Denegar la membresía de #{m.socio}"
+                                                                       onclick="return confirm('¿Denegar este comprobante? La solicitud queda cancelada.')">
+                                                            <f:ajax execute="@this" render=":lista :resumen :lateral :admNav"/>
+                                                            <span class="icon" aria-hidden="true">close</span>Denegar
+                                                        </h:commandLink>
+                                                    </ui:fragment>
+                                                    <ui:fragment rendered="#{m.estado eq 'VIGENTE'}">
+                                                        <h:commandLink styleClass="adm-act adm-act-off"
+                                                                       action="#{adminMembresiasBean.cancelar(m.idSuscripcion)}"
+                                                                       title="Cancelar la membresía"
+                                                                       p:aria-label="Cancelar la membresía de #{m.socio}"
+                                                                       onclick="return confirm('¿Cancelar esta membresía? El socio queda inactivo y su carnet se congela.')">
+                                                            <f:ajax execute="@this" render=":lista :resumen :lateral :admNav"/>
+                                                            <span class="icon" aria-hidden="true">block</span>Cancelar
+                                                        </h:commandLink>
+                                                    </ui:fragment>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    </ui:repeat>
+                                </tbody>
+                            </table>
+                        </div>
+                    </h:form>
+                </ui:fragment>
+            </h:panelGroup>
+        </section>
+
+    </ui:define>
+
+</ui:composition>
