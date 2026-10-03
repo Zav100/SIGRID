@@ -1,26 +1,37 @@
 package com.sigrid.sigrid.bean;
 
 import com.sigrid.sigrid.dto.DatoDestacado;
+import com.sigrid.sigrid.dao.InstalacionDAO;
 import com.sigrid.sigrid.dto.GaleriaItem;
+import com.sigrid.sigrid.dto.HorarioFila;
 import com.sigrid.sigrid.dto.InstalacionCard;
+import com.sigrid.sigrid.repositorio.Instalacion;
+import com.sigrid.sigrid.servicio.HorarioServicio;
 import jakarta.annotation.PostConstruct;
 import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.inject.Inject;
 import jakarta.inject.Named;
 import java.io.Serializable;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
 /**
  * Bean de la home pública (index.xhtml).
  *
- * Todo lo que expone es CONTENIDO FIJO del sitio: no sale de ninguna tabla, por
- * eso no tiene DAO ni Servicio detrás (mismo criterio que HomeBean en REPS). Si
+ * Casi todo lo que expone es CONTENIDO FIJO del sitio: no sale de ninguna tabla
+ * (mismo criterio que HomeBean en REPS); la excepción es el horario de la pileta. Si
  * más adelante las instalaciones destacadas pasan a leerse de la BD, se
  * reemplaza la lista por una consulta a InstalacionDAO; el .xhtml no cambia.
  */
 @Named("homeBean")
 @ApplicationScoped
 public class HomeBean implements Serializable {
+
+    @Inject
+    private InstalacionDAO instalacionDAO;
+    @Inject
+    private HorarioServicio horarioServicio;
 
     private List<InstalacionCard> instalaciones;
     private List<DatoDestacado> destacados;
@@ -71,5 +82,20 @@ public class HomeBean implements Serializable {
 
     public List<GaleriaItem> getGaleria() {
         return galeria;
+    }
+
+    /** Lo único que no es fijo: las franjas de la pileta como las carga el administrador, leídas de la base en cada vista. */
+    public List<HorarioFila> getHorariosPileta() {
+        Instalacion pileta = instalacionDAO.buscarPorNombre("Pileta");
+        return pileta == null ? List.of() : horarioServicio.listar(pileta.getIdInstalacion(), LocalDate.now());
+    }
+
+    /** Las mismas franjas en una frase: "Abre Lun a Vie de 09:00 – 19:00; Sáb y Dom de 10:00 – 20:00". */
+    public String getHorariosPiletaTexto() {
+        List<String> partes = new ArrayList<>();
+        for (HorarioFila h : getHorariosPileta()) {
+            partes.add((h.isDeFecha() ? "apertura extra el " : "") + h.getDias() + " de " + h.getHorario());
+        }
+        return partes.isEmpty() ? "El horario de la pileta se confirma en el predio" : "Abre " + String.join("; ", partes);
     }
 }

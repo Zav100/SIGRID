@@ -52,10 +52,37 @@ public class RegistroServicio implements Serializable {
         if (!password.equals(confirmarPassword)) {
             return "Las contraseñas no coinciden.";
         }
-        if (usuarioDAO.buscarPorEmail(correo) != null) {
+        Usuario existente = usuarioDAO.buscarPorEmail(correo);
+        if (existente != null && bajaDe(existente) == null) {
             return "Ese correo ya tiene una cuenta.";
         }
         return null;
+    }
+
+    /** El socio dado de baja de esa cuenta; null si la cuenta no es de un socio o no está dada de baja. */
+    private Socio bajaDe(Usuario u) {
+        Socio s = u == null ? null : socioDAO.buscarPorIdUsuario(u.getIdUsuario());
+        return s != null && s.isBajaLogica() ? s : null;
+    }
+
+    /**
+     * Un socio dado de baja no retiene su correo ni su DNI (la base los pide únicos): se archivan en su ficha vieja,
+     * que queda con su historial, para que la persona pueda volver a registrarse con los mismos datos.
+     */
+    private void liberar(Socio baja) {
+        if (baja == null) {
+            return;
+        }
+        Usuario u = baja.getIdUsuario();
+        u.setEmail(archivado(u.getEmail(), baja.getIdSocio(), 255));
+        // ponytail: el DNI archivado se corta a 15 caracteres (columna dni); el prefijo con el id mantiene la unicidad
+        baja.setDni(archivado(baja.getDni(), baja.getIdSocio(), 15));
+        socioDAO.flush(); // el UPDATE sale antes del INSERT de la cuenta nueva, o chocaría con el UNIQUE
+    }
+
+    private static String archivado(String valor, Integer idSocio, int maximo) {
+        String texto = "b" + idSocio + "-" + valor;
+        return texto.length() > maximo ? texto.substring(0, maximo) : texto;
     }
 
     /**
@@ -102,9 +129,12 @@ public class RegistroServicio implements Serializable {
         if (categoria.isRequiereLegajo() && legajo.isEmpty()) {
             return "Un " + categoria.getNombreCategoria() + " necesita legajo.";
         }
-        if (socioDAO.buscarPorDni(dni) != null) {
+        Socio conEseDni = socioDAO.buscarPorDni(dni);
+        if (conEseDni != null && !conEseDni.isBajaLogica()) {
             return "Ese DNI ya pertenece a otro socio.";
         }
+        liberar(bajaDe(usuarioDAO.buscarPorEmail(r.getEmail().trim())));
+        liberar(socioDAO.buscarPorDni(dni)); // se vuelve a buscar: si era la misma ficha, ya quedó archivada
 
         Rol rol = rolDAO.buscarPorNombre(ROL_SOCIO);
 

@@ -42,6 +42,11 @@ public abstract class BaseDAO<T> implements Serializable {
         return em.merge(entidad);
     }
 
+    /** Manda ya los cambios pendientes a la base (no al cerrar la transacción). */
+    public void flush() {
+        em.flush();
+    }
+
     /** Primer resultado de la consulta, o null si no hay ninguno. */
     protected <R> R primero(TypedQuery<R> consulta) {
         List<R> lista = consulta.setMaxResults(1).getResultList();

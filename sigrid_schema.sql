@@ -407,7 +407,7 @@ SELECT id_rol, 'Ana', 'Pérez', 'admin@sigrid.com',
 -- Las instalaciones reales del polideportivo (cancha de fútbol 11, cancha de
 -- rugby, cancha de beach vóley, salón SUM, pileta y 3 quinchos con asador) con
 -- sus turnos, 10 socios y reservas repartidas alrededor de HOY (las fechas son
--- relativas a CURDATE(), así que siempre quedan actuales), para ver el dashboard
+-- relativas a @hoy, así que siempre quedan actuales), para ver el dashboard
 -- del administrador con contenido. Necesita el bloque (10).
 --
 -- Los socios de prueba usan la contraseña Admin123! y correos @demo.sigrid.
@@ -415,6 +415,12 @@ SELECT id_rol, 'Ana', 'Pérez', 'admin@sigrid.com',
 -- natural y se duplicarían): correrlo una sola vez. Para sacarlo, ver la
 -- LIMPIEZA al final de este bloque.
 -- =====================================================================
+
+-- Fecha y hora "de hoy" de los datos de prueba. Por defecto son las de ahora; para dejar la demo lista para OTRO día se
+-- fijan ANTES de correr el archivo, en la misma sesión (ej. la demo del lunes 5/10/2026):
+--     SET @hoy = '2026-10-05';  SET @ahora = '2026-10-05 08:00:00';
+SET @hoy = DATE(COALESCE(@hoy, CURDATE()));
+SET @ahora = COALESCE(@ahora, NOW());
 
 -- ---------------------------------------------------------------------
 -- Categorías de socio (catálogo que necesita cualquier socio)
@@ -434,7 +440,7 @@ INSERT IGNORE INTO instalacion
   (nombre, descripcion, tipo_disciplina, capacidad, tipo_acceso, estado, motivo_baja, fecha_inicio_baja, fecha_fin_baja) VALUES
   ('Cancha de Fútbol 11',   'Césped natural con iluminación.',        'Fútbol',             22, 'ARANCELADO', 'HABILITADA', NULL, NULL, NULL),
   ('Cancha de Rugby',       'Césped natural.',                        'Rugby',              30, 'ARANCELADO', 'DESHABILITADA_MANTENIMIENTO',
-     'Riego y nivelación del césped', CURDATE(), CURDATE() + INTERVAL 5 DAY),
+     'Riego y nivelación del césped', @hoy, @hoy + INTERVAL 5 DAY),
   ('Cancha de Beach Vóley', 'Cancha de arena reglamentaria.',         'Beach vóley',        12, 'ARANCELADO', 'HABILITADA', NULL, NULL, NULL),
   ('Salón SUM',             'Salón de usos múltiples para eventos.',  'Salón de eventos',  100, 'ARANCELADO', 'HABILITADA', NULL, NULL, NULL),
   ('Pileta',                'Pileta comunitaria. No se reserva: se entra mientras esté abierta.', 'Natación', 40, 'LIBRE', 'HABILITADA', NULL, NULL, NULL),
@@ -474,7 +480,7 @@ SELECT i.id_instalacion, h.dia, h.fecha, h.ini, h.fin
         SELECT 5, NULL, '09:00:00', '19:00:00' UNION ALL
         SELECT 6, NULL, '10:00:00', '20:00:00' UNION ALL
         SELECT 7, NULL, '10:00:00', '20:00:00' UNION ALL
-        SELECT NULL, CURDATE() + INTERVAL 9 DAY, '20:00:00', '23:00:00') h
+        SELECT NULL, @hoy + INTERVAL 9 DAY, '20:00:00', '23:00:00') h
  WHERE i.nombre = 'Pileta';
 
 -- ---------------------------------------------------------------------
@@ -511,16 +517,16 @@ SELECT u.id_usuario, c.id_categoria_socio, d.dni, d.nacimiento, d.telefono, d.le
   JOIN usuario u ON u.email = d.email
   JOIN categoria_socio c ON c.nombre_categoria = d.categoria;
 
--- Membresías vigentes de los socios activos: tres vencen dentro de la semana
+-- Membresías vigentes de los socios activos: tres vencen dentro de la semana y cinco se pagaron en los primeros días del mes
 INSERT INTO suscripcion_socio (id_socio, estado, fecha_inicio, fecha_vencimiento)
-SELECT s.id_socio, 'VIGENTE', CURDATE() + INTERVAL d.dias DAY - INTERVAL 30 DAY, CURDATE() + INTERVAL d.dias DAY
+SELECT s.id_socio, 'VIGENTE', @hoy + INTERVAL d.dias DAY - INTERVAL 30 DAY, @hoy + INTERVAL d.dias DAY
   FROM (SELECT 'matias.rojas@demo.sigrid' AS email, 2 AS dias UNION ALL
         SELECT 'lucia.torres@demo.sigrid',    4  UNION ALL
         SELECT 'facundo.diaz@demo.sigrid',    6  UNION ALL
-        SELECT 'camila.ruiz@demo.sigrid',     12 UNION ALL
-        SELECT 'bruno.lopez@demo.sigrid',     18 UNION ALL
-        SELECT 'sofia.herrera@demo.sigrid',   20 UNION ALL
-        SELECT 'tomas.acuna@demo.sigrid',     25 UNION ALL
+        SELECT 'camila.ruiz@demo.sigrid',     28 UNION ALL
+        SELECT 'bruno.lopez@demo.sigrid',     29 UNION ALL
+        SELECT 'sofia.herrera@demo.sigrid',   26 UNION ALL
+        SELECT 'tomas.acuna@demo.sigrid',     30 UNION ALL
         SELECT 'nicolas.ledesma@demo.sigrid', 27) d
   JOIN usuario u ON u.email = d.email
   JOIN socio s ON s.id_usuario = u.id_usuario;
@@ -547,17 +553,18 @@ SELECT c.id_categoria_socio, d.precio, '2026-01-01'
 -- Renovaciones anteriores de los socios activos (una por mes hacia atrás): vencidas, y una cancelada
 INSERT INTO suscripcion_socio (id_socio, estado, fecha_inicio, fecha_vencimiento)
 SELECT s.id_socio, IF(d.email = 'nicolas.ledesma@demo.sigrid', 'CANCELADA', 'VENCIDA'),
-       CURDATE() + INTERVAL d.dias DAY - INTERVAL (30 * (d.k + 1)) DAY,
-       CURDATE() + INTERVAL d.dias DAY - INTERVAL (30 * d.k) DAY
+       @hoy + INTERVAL d.dias DAY - INTERVAL (30 * (d.k + 1)) DAY,
+       @hoy + INTERVAL d.dias DAY - INTERVAL (30 * d.k) DAY
   FROM (SELECT 'matias.rojas@demo.sigrid' AS email, 2 AS dias, 1 AS k UNION ALL
         SELECT 'matias.rojas@demo.sigrid',    2, 2 UNION ALL
         SELECT 'matias.rojas@demo.sigrid',    2, 3 UNION ALL
         SELECT 'lucia.torres@demo.sigrid',    4, 1 UNION ALL
         SELECT 'lucia.torres@demo.sigrid',    4, 2 UNION ALL
         SELECT 'facundo.diaz@demo.sigrid',    6, 1 UNION ALL
-        SELECT 'camila.ruiz@demo.sigrid',    12, 1 UNION ALL
-        SELECT 'bruno.lopez@demo.sigrid',    18, 1 UNION ALL
-        SELECT 'sofia.herrera@demo.sigrid',  20, 1 UNION ALL
+        SELECT 'camila.ruiz@demo.sigrid',    28, 1 UNION ALL
+        SELECT 'bruno.lopez@demo.sigrid',    29, 1 UNION ALL
+        SELECT 'sofia.herrera@demo.sigrid',  26, 1 UNION ALL
+        SELECT 'tomas.acuna@demo.sigrid',    30, 1 UNION ALL
         SELECT 'nicolas.ledesma@demo.sigrid', 27, 1) d
   JOIN usuario u ON u.email = d.email
   JOIN socio s ON s.id_usuario = u.id_usuario;
@@ -580,31 +587,31 @@ UPDATE suscripcion_socio s
 UPDATE suscripcion_socio SET fecha_solicitud = TIMESTAMP(fecha_inicio) - INTERVAL 1 DAY WHERE fecha_inicio IS NOT NULL;
 
 -- Solicitudes por validar: valentina.paz (vuelve a asociarse) y sofia.herrera (renueva por adelantado)
-INSERT INTO suscripcion_socio (id_socio, estado)
-SELECT s.id_socio, 'PENDIENTE_PAGO' FROM socio s JOIN usuario u ON u.id_usuario = s.id_usuario
+INSERT INTO suscripcion_socio (id_socio, estado, fecha_solicitud)
+SELECT s.id_socio, 'PENDIENTE_PAGO', @ahora - INTERVAL 5 HOUR FROM socio s JOIN usuario u ON u.id_usuario = s.id_usuario
  WHERE u.email = 'valentina.paz@demo.sigrid';
 SET @suscripcion = LAST_INSERT_ID();
 INSERT INTO pago (id_usuario, monto, fecha_pago)
-VALUES ((SELECT id_usuario FROM usuario WHERE email = 'valentina.paz@demo.sigrid'), 3000.00, NOW() - INTERVAL 5 HOUR);
+VALUES ((SELECT id_usuario FROM usuario WHERE email = 'valentina.paz@demo.sigrid'), 3000.00, @ahora - INTERVAL 5 HOUR);
 SET @pago = LAST_INSERT_ID();
 INSERT INTO comprobante_pago (id_pago, archivo_url, hash_archivo, fecha_operacion_declarada)
-VALUES (@pago, 'demo/membresia-1.pdf', SHA2('demo-membresia-1', 256), NOW() - INTERVAL 5 HOUR);
+VALUES (@pago, 'demo/membresia-1.pdf', SHA2('demo-membresia-1', 256), @ahora - INTERVAL 5 HOUR);
 UPDATE suscripcion_socio SET id_pago = @pago WHERE id_suscripcion = @suscripcion;
 
-INSERT INTO suscripcion_socio (id_socio, estado)
-SELECT s.id_socio, 'PENDIENTE_PAGO' FROM socio s JOIN usuario u ON u.id_usuario = s.id_usuario
+INSERT INTO suscripcion_socio (id_socio, estado, fecha_solicitud)
+SELECT s.id_socio, 'PENDIENTE_PAGO', @ahora - INTERVAL 2 HOUR FROM socio s JOIN usuario u ON u.id_usuario = s.id_usuario
  WHERE u.email = 'sofia.herrera@demo.sigrid';
 SET @suscripcion = LAST_INSERT_ID();
 INSERT INTO pago (id_usuario, monto, fecha_pago)
-VALUES ((SELECT id_usuario FROM usuario WHERE email = 'sofia.herrera@demo.sigrid'), 4000.00, NOW() - INTERVAL 2 HOUR);
+VALUES ((SELECT id_usuario FROM usuario WHERE email = 'sofia.herrera@demo.sigrid'), 4000.00, @ahora - INTERVAL 2 HOUR);
 SET @pago = LAST_INSERT_ID();
 INSERT INTO comprobante_pago (id_pago, archivo_url, hash_archivo, fecha_operacion_declarada)
-VALUES (@pago, 'demo/membresia-2.pdf', SHA2('demo-membresia-2', 256), NOW() - INTERVAL 2 HOUR);
+VALUES (@pago, 'demo/membresia-2.pdf', SHA2('demo-membresia-2', 256), @ahora - INTERVAL 2 HOUR);
 UPDATE suscripcion_socio SET id_pago = @pago WHERE id_suscripcion = @suscripcion;
 
 -- Y una solicitud que todavía espera que el socio cargue el comprobante
-INSERT INTO suscripcion_socio (id_socio, estado)
-SELECT s.id_socio, 'PENDIENTE_PAGO' FROM socio s JOIN usuario u ON u.id_usuario = s.id_usuario
+INSERT INTO suscripcion_socio (id_socio, estado, fecha_solicitud)
+SELECT s.id_socio, 'PENDIENTE_PAGO', @ahora - INTERVAL 26 HOUR FROM socio s JOIN usuario u ON u.id_usuario = s.id_usuario
  WHERE u.email = 'agustina.coronel@demo.sigrid';
 
 -- ---------------------------------------------------------------------
@@ -612,23 +619,23 @@ SELECT s.id_socio, 'PENDIENTE_PAGO' FROM socio s JOIN usuario u ON u.id_usuario 
 -- confirmó la cuenta de administrador.
 -- ---------------------------------------------------------------------
 INSERT INTO reserva (id_socio, id_turno, fecha_turno, estado, fecha_reserva, fecha_confirmacion, id_admin_confirmador)
-SELECT s.id_socio, t.id_turno, CURDATE() + INTERVAL d.dia DAY, d.estado,
-       NOW() - INTERVAL d.hace_horas HOUR,
-       IF(d.estado = 'CONFIRMADA', NOW() - INTERVAL (d.hace_horas - 1) HOUR, NULL),
+SELECT s.id_socio, t.id_turno, @hoy + INTERVAL d.dia DAY, d.estado,
+       @ahora - INTERVAL d.hace_horas HOUR,
+       IF(d.estado = 'CONFIRMADA', @ahora - INTERVAL (d.hace_horas - 1) HOUR, NULL),
        IF(d.estado = 'CONFIRMADA', (SELECT id_usuario FROM usuario WHERE email = 'admin@sigrid.com'), NULL)
   FROM (
         -- hoy
         SELECT 'facundo.diaz@demo.sigrid' AS email, 'Quincho 1' AS instalacion, '12:00:00' AS hora, 0 AS dia, 'CONFIRMADA' AS estado, 40 AS hace_horas UNION ALL
-        SELECT 'bruno.lopez@demo.sigrid',      'Cancha de Fútbol 11',   '17:00:00',  0, 'PENDIENTE_PAGO',  4 UNION ALL
-        SELECT 'matias.rojas@demo.sigrid',     'Cancha de Fútbol 11',   '18:00:00',  0, 'CONFIRMADA',     50 UNION ALL
+        SELECT 'bruno.lopez@demo.sigrid',      'Cancha de Fútbol 11',   '19:00:00',  0, 'PENDIENTE_PAGO',  4 UNION ALL
+        SELECT 'matias.rojas@demo.sigrid',     'Cancha de Fútbol 11',   '18:00:00',  0, 'CONFIRMADA',      3 UNION ALL
         SELECT 'sofia.herrera@demo.sigrid',    'Salón SUM',             '18:00:00',  0, 'CONFIRMADA',     44 UNION ALL
-        SELECT 'lucia.torres@demo.sigrid',     'Cancha de Beach Vóley', '19:00:00',  0, 'CONFIRMADA',     26 UNION ALL
+        SELECT 'lucia.torres@demo.sigrid',     'Cancha de Beach Vóley', '19:00:00',  0, 'CONFIRMADA',      2 UNION ALL
         SELECT 'tomas.acuna@demo.sigrid',      'Cancha de Beach Vóley', '20:00:00',  0, 'CANCELADA',      60 UNION ALL
         SELECT 'nicolas.ledesma@demo.sigrid',  'Cancha de Fútbol 11',   '20:00:00',  0, 'CONFIRMADA',     20 UNION ALL
         -- mañana
         SELECT 'agustina.coronel@demo.sigrid', 'Quincho 2',             '12:00:00',  1, 'CONFIRMADA',     18 UNION ALL
         SELECT 'bruno.lopez@demo.sigrid',      'Cancha de Fútbol 11',   '18:00:00',  1, 'PENDIENTE_PAGO',  2 UNION ALL
-        SELECT 'valentina.paz@demo.sigrid',    'Cancha de Beach Vóley', '20:00:00',  1, 'PENDIENTE_PAGO',  1 UNION ALL
+        SELECT 'valentina.paz@demo.sigrid',    'Cancha de Beach Vóley', '20:00:00',  1, 'CANCELADA',      22 UNION ALL
         -- próximos días
         SELECT 'matias.rojas@demo.sigrid',     'Cancha de Beach Vóley', '17:00:00',  2, 'CONFIRMADA',     30 UNION ALL
         SELECT 'tomas.acuna@demo.sigrid',      'Cancha de Fútbol 11',   '19:00:00',  2, 'PENDIENTE_PAGO',  5 UNION ALL
@@ -640,7 +647,27 @@ SELECT s.id_socio, t.id_turno, CURDATE() + INTERVAL d.dia DAY, d.estado,
         SELECT 'matias.rojas@demo.sigrid',     'Cancha de Fútbol 11',   '18:00:00', -1, 'CONFIRMADA',     80 UNION ALL
         SELECT 'lucia.torres@demo.sigrid',     'Cancha de Beach Vóley', '19:00:00', -1, 'CONFIRMADA',     70 UNION ALL
         SELECT 'tomas.acuna@demo.sigrid',      'Quincho 3',             '12:00:00', -4, 'CANCELADA',     100 UNION ALL
-        SELECT 'nicolas.ledesma@demo.sigrid',  'Cancha de Fútbol 11',   '20:00:00', -7, 'CONFIRMADA',    120
+        SELECT 'nicolas.ledesma@demo.sigrid',  'Cancha de Fútbol 11',   '20:00:00', -7, 'CONFIRMADA',    120 UNION ALL
+        -- refuerzo para la demo: la mañana y la tarde de hoy (el plano se ve ocupado a cualquier hora)
+        SELECT 'camila.ruiz@demo.sigrid',      'Cancha de Fútbol 11',   '09:00:00',  0, 'CONFIRMADA',      3 UNION ALL
+        SELECT 'sofia.herrera@demo.sigrid',    'Cancha de Beach Vóley', '10:00:00',  0, 'CONFIRMADA',      2 UNION ALL
+        SELECT 'tomas.acuna@demo.sigrid',      'Cancha de Fútbol 11',   '16:00:00',  0, 'CONFIRMADA',     52 UNION ALL
+        SELECT 'nicolas.ledesma@demo.sigrid',  'Quincho 3',             '18:00:00',  0, 'CONFIRMADA',     36 UNION ALL
+        -- refuerzo: dos solicitudes más con comprobante (una con el comprobante correcto y otra con el monto equivocado)
+        SELECT 'camila.ruiz@demo.sigrid',      'Quincho 2',             '12:00:00',  4, 'PENDIENTE_PAGO',  3 UNION ALL
+        SELECT 'facundo.diaz@demo.sigrid',     'Salón SUM',             '18:00:00',  8, 'PENDIENTE_PAGO',  2 UNION ALL
+        -- refuerzo: reservas confirmadas de las próximas dos semanas (el calendario del mes se ve con movimiento)
+        SELECT 'lucia.torres@demo.sigrid',     'Cancha de Beach Vóley', '18:00:00',  3, 'CONFIRMADA',     48 UNION ALL
+        SELECT 'lucia.torres@demo.sigrid',     'Quincho 1',             '18:00:00',  5, 'CONFIRMADA',     70 UNION ALL
+        SELECT 'matias.rojas@demo.sigrid',     'Cancha de Fútbol 11',   '19:00:00',  5, 'CONFIRMADA',     66 UNION ALL
+        SELECT 'camila.ruiz@demo.sigrid',      'Cancha de Beach Vóley', '17:00:00',  7, 'CONFIRMADA',     90 UNION ALL
+        SELECT 'facundo.diaz@demo.sigrid',     'Quincho 3',             '12:00:00',  9, 'CONFIRMADA',    100 UNION ALL
+        SELECT 'tomas.acuna@demo.sigrid',      'Cancha de Fútbol 11',   '18:00:00', 10, 'CONFIRMADA',    110 UNION ALL
+        SELECT 'nicolas.ledesma@demo.sigrid',  'Salón SUM',             '12:00:00', 11, 'CONFIRMADA',    120 UNION ALL
+        SELECT 'sofia.herrera@demo.sigrid',    'Cancha de Beach Vóley', '18:00:00', 13, 'CONFIRMADA',    130 UNION ALL
+        SELECT 'lucia.torres@demo.sigrid',     'Cancha de Fútbol 11',   '20:00:00', 14, 'CONFIRMADA',    140 UNION ALL
+        -- refuerzo: una reserva cancelada con crédito que vence pronto (ver "Cancelaciones y reprogramaciones")
+        SELECT 'sofia.herrera@demo.sigrid',    'Quincho 2',             '12:00:00', -2, 'CANCELADA',     300
        ) d
   JOIN usuario u ON u.email = d.email
   JOIN socio s ON s.id_usuario = u.id_usuario
@@ -648,49 +675,42 @@ SELECT s.id_socio, t.id_turno, CURDATE() + INTERVAL d.dia DAY, d.estado,
   JOIN turno t ON t.id_instalacion = i.id_instalacion AND t.hora_inicio = d.hora;
 
 -- ---------------------------------------------------------------------
--- Comprobantes cargados: cuatro solicitudes pendientes ya tienen su transferencia
--- para revisar (son las que aparecen en "Solicitudes por confirmar"); la otra
--- sigue esperando que el socio pague y no le llega al administrador
+-- Comprobantes cargados: seis solicitudes pendientes ya tienen su transferencia para revisar (son las que aparecen en
+-- "Solicitudes por confirmar"; el importe es el precio de la tarifa del socio). Las imágenes de muestra están en
+-- sigrid-comprobantes/demo (carpeta del usuario que corre GlassFish). La última tiene a propósito un monto distinto
+-- en la imagen, para mostrar cuándo el administrador deniega. Las reservas que siguen esperando el comprobante no le
+-- llegan al administrador (y el timer las cancela a la hora).
 -- ---------------------------------------------------------------------
-INSERT INTO pago (id_usuario, monto, fecha_pago)
-VALUES ((SELECT id_usuario FROM usuario WHERE email = 'bruno.lopez@demo.sigrid'), 18000.00, NOW() - INTERVAL 3 HOUR);
-SET @pago = LAST_INSERT_ID();
-INSERT INTO comprobante_pago (id_pago, archivo_url, hash_archivo, fecha_operacion_declarada)
-VALUES (@pago, 'demo/comprobante-1.pdf', SHA2('demo-comprobante-1', 256), NOW() - INTERVAL 3 HOUR);
-UPDATE reserva r
-  JOIN socio s ON s.id_socio = r.id_socio JOIN usuario u ON u.id_usuario = s.id_usuario
-   SET r.id_pago = @pago
- WHERE u.email = 'bruno.lopez@demo.sigrid' AND r.fecha_turno = CURDATE() + INTERVAL 0 DAY AND r.estado = 'PENDIENTE_PAGO';
+DROP TEMPORARY TABLE IF EXISTS tmp_comp;
+CREATE TEMPORARY TABLE tmp_comp (email VARCHAR(255), dia INT, monto DECIMAL(10,2), hace_horas INT, archivo VARCHAR(100));
+INSERT INTO tmp_comp VALUES
+  ('bruno.lopez@demo.sigrid',     0, 35000.00, 3, 'demo/comprobante-1.png'),
+  ('bruno.lopez@demo.sigrid',     1, 35000.00, 1, 'demo/comprobante-2.png'),
+  ('tomas.acuna@demo.sigrid',     2, 35000.00, 4, 'demo/comprobante-3.png'),
+  ('nicolas.ledesma@demo.sigrid', 6, 15000.00, 2, 'demo/comprobante-4.png'),
+  ('camila.ruiz@demo.sigrid',     4, 12600.00, 2, 'demo/comprobante-5.png'),
+  ('facundo.diaz@demo.sigrid',    8, 40000.00, 1, 'demo/comprobante-6.png');
 
-INSERT INTO pago (id_usuario, monto, fecha_pago)
-VALUES ((SELECT id_usuario FROM usuario WHERE email = 'bruno.lopez@demo.sigrid'), 25000.00, NOW() - INTERVAL 1 HOUR);
-SET @pago = LAST_INSERT_ID();
-INSERT INTO comprobante_pago (id_pago, archivo_url, hash_archivo, fecha_operacion_declarada)
-VALUES (@pago, 'demo/comprobante-2.pdf', SHA2('demo-comprobante-2', 256), NOW() - INTERVAL 1 HOUR);
-UPDATE reserva r
-  JOIN socio s ON s.id_socio = r.id_socio JOIN usuario u ON u.id_usuario = s.id_usuario
-   SET r.id_pago = @pago
- WHERE u.email = 'bruno.lopez@demo.sigrid' AND r.fecha_turno = CURDATE() + INTERVAL 1 DAY AND r.estado = 'PENDIENTE_PAGO';
+SET @base = (SELECT COALESCE(MAX(id_pago), 0) FROM pago);
+SET @n = 0;
+DROP TEMPORARY TABLE IF EXISTS tmp_comp_pago;
+CREATE TEMPORARY TABLE tmp_comp_pago AS
+SELECT c.*, @base + (@n := @n + 1) AS id_pago_nuevo, u.id_usuario
+  FROM tmp_comp c JOIN usuario u ON u.email = c.email;
 
-INSERT INTO pago (id_usuario, monto, fecha_pago)
-VALUES ((SELECT id_usuario FROM usuario WHERE email = 'tomas.acuna@demo.sigrid'), 25000.00, NOW() - INTERVAL 4 HOUR);
-SET @pago = LAST_INSERT_ID();
-INSERT INTO comprobante_pago (id_pago, archivo_url, hash_archivo, fecha_operacion_declarada)
-VALUES (@pago, 'demo/comprobante-3.pdf', SHA2('demo-comprobante-3', 256), NOW() - INTERVAL 4 HOUR);
-UPDATE reserva r
-  JOIN socio s ON s.id_socio = r.id_socio JOIN usuario u ON u.id_usuario = s.id_usuario
-   SET r.id_pago = @pago
- WHERE u.email = 'tomas.acuna@demo.sigrid' AND r.fecha_turno = CURDATE() + INTERVAL 2 DAY AND r.estado = 'PENDIENTE_PAGO';
+INSERT INTO pago (id_pago, id_usuario, monto, fecha_pago)
+SELECT id_pago_nuevo, id_usuario, monto, @ahora - INTERVAL hace_horas HOUR FROM tmp_comp_pago;
 
-INSERT INTO pago (id_usuario, monto, fecha_pago)
-VALUES ((SELECT id_usuario FROM usuario WHERE email = 'nicolas.ledesma@demo.sigrid'), 15000.00, NOW() - INTERVAL 2 HOUR);
-SET @pago = LAST_INSERT_ID();
 INSERT INTO comprobante_pago (id_pago, archivo_url, hash_archivo, fecha_operacion_declarada)
-VALUES (@pago, 'demo/comprobante-4.pdf', SHA2('demo-comprobante-4', 256), NOW() - INTERVAL 2 HOUR);
+SELECT id_pago_nuevo, archivo, SHA2(CONCAT('demo-', archivo), 256), @ahora - INTERVAL hace_horas HOUR FROM tmp_comp_pago;
+
 UPDATE reserva r
   JOIN socio s ON s.id_socio = r.id_socio JOIN usuario u ON u.id_usuario = s.id_usuario
-   SET r.id_pago = @pago
- WHERE u.email = 'nicolas.ledesma@demo.sigrid' AND r.fecha_turno = CURDATE() + INTERVAL 6 DAY AND r.estado = 'PENDIENTE_PAGO';
+  JOIN tmp_comp_pago c ON c.email = u.email AND r.fecha_turno = @hoy + INTERVAL c.dia DAY
+   SET r.id_pago = c.id_pago_nuevo
+ WHERE r.estado = 'PENDIENTE_PAGO' AND r.id_pago IS NULL;
+DROP TEMPORARY TABLE tmp_comp_pago;
+DROP TEMPORARY TABLE tmp_comp;
 
 -- ---------------------------------------------------------------------
 -- Tarifas y pagos de las reservas de prueba (idempotente, se puede volver a correr).
@@ -734,8 +754,8 @@ SELECT r.id_reserva, s.id_usuario, ta.precio AS monto, r.fecha_confirmacion, r.i
  ORDER BY r.id_reserva;
 
 INSERT INTO pago (id_pago, id_usuario, monto, estado, fecha_pago, fecha_validacion, id_admin_validador)
-SELECT id_pago_nuevo, id_usuario, monto, 'CONFIRMADO', COALESCE(fecha_confirmacion, NOW()),
-       COALESCE(fecha_confirmacion, NOW()), id_admin_confirmador
+SELECT id_pago_nuevo, id_usuario, monto, 'CONFIRMADO', COALESCE(fecha_confirmacion, @ahora),
+       COALESCE(fecha_confirmacion, @ahora), id_admin_confirmador
   FROM tmp_pago_reserva;
 
 UPDATE reserva r JOIN tmp_pago_reserva t ON t.id_reserva = r.id_reserva SET r.id_pago = t.id_pago_nuevo;
@@ -747,45 +767,61 @@ DROP TEMPORARY TABLE tmp_pago_reserva;
 -- ---------------------------------------------------------------------
 INSERT INTO pago (id_usuario, monto, estado, fecha_pago, fecha_validacion, id_admin_validador)
 VALUES ((SELECT id_usuario FROM usuario WHERE email = 'facundo.diaz@demo.sigrid'), 25000.00, 'CONFIRMADO',
-        NOW() - INTERVAL 10 DAY, NOW() - INTERVAL 10 DAY, (SELECT id_usuario FROM usuario WHERE email = 'admin@sigrid.com'));
+        @ahora - INTERVAL 10 DAY, @ahora - INTERVAL 10 DAY, (SELECT id_usuario FROM usuario WHERE email = 'admin@sigrid.com'));
 SET @pago = LAST_INSERT_ID();
 UPDATE reserva r
   JOIN socio s ON s.id_socio = r.id_socio JOIN usuario u ON u.id_usuario = s.id_usuario
-   SET r.id_pago = @pago, r.fecha_limite_reprogramacion = CURDATE() + INTERVAL 20 DAY
- WHERE u.email = 'facundo.diaz@demo.sigrid' AND r.fecha_turno = CURDATE() + INTERVAL 3 DAY AND r.estado = 'CANCELADA';
+   SET r.id_pago = @pago, r.fecha_limite_reprogramacion = @hoy + INTERVAL 20 DAY
+ WHERE u.email = 'facundo.diaz@demo.sigrid' AND r.fecha_turno = @hoy + INTERVAL 3 DAY AND r.estado = 'CANCELADA';
 
 INSERT INTO pago (id_usuario, monto, estado, fecha_pago, fecha_validacion, id_admin_validador)
 VALUES ((SELECT id_usuario FROM usuario WHERE email = 'tomas.acuna@demo.sigrid'), 18000.00, 'CONFIRMADO',
-        NOW() - INTERVAL 40 DAY, NOW() - INTERVAL 40 DAY, (SELECT id_usuario FROM usuario WHERE email = 'admin@sigrid.com'));
+        @ahora - INTERVAL 40 DAY, @ahora - INTERVAL 40 DAY, (SELECT id_usuario FROM usuario WHERE email = 'admin@sigrid.com'));
 SET @pago = LAST_INSERT_ID();
 UPDATE reserva r
   JOIN socio s ON s.id_socio = r.id_socio JOIN usuario u ON u.id_usuario = s.id_usuario
-   SET r.id_pago = @pago, r.fecha_limite_reprogramacion = CURDATE() - INTERVAL 2 DAY
- WHERE u.email = 'tomas.acuna@demo.sigrid' AND r.fecha_turno = CURDATE() - INTERVAL 4 DAY AND r.estado = 'CANCELADA';
+   SET r.id_pago = @pago, r.fecha_limite_reprogramacion = @hoy - INTERVAL 2 DAY
+ WHERE u.email = 'tomas.acuna@demo.sigrid' AND r.fecha_turno = @hoy - INTERVAL 4 DAY AND r.estado = 'CANCELADA';
+
+-- sofia.herrera canceló su quincho hace una semana y le queda un crédito que vence en 4 días
+INSERT INTO pago (id_usuario, monto, estado, fecha_pago, fecha_validacion, id_admin_validador)
+VALUES ((SELECT id_usuario FROM usuario WHERE email = 'sofia.herrera@demo.sigrid'), 18000.00, 'CONFIRMADO',
+        @ahora - INTERVAL 12 DAY, @ahora - INTERVAL 12 DAY, (SELECT id_usuario FROM usuario WHERE email = 'admin@sigrid.com'));
+SET @pago = LAST_INSERT_ID();
+UPDATE reserva r
+  JOIN socio s ON s.id_socio = r.id_socio JOIN usuario u ON u.id_usuario = s.id_usuario
+   SET r.id_pago = @pago, r.fecha_limite_reprogramacion = @hoy + INTERVAL 4 DAY
+ WHERE u.email = 'sofia.herrera@demo.sigrid' AND r.fecha_turno = @hoy - INTERVAL 2 DAY AND r.estado = 'CANCELADA';
 
 -- matias.rojas pide cancelar su turno de Beach Vóley (queda con crédito si se aprueba)
 INSERT INTO solicitud_cambio_reserva (id_reserva, tipo, motivo, fecha_solicitud)
-SELECT r.id_reserva, 'CANCELACION', 'Se lesionó un compañero y no llegamos a completar el equipo.', NOW() - INTERVAL 6 HOUR
+SELECT r.id_reserva, 'CANCELACION', 'Se lesionó un compañero y no llegamos a completar el equipo.', @ahora - INTERVAL 6 HOUR
   FROM reserva r JOIN socio s ON s.id_socio = r.id_socio JOIN usuario u ON u.id_usuario = s.id_usuario
- WHERE u.email = 'matias.rojas@demo.sigrid' AND r.fecha_turno = CURDATE() + INTERVAL 2 DAY AND r.estado = 'CONFIRMADA';
+ WHERE u.email = 'matias.rojas@demo.sigrid' AND r.fecha_turno = @hoy + INTERVAL 2 DAY AND r.estado = 'CONFIRMADA';
 
--- lucia.torres pide cancelar su turno de la pileta
+-- lucia.torres pide cancelar su turno de Beach Vóley
 INSERT INTO solicitud_cambio_reserva (id_reserva, tipo, motivo, fecha_solicitud)
-SELECT r.id_reserva, 'CANCELACION', 'Ese día tengo examen.', NOW() - INTERVAL 20 HOUR
+SELECT r.id_reserva, 'CANCELACION', 'Ese día tengo examen.', @ahora - INTERVAL 20 HOUR
   FROM reserva r JOIN socio s ON s.id_socio = r.id_socio JOIN usuario u ON u.id_usuario = s.id_usuario
- WHERE u.email = 'lucia.torres@demo.sigrid' AND r.fecha_turno = CURDATE() + INTERVAL 3 DAY AND r.estado = 'CONFIRMADA';
+ WHERE u.email = 'lucia.torres@demo.sigrid' AND r.fecha_turno = @hoy + INTERVAL 3 DAY AND r.estado = 'CONFIRMADA';
 
 -- facundo.diaz quiere usar su crédito (de la reserva que canceló) en otro turno de la cancha de fútbol 11
 INSERT INTO solicitud_cambio_reserva (id_reserva, tipo, id_turno_nuevo, fecha_nueva, motivo, fecha_solicitud)
-SELECT r.id_reserva, 'REPROGRAMACION', r.id_turno, CURDATE() + INTERVAL 8 DAY, 'Uso el crédito de la reserva que cancelé.', NOW() - INTERVAL 2 HOUR
+SELECT r.id_reserva, 'REPROGRAMACION', r.id_turno, @hoy + INTERVAL 8 DAY, 'Uso el crédito de la reserva que cancelé.', @ahora - INTERVAL 2 HOUR
   FROM reserva r JOIN socio s ON s.id_socio = r.id_socio JOIN usuario u ON u.id_usuario = s.id_usuario
- WHERE u.email = 'facundo.diaz@demo.sigrid' AND r.fecha_turno = CURDATE() + INTERVAL 3 DAY AND r.estado = 'CANCELADA';
+ WHERE u.email = 'facundo.diaz@demo.sigrid' AND r.fecha_turno = @hoy + INTERVAL 3 DAY AND r.estado = 'CANCELADA';
 
 -- sofia.herrera ya había pasado su turno del SUM del día 7 al día 9
 INSERT INTO historial_reserva (id_reserva, id_turno_anterior, fecha_anterior, motivo, fecha_cambio)
-SELECT r.id_reserva, r.id_turno, CURDATE() + INTERVAL 7 DAY, 'Reprogramación: el evento se postergó una semana.', NOW() - INTERVAL 2 DAY
+SELECT r.id_reserva, r.id_turno, @hoy + INTERVAL 7 DAY, 'Reprogramación: el evento se postergó una semana.', @ahora - INTERVAL 2 DAY
   FROM reserva r JOIN socio s ON s.id_socio = r.id_socio JOIN usuario u ON u.id_usuario = s.id_usuario
- WHERE u.email = 'sofia.herrera@demo.sigrid' AND r.fecha_turno = CURDATE() + INTERVAL 9 DAY AND r.estado = 'CONFIRMADA';
+ WHERE u.email = 'sofia.herrera@demo.sigrid' AND r.fecha_turno = @hoy + INTERVAL 9 DAY AND r.estado = 'CONFIRMADA';
+
+-- bruno.lopez ya había pasado su turno de fútbol del día 10 al día 12
+INSERT INTO historial_reserva (id_reserva, id_turno_anterior, fecha_anterior, motivo, fecha_cambio)
+SELECT r.id_reserva, r.id_turno, @hoy + INTERVAL 10 DAY, 'Reprogramación: el rival suspendió el partido.', @ahora - INTERVAL 5 DAY
+  FROM reserva r JOIN socio s ON s.id_socio = r.id_socio JOIN usuario u ON u.id_usuario = s.id_usuario
+ WHERE u.email = 'bruno.lopez@demo.sigrid' AND r.fecha_turno = @hoy + INTERVAL 12 DAY AND r.estado = 'CONFIRMADA';
 
 
 -- ---------------------------------------------------------------------
@@ -825,9 +861,9 @@ SELECT 'nicolas.ledesma@demo.sigrid',  'Quincho 1',             '18:00:00', -22,
 
 -- Reservas realizadas (confirmadas por el administrador) de las que todavía no existían
 INSERT INTO reserva (id_socio, id_turno, fecha_turno, id_tarifa, estado, fecha_reserva, fecha_confirmacion, id_admin_confirmador)
-SELECT s.id_socio, t.id_turno, CURDATE() + INTERVAL v.dia DAY, ta.id_tarifa, 'CONFIRMADA',
-       TIMESTAMP(CURDATE() + INTERVAL v.dia DAY) - INTERVAL 3 DAY,
-       TIMESTAMP(CURDATE() + INTERVAL v.dia DAY) - INTERVAL 3 DAY + INTERVAL 2 HOUR,
+SELECT s.id_socio, t.id_turno, @hoy + INTERVAL v.dia DAY, ta.id_tarifa, 'CONFIRMADA',
+       TIMESTAMP(@hoy + INTERVAL v.dia DAY) - INTERVAL 3 DAY,
+       TIMESTAMP(@hoy + INTERVAL v.dia DAY) - INTERVAL 3 DAY + INTERVAL 2 HOUR,
        (SELECT id_usuario FROM usuario WHERE email = 'admin@sigrid.com')
   FROM tmp_valoracion v
   JOIN usuario u ON u.email = v.email
@@ -836,7 +872,7 @@ SELECT s.id_socio, t.id_turno, CURDATE() + INTERVAL v.dia DAY, ta.id_tarifa, 'CO
   JOIN turno t ON t.id_instalacion = i.id_instalacion AND t.hora_inicio = v.hora
   JOIN tarifa_alquiler ta ON ta.id_instalacion = i.id_instalacion AND ta.id_categoria_socio = s.id_categoria_socio
  WHERE NOT EXISTS (SELECT 1 FROM reserva x
-                    WHERE x.id_turno = t.id_turno AND x.fecha_turno = CURDATE() + INTERVAL v.dia DAY
+                    WHERE x.id_turno = t.id_turno AND x.fecha_turno = @hoy + INTERVAL v.dia DAY
                       AND x.estado IN ('PENDIENTE_PAGO', 'CONFIRMADA'));
 
 -- Su pago, ya validado por el administrador (igual que el bloque de tarifas y pagos de más arriba)
@@ -869,7 +905,7 @@ SELECT r.id_reserva, v.puntaje, v.comentario, TIMESTAMP(r.fecha_turno, t.hora_fi
   JOIN instalacion i ON i.nombre = v.instalacion
   JOIN turno t ON t.id_instalacion = i.id_instalacion AND t.hora_inicio = v.hora
   JOIN reserva r ON r.id_socio = s.id_socio AND r.id_turno = t.id_turno
-                AND r.fecha_turno = CURDATE() + INTERVAL v.dia DAY AND r.estado = 'CONFIRMADA';
+                AND r.fecha_turno = @hoy + INTERVAL v.dia DAY AND r.estado = 'CONFIRMADA';
 DROP TEMPORARY TABLE tmp_valoracion;
 
 -- ---------------------------------------------------------------------
@@ -891,9 +927,9 @@ SELECT n,
   FROM seq;
 
 INSERT INTO reserva (id_socio, id_turno, fecha_turno, id_tarifa, estado, fecha_reserva, fecha_confirmacion, id_admin_confirmador)
-SELECT s.id_socio, t.id_turno, CURDATE() + INTERVAL h.dia DAY, ta.id_tarifa, 'CONFIRMADA',
-       TIMESTAMP(CURDATE() + INTERVAL h.dia DAY) - INTERVAL 3 DAY,
-       TIMESTAMP(CURDATE() + INTERVAL h.dia DAY) - INTERVAL 3 DAY + INTERVAL 2 HOUR,
+SELECT s.id_socio, t.id_turno, @hoy + INTERVAL h.dia DAY, ta.id_tarifa, 'CONFIRMADA',
+       TIMESTAMP(@hoy + INTERVAL h.dia DAY) - INTERVAL 3 DAY,
+       TIMESTAMP(@hoy + INTERVAL h.dia DAY) - INTERVAL 3 DAY + INTERVAL 2 HOUR,
        (SELECT id_usuario FROM usuario WHERE email = 'admin@sigrid.com')
   FROM tmp_historia h
   JOIN usuario u ON u.email = h.email
@@ -906,9 +942,9 @@ DROP TEMPORARY TABLE tmp_historia;
 -- Reservas realizadas de los últimos 44 días con demanda distinta según la hora (más a la tarde-noche) y el día
 -- (más los fines de semana), para que el mapa de calor de ocupación tenga contraste. Se reparte a los socios por turno.
 INSERT INTO reserva (id_socio, id_turno, fecha_turno, id_tarifa, estado, fecha_reserva, fecha_confirmacion, id_admin_confirmador)
-SELECT s.id_socio, t.id_turno, CURDATE() - INTERVAL q.k DAY, ta.id_tarifa, 'CONFIRMADA',
-       TIMESTAMP(CURDATE() - INTERVAL q.k DAY) - INTERVAL 3 DAY,
-       TIMESTAMP(CURDATE() - INTERVAL q.k DAY) - INTERVAL 3 DAY + INTERVAL 2 HOUR,
+SELECT s.id_socio, t.id_turno, @hoy - INTERVAL q.k DAY, ta.id_tarifa, 'CONFIRMADA',
+       TIMESTAMP(@hoy - INTERVAL q.k DAY) - INTERVAL 3 DAY,
+       TIMESTAMP(@hoy - INTERVAL q.k DAY) - INTERVAL 3 DAY + INTERVAL 2 HOUR,
        (SELECT id_usuario FROM usuario WHERE email = 'admin@sigrid.com')
   FROM (WITH RECURSIVE dias(k) AS (SELECT 1 UNION ALL SELECT k + 1 FROM dias WHERE k < 44) SELECT k FROM dias) q
   JOIN instalacion i ON i.tipo_acceso = 'ARANCELADO' AND i.nombre <> 'Cancha de Rugby'
@@ -921,9 +957,9 @@ SELECT s.id_socio, t.id_turno, CURDATE() - INTERVAL q.k DAY, ta.id_tarifa, 'CONF
  WHERE (q.k * 37 + t.id_turno * 17) MOD 100 <
        (CASE HOUR(t.hora_inicio) WHEN 20 THEN 45 WHEN 19 THEN 40 WHEN 18 THEN 35 WHEN 17 THEN 25 WHEN 16 THEN 12
                                  WHEN 12 THEN 18 WHEN 10 THEN 8 ELSE 6 END
-        + IF(DAYOFWEEK(CURDATE() - INTERVAL q.k DAY) IN (1, 7), 15, 0))
+        + IF(DAYOFWEEK(@hoy - INTERVAL q.k DAY) IN (1, 7), 15, 0))
    AND NOT EXISTS (SELECT 1 FROM reserva x
-                    WHERE x.id_turno = t.id_turno AND x.fecha_turno = CURDATE() - INTERVAL q.k DAY
+                    WHERE x.id_turno = t.id_turno AND x.fecha_turno = @hoy - INTERVAL q.k DAY
                       AND x.estado IN ('PENDIENTE_PAGO', 'CONFIRMADA'));
 
 SET @base = (SELECT COALESCE(MAX(id_pago), 0) FROM pago);
@@ -948,7 +984,7 @@ DROP TEMPORARY TABLE tmp_pago_reserva;
 
 -- Membresías que vencieron sin renovar: valentina.paz (renovó una vez y después dejó) y agustina.coronel
 INSERT INTO suscripcion_socio (id_socio, estado, fecha_inicio, fecha_vencimiento)
-SELECT s.id_socio, 'VENCIDA', CURDATE() - INTERVAL d.desde DAY, CURDATE() - INTERVAL d.hasta DAY
+SELECT s.id_socio, 'VENCIDA', @hoy - INTERVAL d.desde DAY, @hoy - INTERVAL d.hasta DAY
   FROM (SELECT 'valentina.paz@demo.sigrid' AS email, 115 AS desde, 85 AS hasta UNION ALL
         SELECT 'valentina.paz@demo.sigrid',           85,         55 UNION ALL
         SELECT 'agustina.coronel@demo.sigrid',        60,         30) d
@@ -971,6 +1007,11 @@ UPDATE suscripcion_socio s
 
 UPDATE suscripcion_socio SET fecha_solicitud = TIMESTAMP(fecha_inicio) - INTERVAL 1 DAY WHERE fecha_inicio IS NOT NULL;
 
+-- "Socio desde" (el carnet y la ficha lo toman de usuario.fecha_alta): la cuenta se creó un día antes de su primera solicitud de membresía
+UPDATE usuario u JOIN socio s ON s.id_usuario = u.id_usuario
+   SET u.fecha_alta = COALESCE((SELECT MIN(x.fecha_solicitud) FROM suscripcion_socio x WHERE x.id_socio = s.id_socio), u.fecha_alta) - INTERVAL 1 DAY
+ WHERE u.email LIKE '%@demo.sigrid';
+
 -- Cuánto tardó el administrador en validar cada comprobante de reserva: entre 1 y 7 horas
 UPDATE pago p JOIN reserva r ON r.id_pago = p.id_pago
    SET p.fecha_pago = p.fecha_validacion - INTERVAL (1 + r.id_reserva MOD 7) HOUR
@@ -979,22 +1020,28 @@ UPDATE pago p JOIN reserva r ON r.id_pago = p.id_pago
 
 -- =====================================================================
 -- (12) CUENTAS PARA LA DEMO CON CLIENTES (necesita los bloques 10 y 11)
--- Tres socios armados a propósito (contraseña Admin123!), cada uno con varios casos a la vez:
+-- Cuatro socios armados a propósito (contraseña Admin123!), cada uno con varios casos a la vez:
 --   socio.completo@demo.sigrid  Alumno, membresía vigente, SIN valoraciones pendientes. Tiene: reserva confirmada de mañana
 --                               (ya no se cancela), confirmada con más de 48 h (se puede pedir la cancelación), una con la
 --                               cancelación ya pedida, una con el comprobante EN REVISIÓN, una RECHAZADA, una CANCELADA con
 --                               crédito de reprogramación vigente (la reprogramás desde Mis reservas) e historial de turnos realizados y valorados.
 --   socio.valorar@demo.sigrid   Externo, vigente (vence en 5 días), con 2 valoraciones pendientes: no puede reservar hasta valorarlas.
 --   socio.vencido@demo.sigrid   Docente, membresía vencida (carnet gris, no puede reservar), con historial.
--- ES REINICIABLE: al empezar borra estas tres cuentas y las vuelve a crear con fechas de HOY, así que se puede correr SOLO
+--   socio.reservar@demo.sigrid  No Docente, membresía vigente y nada pendiente: la cuenta para hacer una reserva EN VIVO de punta a punta
+--                               (reservar, subir el comprobante, que el administrador la confirme). Ver sigrid-comprobantes en el README de la demo.
+-- ES REINICIABLE: al empezar borra estas cuatro cuentas y las vuelve a crear con fechas de HOY, así que se puede correr SOLO
 -- este bloque antes de cada demo para dejar todo como nuevo. Si un turno que necesita ya lo ocupaba otra reserva, la cancela.
 -- =====================================================================
 
--- Reinicio: borra lo que hubiera de estas tres cuentas (en el orden que piden las FK)
+-- Si se corre SOLO este bloque en una sesión nueva, @hoy y @ahora toman la fecha y hora de ahora (el lunes de la demo, antes de empezar)
+SET @hoy = DATE(COALESCE(@hoy, CURDATE()));
+SET @ahora = COALESCE(@ahora, NOW());
+
+-- Reinicio: borra lo que hubiera de estas cuatro cuentas (en el orden que piden las FK)
 DROP TEMPORARY TABLE IF EXISTS t12_socios;
 CREATE TEMPORARY TABLE t12_socios AS
 SELECT s.id_socio, s.id_usuario FROM socio s JOIN usuario u ON u.id_usuario = s.id_usuario
- WHERE u.email IN ('socio.completo@demo.sigrid', 'socio.valorar@demo.sigrid', 'socio.vencido@demo.sigrid');
+ WHERE u.email IN ('socio.completo@demo.sigrid', 'socio.valorar@demo.sigrid', 'socio.vencido@demo.sigrid', 'socio.reservar@demo.sigrid');
 
 UPDATE suscripcion_socio SET id_pago = NULL WHERE id_socio IN (SELECT id_socio FROM t12_socios);
 UPDATE reserva SET id_pago = NULL WHERE id_socio IN (SELECT id_socio FROM t12_socios);
@@ -1007,7 +1054,7 @@ DELETE FROM suscripcion_socio WHERE id_socio IN (SELECT id_socio FROM t12_socios
 DELETE FROM pago WHERE id_usuario IN (SELECT id_usuario FROM t12_socios);
 DELETE FROM carnet_digital WHERE id_socio IN (SELECT id_socio FROM t12_socios);
 DELETE FROM socio WHERE id_socio IN (SELECT id_socio FROM t12_socios);
-DELETE FROM usuario WHERE email IN ('socio.completo@demo.sigrid', 'socio.valorar@demo.sigrid', 'socio.vencido@demo.sigrid');
+DELETE FROM usuario WHERE email IN ('socio.completo@demo.sigrid', 'socio.valorar@demo.sigrid', 'socio.vencido@demo.sigrid', 'socio.reservar@demo.sigrid');
 DROP TEMPORARY TABLE t12_socios;
 
 -- Cuentas y socios
@@ -1017,21 +1064,23 @@ SELECT r.id_rol, d.nombre, d.apellido, d.email,
   FROM rol r
   JOIN (SELECT 'Martina' AS nombre, 'Gómez' AS apellido, 'socio.completo@demo.sigrid' AS email UNION ALL
         SELECT 'Joaquín', 'Vera',    'socio.valorar@demo.sigrid' UNION ALL
-        SELECT 'Elena',   'Navarro', 'socio.vencido@demo.sigrid') d
+        SELECT 'Elena',   'Navarro', 'socio.vencido@demo.sigrid' UNION ALL
+        SELECT 'Lautaro', 'Medina',  'socio.reservar@demo.sigrid') d
  WHERE r.nombre_rol = 'SOCIO';
 
 INSERT INTO socio (id_usuario, id_categoria_socio, dni, fecha_nacimiento, telefono, legajo, estado)
 SELECT u.id_usuario, c.id_categoria_socio, d.dni, d.nacimiento, d.telefono, d.legajo, d.estado
   FROM (SELECT 'socio.completo@demo.sigrid' AS email, 'Alumno UNSE' AS categoria, '44100200' AS dni, '2004-06-18' AS nacimiento, '3855100200' AS telefono, 'A-2001' AS legajo, 'ACTIVO' AS estado UNION ALL
         SELECT 'socio.valorar@demo.sigrid', 'Externo',      '36200300', '1992-02-11', '3855200300', NULL,     'ACTIVO' UNION ALL
-        SELECT 'socio.vencido@demo.sigrid', 'Docente UNSE', '27300400', '1980-09-30', '3855300400', 'D-0500', 'NO_ACTIVO') d
+        SELECT 'socio.vencido@demo.sigrid', 'Docente UNSE', '27300400', '1980-09-30', '3855300400', 'D-0500', 'NO_ACTIVO' UNION ALL
+        SELECT 'socio.reservar@demo.sigrid', 'No Docente UNSE', '33400500', '1988-03-22', '3855400500', 'N-0420', 'ACTIVO') d
   JOIN usuario u ON u.email = d.email
   JOIN categoria_socio c ON c.nombre_categoria = d.categoria;
 
 DROP TEMPORARY TABLE IF EXISTS t12_socios;
 CREATE TEMPORARY TABLE t12_socios AS
 SELECT s.id_socio, s.id_usuario FROM socio s JOIN usuario u ON u.id_usuario = s.id_usuario
- WHERE u.email IN ('socio.completo@demo.sigrid', 'socio.valorar@demo.sigrid', 'socio.vencido@demo.sigrid');
+ WHERE u.email IN ('socio.completo@demo.sigrid', 'socio.valorar@demo.sigrid', 'socio.vencido@demo.sigrid', 'socio.reservar@demo.sigrid');
 
 INSERT INTO carnet_digital (id_socio, tipo_carnet, estado)
 SELECT s.id_socio, IF(c.nombre_categoria = 'Alumno UNSE', 'ESTUDIANTIL', 'GENERAL'), IF(s.estado = 'ACTIVO', 'ACTIVO', 'INACTIVO')
@@ -1040,14 +1089,17 @@ SELECT s.id_socio, IF(c.nombre_categoria = 'Alumno UNSE', 'ESTUDIANTIL', 'GENERA
 
 -- Membresías (desde/hasta = días desde hoy): la vigente y las anteriores, ya vencidas
 INSERT INTO suscripcion_socio (id_socio, estado, fecha_inicio, fecha_vencimiento)
-SELECT s.id_socio, d.estado, CURDATE() + INTERVAL d.desde DAY, CURDATE() + INTERVAL d.hasta DAY
-  FROM (SELECT 'socio.completo@demo.sigrid' AS email, 'VIGENTE' AS estado, -10 AS desde,  20 AS hasta UNION ALL
-        SELECT 'socio.completo@demo.sigrid', 'VENCIDA', -40, -10 UNION ALL
-        SELECT 'socio.completo@demo.sigrid', 'VENCIDA', -70, -40 UNION ALL
+SELECT s.id_socio, d.estado, @hoy + INTERVAL d.desde DAY, @hoy + INTERVAL d.hasta DAY
+  FROM (SELECT 'socio.completo@demo.sigrid' AS email, 'VIGENTE' AS estado, -4 AS desde,  26 AS hasta UNION ALL
+        SELECT 'socio.completo@demo.sigrid', 'VENCIDA', -34, -4 UNION ALL
+        SELECT 'socio.completo@demo.sigrid', 'VENCIDA', -64, -34 UNION ALL
         SELECT 'socio.valorar@demo.sigrid',  'VIGENTE', -25,   5 UNION ALL
         SELECT 'socio.valorar@demo.sigrid',  'VENCIDA', -55, -25 UNION ALL
         SELECT 'socio.vencido@demo.sigrid',  'VENCIDA', -40, -10 UNION ALL
-        SELECT 'socio.vencido@demo.sigrid',  'VENCIDA', -70, -40) d
+        SELECT 'socio.vencido@demo.sigrid',  'VENCIDA', -70, -40 UNION ALL
+        SELECT 'socio.reservar@demo.sigrid', 'VIGENTE',  -3,  27 UNION ALL
+        SELECT 'socio.reservar@demo.sigrid', 'VENCIDA', -33,  -3 UNION ALL
+        SELECT 'socio.reservar@demo.sigrid', 'VENCIDA', -63, -33) d
   JOIN usuario u ON u.email = d.email
   JOIN socio s ON s.id_usuario = u.id_usuario;
 
@@ -1064,6 +1116,10 @@ UPDATE suscripcion_socio s
   JOIN pago p ON p.id_usuario = so.id_usuario AND p.fecha_pago = TIMESTAMP(s.fecha_inicio)
    SET s.id_pago = p.id_pago, s.fecha_solicitud = TIMESTAMP(s.fecha_inicio) - INTERVAL 1 DAY
  WHERE s.id_socio IN (SELECT id_socio FROM t12_socios) AND s.id_pago IS NULL;
+
+UPDATE usuario u JOIN socio s ON s.id_usuario = u.id_usuario
+   SET u.fecha_alta = COALESCE((SELECT MIN(x.fecha_solicitud) FROM suscripcion_socio x WHERE x.id_socio = s.id_socio), u.fecha_alta) - INTERVAL 1 DAY
+ WHERE s.id_socio IN (SELECT id_socio FROM t12_socios);
 
 -- Reservas. dia = días desde hoy (negativo = pasado); pago = cómo quedó su pago (NULL = sin pago, no pasa acá);
 -- limite = días hasta que vence el crédito de reprogramación (solo canceladas con pago); puntaje/comentario = su valoración.
@@ -1092,22 +1148,26 @@ INSERT INTO t12_res VALUES
   -- socio.vencido: historial de cuando todavía era socio activo
   ('socio.vencido@demo.sigrid',  'Cancha de Fútbol 11',   '20:00:00', -48, 'CONFIRMADA',    'CONFIRMADO',        1224, NULL, 4, NULL),
   ('socio.vencido@demo.sigrid',  'Quincho 1',             '12:00:00', -50, 'CONFIRMADA',    'CONFIRMADO',        1272, NULL, NULL, NULL),
-  ('socio.vencido@demo.sigrid',  'Salón SUM',             '18:00:00', -51, 'CONFIRMADA',    'CONFIRMADO',        1296, NULL, 5, 'Salón amplio y limpio.');
+  ('socio.vencido@demo.sigrid',  'Salón SUM',             '18:00:00', -51, 'CONFIRMADA',    'CONFIRMADO',        1296, NULL, 5, 'Salón amplio y limpio.'),
+  -- socio.reservar: una reserva confirmada más adelante y dos turnos viejos ya valorados (nada pendiente de valorar)
+  ('socio.reservar@demo.sigrid', 'Cancha de Fútbol 11',   '18:00:00',  9, 'CONFIRMADA',     'CONFIRMADO',           80, NULL, NULL, NULL),
+  ('socio.reservar@demo.sigrid', 'Cancha de Beach Vóley', '19:00:00', -21, 'CONFIRMADA',    'CONFIRMADO',          600, NULL, 5, 'Arena bien nivelada, volvemos seguro.'),
+  ('socio.reservar@demo.sigrid', 'Quincho 1',             '18:00:00', -30, 'CONFIRMADA',    'CONFIRMADO',          800, NULL, 4, NULL);
 
 -- Si otra reserva ocupaba alguno de estos turnos (por ejemplo la decoración aleatoria de los reportes), se cancela para que el turno sea de la demo
 UPDATE reserva x
   JOIN turno t ON t.id_turno = x.id_turno
   JOIN instalacion i ON i.id_instalacion = t.id_instalacion
-  JOIN t12_res d ON d.instalacion = i.nombre AND d.hora = t.hora_inicio AND x.fecha_turno = CURDATE() + INTERVAL d.dia DAY
+  JOIN t12_res d ON d.instalacion = i.nombre AND d.hora = t.hora_inicio AND x.fecha_turno = @hoy + INTERVAL d.dia DAY
    SET x.estado = 'CANCELADA'
  WHERE x.estado IN ('PENDIENTE_PAGO', 'CONFIRMADA') AND d.estado IN ('PENDIENTE_PAGO', 'CONFIRMADA')
    AND x.id_socio NOT IN (SELECT id_socio FROM t12_socios);
 
 INSERT INTO reserva (id_socio, id_turno, fecha_turno, id_tarifa, estado, fecha_reserva, fecha_confirmacion, fecha_limite_reprogramacion, id_admin_confirmador)
-SELECT s.id_socio, t.id_turno, CURDATE() + INTERVAL d.dia DAY, ta.id_tarifa, d.estado,
-       NOW() - INTERVAL d.hace_horas HOUR,
-       IF(d.estado = 'CONFIRMADA', NOW() - INTERVAL (d.hace_horas - 2) HOUR, NULL),
-       IF(d.limite IS NULL, NULL, CURDATE() + INTERVAL d.limite DAY),
+SELECT s.id_socio, t.id_turno, @hoy + INTERVAL d.dia DAY, ta.id_tarifa, d.estado,
+       @ahora - INTERVAL d.hace_horas HOUR,
+       IF(d.estado = 'CONFIRMADA', @ahora - INTERVAL (d.hace_horas - 2) HOUR, NULL),
+       IF(d.limite IS NULL, NULL, @hoy + INTERVAL d.limite DAY),
        IF(d.estado = 'CONFIRMADA', (SELECT id_usuario FROM usuario WHERE email = 'admin@sigrid.com'), NULL)
   FROM t12_res d
   JOIN usuario u ON u.email = d.email
@@ -1128,7 +1188,7 @@ SELECT r.id_reserva, s.id_usuario, ta.precio AS monto, d.pago, r.fecha_reserva, 
   JOIN instalacion i ON i.nombre = d.instalacion
   JOIN turno t ON t.id_instalacion = i.id_instalacion AND t.hora_inicio = d.hora
   JOIN reserva r ON r.id_socio = s.id_socio AND r.id_turno = t.id_turno
-                AND r.fecha_turno = CURDATE() + INTERVAL d.dia DAY AND r.estado = d.estado
+                AND r.fecha_turno = @hoy + INTERVAL d.dia DAY AND r.estado = d.estado
   JOIN tarifa_alquiler ta ON ta.id_tarifa = r.id_tarifa
  WHERE d.pago IS NOT NULL
  ORDER BY r.id_reserva;
@@ -1140,9 +1200,10 @@ SELECT id_pago_nuevo, id_usuario, monto, pago, fecha_reserva + INTERVAL 30 MINUT
        IF(pago = 'RECHAZADO', 'El monto transferido no coincide con el precio del turno', NULL)
   FROM t12_pago;
 
--- El en revisión y el rechazado tienen su comprobante (el archivo de muestra: ver sigrid-comprobantes/demo)
+-- El en revisión y el rechazado tienen su comprobante (imágenes de muestra en sigrid-comprobantes/demo)
 INSERT INTO comprobante_pago (id_pago, archivo_url, hash_archivo, fecha_operacion_declarada)
-SELECT id_pago_nuevo, 'demo/comprobante-demo.pdf', SHA2(CONCAT('t12-comprobante-', id_reserva), 256), fecha_reserva + INTERVAL 20 MINUTE
+SELECT id_pago_nuevo, IF(pago = 'RECHAZADO', 'demo/comprobante-rechazado.png', 'demo/comprobante-revision.png'),
+       SHA2(CONCAT('t12-comprobante-', id_reserva), 256), fecha_reserva + INTERVAL 20 MINUTE
   FROM t12_pago WHERE pago <> 'CONFIRMADO';
 
 UPDATE reserva r JOIN t12_pago p ON p.id_reserva = r.id_reserva SET r.id_pago = p.id_pago_nuevo;
@@ -1157,17 +1218,27 @@ SELECT r.id_reserva, d.puntaje, d.comentario, TIMESTAMP(r.fecha_turno, t.hora_fi
   JOIN instalacion i ON i.nombre = d.instalacion
   JOIN turno t ON t.id_instalacion = i.id_instalacion AND t.hora_inicio = d.hora
   JOIN reserva r ON r.id_socio = s.id_socio AND r.id_turno = t.id_turno
-                AND r.fecha_turno = CURDATE() + INTERVAL d.dia DAY AND r.estado = d.estado
+                AND r.fecha_turno = @hoy + INTERVAL d.dia DAY AND r.estado = d.estado
  WHERE d.puntaje IS NOT NULL;
 
 -- socio.completo ya pidió cancelar su turno del SUM (queda por aprobar en "Cancelaciones" del administrador)
 INSERT INTO solicitud_cambio_reserva (id_reserva, tipo, motivo, fecha_solicitud)
-SELECT r.id_reserva, 'CANCELACION', 'Se suspendió el evento familiar.', NOW() - INTERVAL 3 HOUR
+SELECT r.id_reserva, 'CANCELACION', 'Se suspendió el evento familiar.', @ahora - INTERVAL 3 HOUR
   FROM reserva r
   JOIN turno t ON t.id_turno = r.id_turno
   JOIN instalacion i ON i.id_instalacion = t.id_instalacion
  WHERE r.id_socio = (SELECT s.id_socio FROM socio s JOIN usuario u ON u.id_usuario = s.id_usuario WHERE u.email = 'socio.completo@demo.sigrid')
-   AND i.nombre = 'Salón SUM' AND r.fecha_turno = CURDATE() + INTERVAL 10 DAY AND r.estado = 'CONFIRMADA';
+   AND i.nombre = 'Salón SUM' AND r.fecha_turno = @hoy + INTERVAL 10 DAY AND r.estado = 'CONFIRMADA';
+
+-- ... y hace 8 días le aprobaron la cancelación que le dejó su crédito de reprogramación (aviso "Cancelación aprobada")
+INSERT INTO solicitud_cambio_reserva (id_reserva, tipo, motivo, estado, fecha_solicitud, fecha_resolucion, id_admin_resolutor)
+SELECT r.id_reserva, 'CANCELACION', 'Un imprevisto familiar.', 'APROBADA', @ahora - INTERVAL 8 DAY - INTERVAL 5 HOUR, @ahora - INTERVAL 8 DAY,
+       (SELECT id_usuario FROM usuario WHERE email = 'admin@sigrid.com')
+  FROM reserva r
+  JOIN turno t ON t.id_turno = r.id_turno
+  JOIN instalacion i ON i.id_instalacion = t.id_instalacion
+ WHERE r.id_socio = (SELECT s.id_socio FROM socio s JOIN usuario u ON u.id_usuario = s.id_usuario WHERE u.email = 'socio.completo@demo.sigrid')
+   AND i.nombre = 'Cancha de Fútbol 11' AND r.fecha_turno = @hoy + INTERVAL 4 DAY AND r.estado = 'CANCELADA';
 
 DROP TEMPORARY TABLE t12_res;
 DROP TEMPORARY TABLE t12_socios;

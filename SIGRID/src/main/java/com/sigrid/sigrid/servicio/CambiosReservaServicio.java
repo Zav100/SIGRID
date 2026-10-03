@@ -55,7 +55,13 @@ public class CambiosReservaServicio implements Serializable {
     private static final Locale ES = Locale.forLanguageTag("es-AR");
     private static final DateTimeFormatter HORA = DateTimeFormatter.ofPattern("HH:mm");
     private static final DateTimeFormatter FECHA = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+
     private static final DateTimeFormatter FECHA_HORA = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
+
+    /** Regla de dominio: un turno se reserva (o reprograma) a más tardar HORAS_ANTICIPACION antes de que empiece. */
+    static boolean fueraDePlazo(LocalDateTime inicio, LocalDateTime ahora) {
+        return inicio.isBefore(ahora.plusHours(HORAS_ANTICIPACION));
+    }
 
     @Inject
     private SolicitudCambioReservaDAO solicitudDAO;
@@ -281,6 +287,9 @@ public class CambiosReservaServicio implements Serializable {
         }
         if (!fecha.atTime(nuevo.getHoraInicio()).isAfter(ahora)) {
             return "El turno pedido ya pasó.";
+        }
+        if (fueraDePlazo(fecha.atTime(nuevo.getHoraInicio()), ahora)) {
+            return "El turno pedido empieza en menos de " + HORAS_ANTICIPACION + " h: elegí uno con más anticipación.";
         }
         if (reservaDAO.buscarActivaPorTurnoYFecha(nuevo.getIdTurno(), fecha) != null) {
             return "El turno pedido ya está reservado.";

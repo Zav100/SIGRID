@@ -90,8 +90,8 @@ public class SocioReservasBean implements Serializable {
         idReprogramando = idReserva;
         idTurnoNuevo = null;
         motivoReprogramacion = null;
-        fechaNueva = LocalDate.now();
-        diasReprogramar = servicio.dias(Collections.emptyList(), fechaNueva, PanelSocioServicio.DIAS_ADELANTE + 1);
+        fechaNueva = PanelSocioServicio.primerDiaReservable(LocalDate.now());
+        diasReprogramar = servicio.diasReservables(LocalDate.now());
         cargarTurnosReprogramar();
     }
 
