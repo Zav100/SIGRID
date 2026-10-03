@@ -48,7 +48,7 @@ public class SocioNuevaReservaBean implements Serializable {
     public void init() {
         LocalDate hoy = LocalDate.now();
         instalaciones = servicio.instalaciones(socioBean.getSocio(), hoy);
-        dias = servicio.dias(Collections.emptyList(), hoy, PanelSocioServicio.DIAS_ADELANTE + 1);
+        dias = servicio.diasReservables(hoy);
     }
 
     // ---------- elecciones ----------
@@ -56,7 +56,7 @@ public class SocioNuevaReservaBean implements Serializable {
     public void seleccionarInstalacion(Integer id) {
         if (instalaciones.stream().anyMatch(i -> i.getIdInstalacion().equals(id) && i.isHabilitada())) {
             idInstalacion = id;
-            fecha = LocalDate.now(); // ya muestra los turnos de hoy; el socio puede cambiar el día
+            fecha = PanelSocioServicio.primerDiaReservable(LocalDate.now()); // el socio puede cambiar el día
             idTurno = null;
             cargarTurnos();
         }

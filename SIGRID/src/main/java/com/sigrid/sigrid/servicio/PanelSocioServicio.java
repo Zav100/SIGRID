@@ -430,6 +430,17 @@ public class PanelSocioServicio implements Serializable {
         return ReservaServicio.textoEspera(Math.max(0, ChronoUnit.MINUTES.between(momento, ahora)));
     }
 
+    /** El primer día con turnos que cumplen la anticipación: los de hoy y mañana ya no se pueden reservar. */
+    public static LocalDate primerDiaReservable(LocalDate hoy) {
+        return hoy.plusDays(CambiosReservaServicio.HORAS_ANTICIPACION / 24);
+    }
+
+    /** Los días que ofrece la pantalla de reservar y de reprogramar: del primero reservable hasta DIAS_ADELANTE. */
+    public List<DiaSocio> diasReservables(LocalDate hoy) {
+        LocalDate primero = primerDiaReservable(hoy);
+        return dias(new ArrayList<>(), primero, (int) ChronoUnit.DAYS.between(primero, hoy.plusDays(DIAS_ADELANTE)) + 1);
+    }
+
     /** Los próximos días desde "desde", con cuántas reservas activas (futuras) tiene el socio cada uno. */
     public List<DiaSocio> dias(List<MiReserva> reservas, LocalDate desde, int cantidad) {
         Map<LocalDate, Integer> porDia = new HashMap<>();
@@ -443,7 +454,7 @@ public class PanelSocioServicio implements Serializable {
             LocalDate d = desde.plusDays(k);
             dias.add(new DiaSocio(d, d.getDayOfWeek().getDisplayName(TextStyle.SHORT, ES).replace(".", ""),
                     String.valueOf(d.getDayOfMonth()), d.getMonth().getDisplayName(TextStyle.SHORT, ES).replace(".", ""),
-                    porDia.getOrDefault(d, 0), k == 0));
+                    porDia.getOrDefault(d, 0), d.equals(LocalDate.now())));
         }
         return dias;
     }
@@ -479,8 +490,10 @@ public class PanelSocioServicio implements Serializable {
         List<TurnoDisponible> lista = new ArrayList<>();
         for (Turno t : turnoDAO.listarPorInstalacion(idInstalacion)) {
             Reserva r = ocupados.get(t.getIdTurno());
+            LocalDateTime inicio = fecha.atTime(t.getHoraInicio());
             String motivo = r != null ? (r.getIdSocio().getIdSocio().equals(idSocio) ? "Tu reserva" : "Reservado")
-                    : !fecha.atTime(t.getHoraInicio()).isAfter(ahora) ? "Ya pasó" : null;
+                    : !inicio.isAfter(ahora) ? "Ya pasó"
+                    : CambiosReservaServicio.fueraDePlazo(inicio, ahora) ? "Menos de " + CambiosReservaServicio.HORAS_ANTICIPACION + " h" : null;
             lista.add(new TurnoDisponible(t.getIdTurno(), t.getHoraInicio().format(HORA) + " – " + t.getHoraFin().format(HORA),
                     motivo == null, motivo));
         }
@@ -544,6 +557,10 @@ public class PanelSocioServicio implements Serializable {
         }
         if (!fecha.atTime(turno.getHoraInicio()).isAfter(ahora)) {
             throw new ReglaReservaException("Ese turno ya pasó.");
+        }
+        if (CambiosReservaServicio.fueraDePlazo(fecha.atTime(turno.getHoraInicio()), ahora)) {
+            throw new ReglaReservaException("Las reservas se hacen con al menos " + CambiosReservaServicio.HORAS_ANTICIPACION
+                    + " h de anticipación al turno.");
         }
         TarifaAlquiler tarifa = tarifaDAO.buscarVigente(instalacion.getIdInstalacion(),
                 socio.getIdCategoriaSocio().getIdCategoriaSocio(), fecha);
