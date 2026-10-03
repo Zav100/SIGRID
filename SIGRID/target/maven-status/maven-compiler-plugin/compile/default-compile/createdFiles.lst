@@ -14,6 +14,7 @@ com\sigrid\sigrid\dto\Demanda.class
 com\sigrid\sigrid\servicio\HorarioServicio.class
 com\sigrid\sigrid\dao\InstalacionDAO.class
 com\sigrid\sigrid\dto\HistorialTarifa.class
+com\sigrid\sigrid\dto\EventoCard.class
 com\sigrid\sigrid\repositorio\Rol.class
 com\sigrid\sigrid\dto\MiReserva.class
 com\sigrid\sigrid\dao\CarnetDigitalDAO.class
