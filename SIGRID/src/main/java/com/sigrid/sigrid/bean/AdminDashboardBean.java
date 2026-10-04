@@ -44,6 +44,8 @@ public class AdminDashboardBean implements Serializable {
     private ReservaServicio reservaServicio;
     @Inject
     private LoginBean loginBean;
+    @Inject
+    private AdminNavBean adminNavBean;
 
     private LocalDate hoy;
     private YearMonth mes;
@@ -140,6 +142,7 @@ public class AdminDashboardBean implements Serializable {
         }
         FacesContext.getCurrentInstance().addMessage(null, mensaje);
         recargar();
+        adminNavBean.refrescar(); // el contador de solicitudes del menú ya cambió
     }
 
     // ---------- encabezado ----------
