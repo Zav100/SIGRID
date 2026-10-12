@@ -46,10 +46,10 @@ Dónde ver los resultados:
 
 | Medida | Valor |
 |---|---|
-| Clases de prueba | 21 |
-| Pruebas (métodos) | 499 |
-| Ejecuciones (casos, contando cada valor de las parametrizadas) | 558 |
-| Pasan | 554 |
+| Clases de prueba | 25 |
+| Pruebas (métodos) | 580 |
+| Ejecuciones (casos, contando cada valor de las parametrizadas) | 646 |
+| Pasan | 642 |
 | Deshabilitadas (defectos D-1, D-2, D-3) | 4 |
 | Fallan | 0 |
 | Tiempo total | unos segundos (la mayor parte es el hash PBKDF2 de 120 000 iteraciones) |
@@ -105,6 +105,22 @@ Cada nombre describe un único comportamiento. En las pruebas parametrizadas, "N
 | `generarHashConContrasenaNulaLanzaNullPointerException` | Generar hash con contraseña nula lanza null pointer exception | Pasa |
 | `rechazaUnHashMalFormadoSinLanzarExcepcion` | Rechaza un hash mal formado sin lanzar excepción | Deshabilitada (posible defecto D-1) |
 
+### `servicio.CambiosReservaServicioListadosTest` (11 pruebas, 11 casos)
+
+| Prueba | Qué verifica | Resultado |
+|---|---|---|
+| `elPedidoDiceConCuantasHorasDeAnticipacionSeHizo` | El pedido dice con cuantas horas de anticipación se hizo | Pasa |
+| `conMasDe72HorasLaAnticipacionSeDiceEnDias` | Con más de 72 horas la anticipación se dice en días | Pasa |
+| `elPedidoDeUnaReservaConCreditoDiceHastaCuandoVale` | El pedido de una reserva con crédito dice hasta cuando vale | Pasa |
+| `elPedidoMuestraLaEsperaYElMonto` | El pedido muestra la espera y el monto | Pasa |
+| `elPedidoMuestraElTurnoActualYElNuevoSiEsReprogramacion` | El pedido muestra el turno actual y el nuevo si es reprogramación | Pasa |
+| `unaCancelacionNoTieneTurnoNuevo` | Una cancelación no tiene turno nuevo | Pasa |
+| `unCreditoQueVenceHoyEstaVigenteYPorVencer` | Un crédito que vence hoy está vigente y por vencer | Pasa |
+| `unCreditoQueVenceEnSieteDiasEstaPorVencerYEnOchoNo` | Un crédito que vence en siete días está por vencer y en ocho no | Pasa |
+| `elPlazoDiceCuantosDiasQuedan` | El plazo dice cuantos días quedan | Pasa |
+| `unCreditoVencidoNoEstaVigenteNiPorVencerYDiceHaceCuanto` | Un crédito vencido no está vigente ni por vencer y dice hace cuanto | Pasa |
+| `laReprogramacionMuestraDeQueTurnoAQueTurnoYCuando` | La reprogramación muestra de que turno a que turno y cuando | Pasa |
+
 ### `servicio.CambiosReservaServicioTest` (48 pruebas, 52 casos)
 
 | Prueba | Qué verifica | Resultado |
@@ -158,6 +174,48 @@ Cada nombre describe un único comportamiento. En las pruebas parametrizadas, "N
 | `rechazarConMotivoNuloNoGuardaMotivo` | Rechazar con motivo nulo no guarda motivo | Pasa |
 | `laCancelacionPorElPredioRechazaUnaReservaInexistente` | La cancelación por el predio rechaza una reserva inexistente | Pasa |
 
+### `servicio.HorarioServicioTest` (37 pruebas, 44 casos)
+
+| Prueba | Qué verifica | Resultado |
+|---|---|---|
+| `dentroDeLaFranjaEstaAbiertaYDiceHastaCuando` | Dentro de la franja está abierta y dice hasta cuando | Pasa |
+| `abreExactamenteALaHoraDeApertura` | Abre exactamente a la hora de apertura | Pasa |
+| `unMinutoAntesDeAbrirTodaviaEstaCerrada` | Un minuto antes de abrir todavía está cerrada | Pasa |
+| `unMinutoAntesDelCierreSigueAbierta` | Un minuto antes del cierre sigue abierta | Pasa |
+| `aLaHoraDeCierreYaEstaCerradaYDiceCuandoAbreLaSemanaSiguiente` | A la hora de cierre ya está cerrada y dice cuando abre la semana siguiente | Pasa |
+| `siAbreMasTardeHoyDiceLaHora` | Si abre más tarde hoy dice la hora | Pasa |
+| `siHayDosFranjasMasTardeDiceLaPrimera` | Si hay dos franjas más tarde dice la primera | Pasa |
+| `siAbreMananaLoDiceAsi` | Si abre mañana lo dice asi | Pasa |
+| `siAbreOtroDiaDiceElDiaYLaFecha` | Si abre otro día dice el día y la fecha | Pasa |
+| `unaFranjaDeUnDiaPuntualSeSumaALasSemanales` | Una franja de un día puntual se suma a las semanales | Pasa |
+| `laFranjaDeUnDiaPuntualPuedeSerLaProximaApertura` | La franja de un día puntual puede ser la proxima apertura | Pasa |
+| `buscaLaProximaAperturaHastaCatorceDiasAdelante` | Busca la proxima apertura hasta catorce días adelante | Pasa |
+| `siLaProximaAperturaEstaAMasDeCatorceDiasDiceSoloCerrada` | Si la proxima apertura está a más de catorce días dice solo cerrada | Pasa |
+| `sinHorariosCargadosLoDice` | Sin horarios cargados lo dice | Pasa |
+| `elDiaDeHoyMuestraComoEstaAhora` | El día de hoy muestra como está ahora | Pasa |
+| `otroDiaMuestraTodasSusFranjas` | Otro día muestra todas sus franjas | Pasa |
+| `unDiaSinFranjasDiceCerradaEseDia` | Un día sin franjas dice cerrada ese día | Pasa |
+| `agrupaLosDiasConElMismoHorarioYLosAbrevia` | Agrupa los días con el mismo horario y los abrevia | Pasa |
+| `despuesDeLasSemanalesVanLosDiasPuntualesQueTodaviaNoPasaron` | Después de las semanales van los días puntuales que todavía no pasaron | Pasa |
+| `elTextoDeDiasAbreviaLasRachasDeTresOMas` | El texto de días abrevia las rachas de tres o más | Pasa (8 casos) |
+| `agregaUnaFilaPorCadaDiaElegido` | Agrega una fila por cada día elegido | Pasa |
+| `rechazaUnaInstalacionInexistente` | Rechaza una instalación inexistente | Pasa |
+| `rechazaUnaInstalacionQueSeReservaPorTurnos` | Rechaza una instalación que se reserva por turnos | Pasa |
+| `exigeLaHoraDeAperturaYLaDeCierre` | Exige la hora de apertura y la de cierre | Pasa |
+| `elCierreTieneQueSerPosteriorALaApertura` | El cierre tiene que ser posterior a la apertura | Pasa |
+| `exigeAlMenosUnDia` | Exige al menos un día | Pasa |
+| `rechazaUnaFranjaQueSeSuperponeConOtraDelMismoDia` | Rechaza una franja que se superpone con otra del mismo día | Pasa |
+| `unaFranjaQueEmpiezaJustoCuandoOtraTerminaNoSeSuperpone` | Una franja que empieza justo cuando otra termina no se superpone | Pasa |
+| `unaFranjaQueTerminaJustoCuandoOtraEmpiezaNoSeSuperpone` | Una franja que termina justo cuando otra empieza no se superpone | Pasa |
+| `lasFranjasDeOtroDiaNoSeSuperponen` | Las franjas de otro día no se superponen | Pasa |
+| `siUnSoloDiaChocaNoSeAgregaNingunoDeLosOtros` | Si un solo día choca no se agrega ninguno de los otros | Pasa |
+| `agregaLaFranjaDeUnDiaPuntual` | Agrega la franja de un día puntual | Pasa |
+| `elDiaPuntualPuedeSerHoyPeroNoUnDiaAnterior` | El día puntual puede ser hoy pero no un día anterior | Pasa |
+| `elDiaPuntualEsObligatorio` | El día puntual es obligatorio | Pasa |
+| `elDiaPuntualNoSePuedeSuperponerConElHorarioSemanalDeEseDia` | El día puntual no se puede superponer con el horario semanal de ese día | Pasa |
+| `elDiaPuntualPuedeIrDespuesDelHorarioSemanalSinTocarlo` | El día puntual puede ir después del horario semanal sin tocarlo | Pasa |
+| `quitaSoloLasFranjasDeEsaInstalacion` | Quita solo las franjas de esa instalación | Pasa |
+
 ### `servicio.InstalacionesServicioTest` (42 pruebas, 45 casos)
 
 | Prueba | Qué verifica | Resultado |
@@ -204,6 +262,26 @@ Cada nombre describe un único comportamiento. En las pruebas parametrizadas, "N
 | `laFichaAvisaQueLaFechaEstimadaDeReactivacionYaPaso` | La ficha avisa que la fecha estimada de reactivacion ya paso | Pasa |
 | `laFichaDeUnaBajaDefinitivaLoDice` | La ficha de una baja definitiva lo dice | Pasa |
 | `laFichaMuestraSoloLasTresProximasReservasQueTodaviaNoTerminaron` | La ficha muestra solo las tres proximas reservas que todavía no terminaron | Pasa |
+
+### `servicio.MembresiasServicioListadosTest` (15 pruebas, 15 casos)
+
+| Prueba | Qué verifica | Resultado |
+|---|---|---|
+| `ordenaPendientesVigentesVencidasYCanceladasConservandoElOrdenPorFecha` | Ordena pendientes vigentes vencidas y canceladas conservando el orden por fecha | Pasa |
+| `unaVigenteQueVenceHoyOMananaLoDiceYEstaPorVencer` | Una vigente que vence hoy o mañana lo dice y está por vencer | Pasa |
+| `unaVigenteEstaPorVencerHastaSieteDiasInclusive` | Una vigente está por vencer hasta siete días inclusive | Pasa |
+| `unaPendienteConComprobanteDiceQueHayQueValidarlo` | Una pendiente con comprobante dice que hay que validarlo | Pasa |
+| `unaPendienteSinComprobanteEstaEsperandolo` | Una pendiente sin comprobante está esperandolo | Pasa |
+| `unaCanceladaPorComprobanteDenegadoLoDiceYUnaBajaTambien` | Una cancelada por comprobante denegado lo dice y una baja tambien | Pasa |
+| `unaVencidaAvisaQueElCarnetSeCongelaSiNoRenovo` | Una vencida avisa que el carnet se congela si no renovó | Pasa |
+| `laFilaMuestraElSocioSusInicialesYSuTipo` | La fila muestra el socio sus iniciales y su tipo | Pasa |
+| `laListaDeProximosVencimientosPideAlDaoDesdeHoyHastaLaFechaLimite` | La lista de próximos vencimientos pide al dao desde hoy hasta la fecha limite | Pasa |
+| `elIngresoDelMesSeComparaConElMesAnteriorYSeReparteEntreLosTipos` | El ingreso del mes se compara con el mes anterior y se reparte entre los tipos | Pasa |
+| `siElMesBajoLaComparacionEsNegativa` | Si el mes bajo la comparacion es negativa | Pasa |
+| `siElMesAnteriorNoTuvoIngresosNoHayPorcentaje` | Si el mes anterior no tuvo ingresos no hay porcentaje | Pasa |
+| `sinIngresosEnNingunMesLoDice` | Sin ingresos en ningún mes lo dice | Pasa |
+| `lasCuotasSonLaTarifaVigenteDeCadaTipoONulaSiNoHay` | Las cuotas son la tarifa vigente de cada tipo o nula si no hay | Pasa |
+| `losTiposDeSocioSonLosNombresDeLasCategorias` | Los tipos de socio son los nombres de las categorias | Pasa |
 
 ### `servicio.MembresiasServicioTest` (24 pruebas, 24 casos, 2 deshabilitadas)
 
@@ -528,6 +606,29 @@ Cada nombre describe un único comportamiento. En las pruebas parametrizadas, "N
 | `avisaLosCreditosQueVencenEnLosProximos7DiasYNoLosDe8` | Avisa los creditos que vencen en los próximos 7 días y no los de 8 | Pasa |
 | `avisaLasInstalacionesEnMantenimientoConSuFechaDeReactivacion` | Avisa las instalaciones en mantenimiento con su fecha de reactivacion | Pasa |
 
+### `servicio.ReservaServicioListadosTest` (18 pruebas, 18 casos)
+
+| Prueba | Qué verifica | Resultado |
+|---|---|---|
+| `unaConfirmadaSeMuestraConfirmadaYCobradaElDiaDeLaConfirmacion` | Una confirmada se muestra confirmada y cobrada el día de la confirmacion | Pasa |
+| `unaCanceladaConCreditoVigenteLoDiceEnElTexto` | Una cancelada con crédito vigente lo dice en el texto | Pasa |
+| `unaCanceladaConCreditoVencidoAyerNoDiceConCredito` | Una cancelada con crédito vencido ayer no dice con crédito | Pasa |
+| `unaPendienteConComprobanteEstaPorConfirmar` | Una pendiente con comprobante está por confirmar | Pasa |
+| `unaPendienteSinComprobanteEstaEsperandoElPago` | Una pendiente sin comprobante está esperando el pago | Pasa |
+| `unaRechazadaNoOcupaElTurno` | Una rechazada no ocupa el turno | Pasa |
+| `unaReservaTerminadaSeMarcaFinalizada` | Una reserva terminada se marca finalizada | Pasa |
+| `unaReservaDeHoyQueTerminaJustoAhoraYaEstaFinalizada` | Una reserva de hoy que termina justo ahora ya está finalizada | Pasa |
+| `unaReservaDeHoyQueTodaviaNoTerminoNoEstaFinalizada` | Una reserva de hoy que todavía no terminó no está finalizada | Pasa |
+| `sinPagoNiTarifaElMontoEsNulo` | Sin pago ni tarifa el monto es nulo | Pasa |
+| `elBuscadorUsaTextoSinTildesNiMayusculas` | El buscador usa texto sin tildes ni mayúsculas | Pasa |
+| `laSolicitudMuestraLaEsperaDesdeQueElSocioPago` | La solicitud muestra la espera desde que el socio pago | Pasa |
+| `siElPagoEsPosteriorAAhoraLaEsperaEsCero` | Si el pago es posterior a ahora la espera es cero | Pasa |
+| `unaSolicitudParaHoyOMananaEsUrgenteYParaPasadoMananaNo` | Una solicitud para hoy o mañana es urgente y para pasado mañana no | Pasa |
+| `unaSolicitudDeUnTurnoQueYaPasoEstaVencida` | Una solicitud de un turno que ya paso está vencida | Pasa |
+| `unaSolicitudDeHoyEstaVencidaSoloSiElTurnoYaTermino` | Una solicitud de hoy está vencida solo si el turno ya terminó | Pasa |
+| `laSolicitudMuestraCuandoDiceElSocioQueHizoLaTransferencia` | La solicitud muestra cuando dice el socio que hizo la transferencia | Pasa |
+| `sinComprobanteGuardadoNoHayFechaDeOperacion` | Sin comprobante guardado no hay fecha de operación | Pasa |
+
 ### `servicio.ReservaServicioTest` (13 pruebas, 19 casos)
 
 | Prueba | Qué verifica | Resultado |
@@ -673,16 +774,16 @@ La cobertura la mide JaCoCo sobre el código de producción mientras corren las 
 
 | Paquete | Líneas | Ramas | Métodos |
 |---|---|---|---|
-| **`servicio`** | 73.7 % (1805/2450) | 67.6 % (1362/2016) | 70.0 % |
+| **`servicio`** | 88.0 % (2156/2450) | 80.0 % (1612/2016) | 80.5 % |
 | **`util`** | 94.9 % (37/39) | 100.0 % (44/44) | 100.0 % |
-| `repositorio` | 64.0 % (384/600) | 6.9 % (14/202) | 67.1 % |
-| `dto` | 43.3 % (427/987) | 31.0 % (13/42) | 39.3 % |
+| `repositorio` | 69.8 % (419/600) | 9.4 % (19/202) | 74.2 % |
+| `dto` | 63.8 % (630/987) | 59.5 % (25/42) | 53.7 % |
 | `dao` | 0.7 % (2/291) | 0.0 % (0/14) | 1.0 % |
 | `bean` | 0.0 % (0/1361) | 0.0 % (0/603) | 0.0 % |
 | `seguridad` | 0.0 % (0/40) | 0.0 % (0/18) | 0.0 % |
 | `resources` | 0.0 % (0/4) | n/a (0/0) | 0.0 % |
 | `(raíz)` | 0.0 % (0/1) | n/a (0/0) | 0.0 % |
-| **Total** | 46.0 % (2655/5773) | 48.8 % (1433/2939) | 36.3 % |
+| **Total** | 56.2 % (3244/5773) | 57.8 % (1700/2939) | 43.7 % |
 
 Cómo leer esta tabla: `servicio` y `util` son el alcance de este conjunto de pruebas. El total incluye paquetes que no se probaron a propósito (`bean`, con las pantallas JSF; `dao`, con las consultas a la base; y `seguridad`), que figuran en 0 %, por lo que el total solo no es un indicador de calidad. El porcentaje de `repositorio` y `dto` es incidental: son clases de datos que las pruebas construyen o recorren pero no verifican por sí mismas.
 
@@ -692,20 +793,20 @@ Cómo leer esta tabla: `servicio` y `util` son el alcance de este conjunto de pr
 |---|---|---|
 | `util.ComprobanteArchivos` | 100.0 % (20/20) | 100.0 % (38/38) |
 | `util.PasswordUtil` | 89.5 % (17/19) | 100.0 % (6/6) |
+| `servicio.MembresiasServicio` | 100.0 % (150/150) | 93.3 % (97/104) |
 | `servicio.ReglaReservaException` | 100.0 % (2/2) | n/a (0/0) |
 | `servicio.RegistroServicio` | 100.0 % (84/84) | 100.0 % (70/70) |
+| `servicio.ReservaServicio` | 100.0 % (109/109) | 93.3 % (84/90) |
 | `servicio.UsuarioServicio` | 100.0 % (9/9) | 100.0 % (10/10) |
 | `servicio.ValoracionesServicio` | 100.0 % (58/58) | 100.0 % (32/32) |
 | `servicio.ReportesServicio` | 99.8 % (540/541) | 84.2 % (404/480) |
+| `servicio.HorarioServicio` | 99.2 % (128/129) | 98.1 % (104/106) |
 | `servicio.TarifasServicio` | 98.4 % (127/129) | 100.0 % (100/100) |
 | `servicio.PanelSocioServicio` | 98.2 % (379/386) | 90.2 % (313/347) |
+| `servicio.CambiosReservaServicio` | 97.7 % (168/172) | 91.9 % (114/124) |
 | `servicio.SociosServicio` | 91.9 % (171/186) | 75.3 % (137/182) |
 | `servicio.InstalacionesServicio` | 80.2 % (186/232) | 69.8 % (132/189) |
-| `servicio.CambiosReservaServicio` | 62.2 % (107/172) | 68.5 % (85/124) |
-| `servicio.ReservaServicio` | 35.8 % (39/109) | 37.8 % (34/90) |
-| `servicio.MembresiasServicio` | 35.3 % (53/150) | 28.8 % (30/104) |
 | `servicio.DashboardServicio` | 12.4 % (17/137) | 5.4 % (6/111) |
-| `servicio.HorarioServicio` | 3.9 % (5/129) | 0.0 % (0/106) |
 | `servicio.MembresiaJob` | 0.0 % (0/24) | 0.0 % (0/8) |
 | `servicio.CalendarioServicio` | 0.0 % (0/74) | 0.0 % (0/51) |
 
@@ -732,20 +833,16 @@ Métodos incluidos: `PanelSocioServicio`: reservar, subirComprobante, valorar, l
 
 | # | Clase y métodos | Líneas | Ramas | Qué hace / por qué es crítico | Qué pruebas faltan |
 |---|---|---|---|---|---|
-| 1 | `HorarioServicio` (ahora, enDia, listar, textoDias, agregarSemanal, agregarDeFecha, quitar, validar, seSuperpone, nueva) | 0.0 % (0/123) | 0.0 % (0/100) | Horarios de apertura de la pileta (acceso libre): si está abierta ahora o en un día, franjas semanales y por fecha, y alta y baja de horarios sin superponerlos. | Abierta y cerrada según franja y día, una fecha puntual que pisa al horario semanal, límites de la franja (abre y cierra justo), superposición de horarios, validaciones al agregar y quitar, y el texto de días ("lun a vie"). |
-| 2 | `MembresiasServicio` (listar, porVencer, ingresos, tarifas, tiposDeSocio, aFila, orden, iniciales) | 0.0 % (0/95) | 0.0 % (0/74) | Listado de membresías con su estado, vencimientos próximos (7 días) e ingresos por mes con variación y reparto por tipo de socio. | Ingresos con y sin mes anterior (variación y tendencia), porcentaje de cada tipo, orden por estado y "vence hoy/mañana/en N días". |
-| 3 | `ReservaServicio` (listarTodas, listarSolicitudes) | 0.0 % (0/70) | 0.0 % (0/56) | Listado del administrador: estado visible de cada reserva (con crédito, por confirmar o esperando pago), si ya terminó, espera y buscador. | Un caso por estado, el texto "Cancelada · con crédito" en el último día del crédito, tiempo de espera y el texto normalizado para buscar. |
-| 4 | `CambiosReservaServicio` (contarPedidos, listarPedidos, listarCreditos, listarReprogramadas, turnoTexto, montoDe, textoEspera) | 0.0 % (0/65) | 0.0 % (0/38) | Listados de pedidos, créditos y reprogramaciones que ve el administrador. | Anticipación del pedido (horas y días), días que le quedan a cada crédito y si está por vencer (7 días), orden de los listados. |
-| 5 | `DashboardServicio` (calendario, plano, resumenDelDia, aFilas, estadoInstalaciones, porcentajeOcupacion, cuando, textoEstado, claseEstado, etiquetaDia, icono) | 2.6 % (3/114) | 1.0 % (1/103) | Tablero principal del administrador: resumen del día, plano del predio y calendario. | Resumen con y sin reservas, porcentaje de ocupación, íconos por disciplina y etiquetas del calendario. |
-| 6 | `CalendarioServicio` (reservasDelMes, reservasDelDia, calendario, proximas, anteriores, inicioGrilla, aDto, cuando, textoEstado, claseEstado, nota, etiquetaDia) | 0.0 % (0/69) | 0.0 % (0/51) | Calendario de reservas del administrador (mes, próximas y anteriores). | Grilla de un mes que empieza a mitad de semana, próximas y anteriores y la nota de cada reserva. |
-| 7 | `MembresiaJob` (iniciar, detener, liberarReservas, vencerMembresias) | 0.0 % (0/22) | 0.0 % (0/8) | Tarea programada: vence membresías cada 60 minutos y libera reservas sin comprobante cada 5. | No se puede sin el contenedor (ver 6.1). Haría falta una prueba de integración. |
+| 1 | `DashboardServicio` (calendario, plano, resumenDelDia, aFilas, estadoInstalaciones, porcentajeOcupacion, cuando, textoEstado, claseEstado, etiquetaDia, icono) | 2.6 % (3/114) | 1.0 % (1/103) | Tablero principal del administrador: resumen del día, plano del predio y calendario. | Resumen con y sin reservas, porcentaje de ocupación, íconos por disciplina y etiquetas del calendario. |
+| 2 | `CalendarioServicio` (reservasDelMes, reservasDelDia, calendario, proximas, anteriores, inicioGrilla, aDto, cuando, textoEstado, claseEstado, nota, etiquetaDia) | 0.0 % (0/69) | 0.0 % (0/51) | Calendario de reservas del administrador (mes, próximas y anteriores). | Grilla de un mes que empieza a mitad de semana, próximas y anteriores y la nota de cada reserva. |
+| 3 | `MembresiaJob` (iniciar, detener, liberarReservas, vencerMembresias) | 0.0 % (0/22) | 0.0 % (0/8) | Tarea programada: vence membresías cada 60 minutos y libera reservas sin comprobante cada 5. | No se puede sin el contenedor (ver 6.1). Haría falta una prueba de integración. |
 
 Lo que queda sin cubrir dentro del núcleo de reglas (cuatro líneas y una rama) **no se puede ejercer desde una prueba unitaria**:
 
 - `PanelSocioServicio.sha256` y `PasswordUtil.hashear`: el `catch (NoSuchAlgorithmException…)`. SHA-256 y PBKDF2WithHmacSHA256 los trae toda JVM; solo se alcanzarían alterando la JVM.
 - `CambiosReservaServicio.mover` (`if (r.getEstado() == CANCELADA)`): la rama "la reserva no estaba cancelada" no es alcanzable desde la API pública, porque una reprogramación solo se aprueba si la reserva está cancelada con crédito. Es una condición defensiva.
 
-Las clases que antes estaban en 0 % (`InstalacionesServicio`, `SociosServicio`, `ValoracionesServicio`, los reportes y los avisos y estados del panel del socio) ahora tienen pruebas. Lo que queda sin cobertura es, sobre todo, código que arma textos y listados para pantallas, más `MembresiaJob`, que no se puede probar sin el contenedor (sección 6.1).
+Las clases que antes estaban en 0 % (`InstalacionesServicio`, `SociosServicio`, `ValoracionesServicio`, `HorarioServicio`, los reportes, los listados del administrador y los avisos y estados del panel del socio) ahora tienen pruebas. Lo que queda sin cobertura es el tablero y el calendario del administrador, que arman textos y grillas para pantalla, y `MembresiaJob`, que no se puede probar sin el contenedor (sección 6.1).
 
 ### 4.5 ¿Las pruebas detectan errores? (mutación manual)
 
@@ -840,14 +937,13 @@ Los identificadores `D-n` son defectos con una prueba deshabilitada: **D-2 y D-3
 ### 6.2 Se pueden probar, pero quedaron fuera de este alcance
 
 - `seguridad/AdminFilter`, `SocioFilter`, `CodificacionFilter` y `ComprobanteServlet`: usan la API de servlets (son interfaces, se podrían simular con Mockito). Son de seguridad (control de acceso por rol): conviene probarlos en una segunda etapa.
-- `servicio/HorarioServicio` (horarios de apertura de la pileta: franjas, excepciones por fecha y superposiciones), `CalendarioServicio` y `DashboardServicio`: ver 4.4.
-- Los listados del administrador de `MembresiasServicio` (`listar`, `ingresos`, `aFila`), `ReservaServicio` (`listarTodas`, `listarSolicitudes`) y `CambiosReservaServicio` (`listarPedidos`, `listarCreditos`, `listarReprogramadas`): ver 4.4.
+- `servicio/DashboardServicio` y `CalendarioServicio`: tablero y calendario del administrador; arman textos y grillas para las pantallas (ver 4.4).
 
 ## 7. Limitaciones de este conjunto de pruebas
 
 1. **Mockito simula los DAO.** No se ejecuta SQL ni JPQL, no hay transacciones (`@Transactional` no actúa en pruebas unitarias) ni concurrencia: el bloqueo pesimista (`buscarParaResolver`) y la carrera por el mismo turno no se ejercen.
 2. **No hay pruebas de interfaz ni de integración.** Nada verifica las páginas JSF, los filtros de seguridad, el despliegue ni la tarea programada.
-3. **La cobertura global (46 %) queda por debajo de la de las reglas por alcance, no por descuido.** El núcleo de reglas está en el 99 % de líneas y de ramas; la capa de servicio completa, en el 74 %. Una cobertura alta no garantiza que cada verificación sea fuerte: por eso se hizo la mutación manual de 4.5, que cubre 20 reglas y no reemplaza a una herramienta automática.
+3. **La cobertura global (56 %) queda por debajo de la de las reglas por alcance, no por descuido.** El núcleo de reglas está en el 99 % de líneas y de ramas; la capa de servicio completa, en el 88 %. Una cobertura alta no garantiza que cada verificación sea fuerte: por eso se hizo la mutación manual de 4.5, que cubre 20 reglas y no reemplaza a una herramienta automática.
 4. **Las pruebas fijan los mensajes de error actuales.** Cambiar el texto de un mensaje rompe la prueba correspondiente, aunque la regla siga igual.
 5. **Cuatro pruebas están deshabilitadas** y expresan la regla esperada, no el comportamiento actual (D-1, D-2 y dos de D-3). D-2 y D-3 están confirmadas por el responsable; D-1 queda por confirmar. Si se corrige el código, hay que quitarles el `@Disabled`.
 6. **Datos de prueba ficticios y fechas fijas** (12/10/2026 10:00 como "ahora"), salvo los casos del punto O-4.
@@ -863,3 +959,22 @@ JAVA_HOME="/c/Program Files/Java/jdk-21.0.10" mvn test
 ```
 
 Las tablas de las secciones 3 y 4 se generaron a partir de `target/surefire-reports/TEST-*.xml` y `target/site/jacoco/jacoco.csv`/`jacoco.xml` de esa corrida.
+
+## 9. Ejecución automática en GitHub (opcional)
+
+El archivo `.github/workflows/pruebas.yml` hace que GitHub corra las pruebas solo, en cada push y en cada pull request:
+
+| Paso | Qué hace |
+|---|---|
+| Disparador | `push` y `pull_request` (cualquier rama) |
+| Entorno | `ubuntu-latest`, JDK 21 (Temurin), caché de Maven |
+| Comando | `mvn -B clean test`, dentro de la carpeta `SIGRID` (donde está el `pom.xml`) |
+| Resultado | Si alguna prueba falla, el trabajo queda en rojo. El informe de cobertura se sube como artefacto `informe-jacoco` (se descarga desde la pestaña *Actions* de cada corrida) |
+
+Detalles que conviene saber:
+
+- **Está en la rama pero no activado.** GitHub solo lo ejecuta cuando la rama se sube (`push`). Mientras no se suba, no hace nada.
+- **Usa `clean` a propósito.** La carpeta `SIGRID/target/` está versionada y trae clases compiladas viejas; sin limpiarla, Maven podría probar clases que no corresponden al código fuente actual.
+- **No se pudo comprobar en GitHub desde esta máquina.** Lo que sí se verificó es la receta: en una copia limpia del proyecto (sin `target/`), `mvn clean test` con JDK 21 corrió 646 casos, 0 fallas, 4 deshabilitadas y generó `target/site/jacoco/index.html`. La primera corrida real en GitHub puede necesitar algún ajuste de entorno. En principio no debería depender de la zona horaria ni del idioma del servidor: las pruebas usan fechas fijas (salvo los casos de O-4) y el código fija el idioma `es-AR` de forma explícita.
+- **No falla por cobertura baja:** no hay un umbral configurado, igual que en la corrida local.
+
