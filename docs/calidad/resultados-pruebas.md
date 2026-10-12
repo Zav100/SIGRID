@@ -47,9 +47,9 @@ Dónde ver los resultados:
 | Medida | Valor |
 |---|---|
 | Clases de prueba | 12 |
-| Pruebas (métodos) | 228 |
-| Ejecuciones (casos, contando cada valor de las parametrizadas) | 258 |
-| Pasan | 255 |
+| Pruebas (métodos) | 269 |
+| Ejecuciones (casos, contando cada valor de las parametrizadas) | 307 |
+| Pasan | 304 |
 | Deshabilitadas (posibles defectos) | 3 |
 | Fallan | 0 |
 | Tiempo total | unos segundos (la mayor parte es el hash PBKDF2 de 120 000 iteraciones) |
@@ -60,7 +60,7 @@ Las 3 pruebas deshabilitadas **no son pruebas rotas**: describen una regla que e
 
 Cada nombre describe un único comportamiento. En las pruebas parametrizadas, "N casos" son los valores distintos con que se ejecuta la misma prueba (por ejemplo, los puntajes 1, 2, 3, 4 y 5).
 
-### `util.ComprobanteArchivosTest` (18 pruebas, 18 casos)
+### `util.ComprobanteArchivosTest` (21 pruebas, 29 casos)
 
 | Prueba | Qué verifica | Resultado |
 |---|---|---|
@@ -82,6 +82,9 @@ Cada nombre describe un único comportamiento. En las pruebas parametrizadas, "N
 | `laRutaEsNulaSiElNombreIntentaSalirseDeLaCarpeta` | La ruta es nula si el nombre intenta salirse de la carpeta | Pasa |
 | `borraElArchivoGuardado` | Borra el archivo guardado | Pasa |
 | `borrarUnArchivoInexistenteNoLanzaExcepcion` | Borrar un archivo inexistente no lanza excepción | Pasa |
+| `rechazaUnaFirmaConUnSoloByteIncorrecto` | Rechaza una firma con un solo byte incorrecto | Pasa (9 casos) |
+| `sinPropiedadGuardaEnSigridComprobantesDentroDeLaCarpetaDelUsuario` | Sin propiedad guarda en sigrid comprobantes dentro de la carpeta del usuario | Pasa |
+| `borrarNoLanzaExcepcionSiNoSePuedeEliminarElElemento` | Borrar no lanza excepción si no se puede eliminar el elemento | Pasa |
 
 ### `util.PasswordUtilTest` (14 pruebas, 14 casos, 1 deshabilitada)
 
@@ -102,7 +105,7 @@ Cada nombre describe un único comportamiento. En las pruebas parametrizadas, "N
 | `generarHashConContrasenaNulaLanzaNullPointerException` | Generar hash con contraseña nula lanza null pointer exception | Pasa |
 | `rechazaUnHashMalFormadoSinLanzarExcepcion` | Rechaza un hash mal formado sin lanzar excepción | Deshabilitada (posible defecto D-1) |
 
-### `servicio.CambiosReservaServicioTest` (39 pruebas, 43 casos)
+### `servicio.CambiosReservaServicioTest` (48 pruebas, 52 casos)
 
 | Prueba | Qué verifica | Resultado |
 |---|---|---|
@@ -145,8 +148,17 @@ Cada nombre describe un único comportamiento. En las pruebas parametrizadas, "N
 | `laCancelacionPorElPredioExigeUnMotivo` | La cancelación por el predio exige un motivo | Pasa (3 casos) |
 | `laCancelacionPorElPredioRechazaUnTurnoQueYaEmpezo` | La cancelación por el predio rechaza un turno que ya empezó | Pasa |
 | `laCancelacionPorElPredioRechazaUnaReservaNoConfirmada` | La cancelación por el predio rechaza una reserva no confirmada | Pasa |
+| `rechazaReprogramarAUnTurnoDeUnaInstalacionNoHabilitada` | Rechaza reprogramar a un turno de una instalación no habilitada | Pasa |
+| `rechazaReprogramarAUnTurnoQueYaPaso` | Rechaza reprogramar a un turno que ya paso | Pasa |
+| `rechazaReprogramarSinElegirLaFecha` | Rechaza reprogramar sin elegir la fecha | Pasa |
+| `rechazaReprogramarUnaReservaCanceladaSinFechaLimiteDeCredito` | Rechaza reprogramar una reserva cancelada sin fecha limite de crédito | Pasa |
+| `noApruebaUnaReprogramacionDeUnaReservaCanceladaSinCredito` | No aprueba una reprogramación de una reserva cancelada sin crédito | Pasa |
+| `noApruebaUnaReprogramacionDeUnaReservaQueNoEstaCancelada` | No aprueba una reprogramación de una reserva que no está cancelada | Pasa |
+| `noRechazaUnPedidoInexistente` | No rechaza un pedido inexistente | Pasa |
+| `rechazarConMotivoNuloNoGuardaMotivo` | Rechazar con motivo nulo no guarda motivo | Pasa |
+| `laCancelacionPorElPredioRechazaUnaReservaInexistente` | La cancelación por el predio rechaza una reserva inexistente | Pasa |
 
-### `servicio.MembresiasServicioTest` (22 pruebas, 22 casos, 1 deshabilitada)
+### `servicio.MembresiasServicioTest` (23 pruebas, 23 casos, 1 deshabilitada)
 
 | Prueba | Qué verifica | Resultado |
 |---|---|---|
@@ -172,8 +184,9 @@ Cada nombre describe un único comportamiento. En las pruebas parametrizadas, "N
 | `alVencerCongelaACadaSocioQueQuedoSinMembresia` | Al vencer congela a cada socio que quedó sin membresía | Pasa |
 | `alVencerNoFallaSiElSocioNoTieneCarnet` | Al vencer no falla si el socio no tiene carnet | Pasa |
 | `sinMembresiasVencidasNoCambiaNada` | Sin membresías vencidas no cambia nada | Pasa |
+| `noCancelaUnaMembresiaInexistente` | No cancela una membresía inexistente | Pasa |
 
-### `servicio.PanelSocioServicioComprobanteTest` (18 pruebas, 18 casos, 1 deshabilitada)
+### `servicio.PanelSocioServicioComprobanteTest` (19 pruebas, 19 casos, 1 deshabilitada)
 
 | Prueba | Qué verifica | Resultado |
 |---|---|---|
@@ -195,8 +208,9 @@ Cada nombre describe un único comportamiento. En las pruebas parametrizadas, "N
 | `rechazaUnaReservaQueYaTieneComprobante` | Rechaza una reserva que ya tiene comprobante | Pasa |
 | `rechazaUnaReservaDeOtroSocio` | Rechaza una reserva de otro socio | Pasa |
 | `rechazaUnaReservaQueYaNoEsperaElPago` | Rechaza una reserva que ya no espera el pago | Pasa |
+| `siNoSePuedeGuardarElArchivoAvisaAlSocioQueReintente` | Si no se puede guardar el archivo avisa al socio que reintente | Pasa |
 
-### `servicio.PanelSocioServicioReservaTest` (31 pruebas, 31 casos)
+### `servicio.PanelSocioServicioReservaTest` (35 pruebas, 35 casos)
 
 | Prueba | Qué verifica | Resultado |
 |---|---|---|
@@ -231,8 +245,12 @@ Cada nombre describe un único comportamiento. En las pruebas parametrizadas, "N
 | `noLiberaLaReservaCuyoComprobanteSeSubioJustoAntes` | No libera la reserva cuyo comprobante se subió justo antes | Pasa |
 | `sinReservasVencidasNoLiberaNada` | Sin reservas vencidas no libera nada | Pasa |
 | `elPrimerDiaReservableEsElDeDentroDeDosDias` | El primer día reservable es el de dentro de dos días | Pasa |
+| `elMensajeDeValoracionesPendientesVaEnPluralConDosOMas` | El mensaje de valoraciones pendientes va en plural con dos o más | Pasa |
+| `exigeElegirElDia` | Exige elegir el día | Pasa |
+| `noLiberaLaReservaQueMientrasTantoFueConfirmada` | No libera la reserva que mientras tanto fue confirmada | Pasa |
+| `noLiberaSinIndicarLaReserva` | No libera sin indicar la reserva | Pasa |
 
-### `servicio.PanelSocioServicioValoracionTest` (16 pruebas, 23 casos)
+### `servicio.PanelSocioServicioValoracionTest` (17 pruebas, 24 casos)
 
 | Prueba | Qué verifica | Resultado |
 |---|---|---|
@@ -252,6 +270,7 @@ Cada nombre describe un único comportamiento. En las pruebas parametrizadas, "N
 | `rechazaValorarUnaReservaQueNoEstaConfirmada` | Rechaza valorar una reserva que no está confirmada | Pasa |
 | `rechazaValorarUnaReservaDeOtroSocio` | Rechaza valorar una reserva de otro socio | Pasa |
 | `rechazaValorarUnaReservaInexistente` | Rechaza valorar una reserva inexistente | Pasa |
+| `rechazaValorarSinIndicarLaReserva` | Rechaza valorar sin indicar la reserva | Pasa |
 
 ### `servicio.PruebaDeHumoTest` (1 prueba, 1 caso)
 
@@ -259,7 +278,7 @@ Cada nombre describe un único comportamiento. En las pruebas parametrizadas, "N
 |---|---|---|
 | `cargaUnaClaseDeProduccionYGuardaElMensajeTalCual` | Carga una clase de producción y guarda el mensaje tal cual | Pasa |
 
-### `servicio.RegistroServicioTest` (20 pruebas, 28 casos)
+### `servicio.RegistroServicioTest` (32 pruebas, 40 casos)
 
 | Prueba | Qué verifica | Resultado |
 |---|---|---|
@@ -283,6 +302,18 @@ Cada nombre describe un único comportamiento. En las pruebas parametrizadas, "N
 | `registraUsuarioSocioYCarnetEstudiantilParaUnAlumno` | Registra usuario socio y carnet estudiantil para un alumno | Pasa |
 | `elSocioNuevoNaceSinMembresiaHastaQueSeValideSuPago` | El socio nuevo nace sin membresía hasta que se valide su pago | Pasa |
 | `registraUnExternoConCarnetGeneralYSinGuardarLegajo` | Registra un externo con carnet general y sin guardar legajo | Pasa |
+| `alVolverARegistrarseArchivaElCorreoYElDniDeLaFichaDadaDeBaja` | Al volver a registrarse archiva el correo y el DNI de la ficha dada de baja | Pasa |
+| `elDniArchivadoSeCortaA15CaracteresParaEntrarEnLaColumna` | El DNI archivado se corta a 15 caracteres para entrar en la columna | Pasa |
+| `registraUnDocenteInternoConSuCategoria` | Registra un docente interno con su categoria | Pasa |
+| `registraUnNoDocenteInternoConSuCategoria` | Registra un no docente interno con su categoria | Pasa |
+| `rechazaUnaCategoriaInternaDesconocida` | Rechaza una categoria interna desconocida | Pasa |
+| `rechazaUnSocioInternoSinCategoria` | Rechaza un socio interno sin categoria | Pasa |
+| `rechazaUnaContrasenaNula` | Rechaza una contraseña nula | Pasa |
+| `unNombreNuloSeTrataComoVacio` | Un nombre nulo se trata como vacío | Pasa |
+| `unDniNuloSeTrataComoVacio` | Un DNI nulo se trata como vacío | Pasa |
+| `unLegajoNuloSeTrataComoVacio` | Un legajo nulo se trata como vacío | Pasa |
+| `unApellidoNuloSeTrataComoVacio` | Un apellido nulo se trata como vacío | Pasa |
+| `unTelefonoNuloSeTrataComoVacio` | Un teléfono nulo se trata como vacío | Pasa |
 
 ### `servicio.ReservaServicioTest` (13 pruebas, 19 casos)
 
@@ -302,7 +333,7 @@ Cada nombre describe un único comportamiento. En las pruebas parametrizadas, "N
 | `cuandoMuestraElDiaDeLaSemanaYLaFechaParaElResto` | Cuando muestra el día de la semana y la fecha para el resto | Pasa |
 | `normalizarQuitaTildesYMayusculasParaBuscar` | Normalizar quita tildes y mayúsculas para buscar | Pasa |
 
-### `servicio.TarifasServicioTest` (29 pruebas, 34 casos)
+### `servicio.TarifasServicioTest` (39 pruebas, 44 casos)
 
 | Prueba | Qué verifica | Resultado |
 |---|---|---|
@@ -335,6 +366,16 @@ Cada nombre describe un único comportamiento. En las pruebas parametrizadas, "N
 | `muestraLoQueRigeHoyYNoElPrecioProgramado` | Muestra lo que rige hoy y no el precio programado | Pasa |
 | `dejaVacioElTipoDeSocioQueTodaviaNoTienePrecio` | Deja vacío el tipo de socio que todavía no tiene precio | Pasa |
 | `elHistorialMarcaComoProgramadoElCambioFuturo` | El historial marca como programado el cambio futuro | Pasa |
+| `cargaLosPrimerosPreciosDeUnaInstalacionSinHistorial` | Carga los primeros precios de una instalación sin historial | Pasa |
+| `alCambiarSoloCierraElUltimoPrecioDelTipoDeSocioYNoLosAnteriores` | Al cambiar solo cierra el último precio del tipo de socio y no los anteriores | Pasa |
+| `noAcortaNiReabreUnPrecioQueYaEstabaCerradoAntesDeLaNuevaFecha` | No acorta ni reabre un precio que ya estaba cerrado antes de la nueva fecha | Pasa |
+| `siHayDosPreciosAbiertosRigeElDeFechaDesdeMasReciente` | Si hay dos precios abiertos rige el de fecha desde más reciente | Pasa |
+| `ordenValidoSiLaListaNoTieneAlumnoNiExterno` | Orden válido si la lista no tiene alumno ni externo | Pasa |
+| `ordenValidoSiLaListaTieneAlumnoPeroNoExterno` | Orden válido si la lista tiene alumno pero no externo | Pasa |
+| `alCambiarCierraElPrecioMasRecienteAunqueElHistorialVengaEnOrdenAscendente` | Al cambiar cierra el precio más reciente aunque el historial venga en orden ascendente | Pasa |
+| `elPrecioVigenteEsElMasRecienteAunqueElHistorialVengaEnOrdenAscendente` | El precio vigente es el más reciente aunque el historial venga en orden ascendente | Pasa |
+| `acortaUnPrecioCuyaFechaDeFinEraPosteriorALaNuevaVigencia` | Acorta un precio cuya fecha de fin era posterior a la nueva vigencia | Pasa |
+| `elPrecioVigenteEsElMasRecienteAunqueElHistorialVengaEnOrdenDescendente` | El precio vigente es el más reciente aunque el historial venga en orden descendente | Pasa |
 
 ### `servicio.UsuarioServicioTest` (7 pruebas, 7 casos)
 
@@ -357,16 +398,16 @@ La cobertura la mide JaCoCo sobre el código de producción mientras corren las 
 
 | Paquete | Líneas | Ramas | Métodos |
 |---|---|---|---|
-| **`servicio`** | 22.2 % (544/2450) | 19.3 % (390/2016) | 23.8 % |
-| **`util`** | 92.3 % (36/39) | 81.8 % (36/44) | 100.0 % |
-| `repositorio` | 59.5 % (357/600) | 6.9 % (14/202) | 61.2 % |
+| **`servicio`** | 22.9 % (561/2450) | 21.5 % (434/2016) | 24.1 % |
+| **`util`** | 94.9 % (37/39) | 100.0 % (44/44) | 100.0 % |
+| `repositorio` | 59.8 % (359/600) | 6.9 % (14/202) | 61.5 % |
 | `dto` | 4.2 % (41/987) | 0.0 % (0/42) | 4.9 % |
 | `dao` | 0.7 % (2/291) | 0.0 % (0/14) | 1.0 % |
 | `bean` | 0.0 % (0/1361) | 0.0 % (0/603) | 0.0 % |
 | `seguridad` | 0.0 % (0/40) | 0.0 % (0/18) | 0.0 % |
 | `resources` | 0.0 % (0/4) | n/a (0/0) | 0.0 % |
 | `(raíz)` | 0.0 % (0/1) | n/a (0/0) | 0.0 % |
-| **Total** | 17.0 % (980/5773) | 15.0 % (440/2939) | 17.2 % |
+| **Total** | 17.3 % (1000/5773) | 16.7 % (492/2939) | 17.3 % |
 
 Cómo leer esta tabla: el total (17 %) es bajo porque este conjunto de pruebas apunta solo a las reglas de negocio (`servicio` y `util`). Los paquetes `bean` (pantallas JSF), `dao` (consultas a la base), `dto` y `seguridad` no están dentro del alcance y figuran en 0 % o casi. El porcentaje de `repositorio` y `dto` es incidental: son clases de datos que las pruebas construyen pero no verifican por sí mismas.
 
@@ -374,16 +415,16 @@ Cómo leer esta tabla: el total (17 %) es bajo porque este conjunto de pruebas a
 
 | Clase | Líneas | Ramas |
 |---|---|---|
-| `util.ComprobanteArchivos` | 95.0 % (19/20) | 78.9 % (30/38) |
+| `util.ComprobanteArchivos` | 100.0 % (20/20) | 100.0 % (38/38) |
 | `util.PasswordUtil` | 89.5 % (17/19) | 100.0 % (6/6) |
 | `servicio.ReglaReservaException` | 100.0 % (2/2) | n/a (0/0) |
+| `servicio.RegistroServicio` | 100.0 % (84/84) | 100.0 % (70/70) |
 | `servicio.UsuarioServicio` | 100.0 % (9/9) | 100.0 % (10/10) |
-| `servicio.TarifasServicio` | 96.1 % (124/129) | 87.0 % (87/100) |
-| `servicio.RegistroServicio` | 88.1 % (74/84) | 78.6 % (55/70) |
-| `servicio.CambiosReservaServicio` | 61.0 % (105/172) | 61.3 % (76/124) |
+| `servicio.TarifasServicio` | 98.4 % (127/129) | 100.0 % (100/100) |
+| `servicio.CambiosReservaServicio` | 62.2 % (107/172) | 68.5 % (85/124) |
 | `servicio.ReservaServicio` | 35.8 % (39/109) | 37.8 % (34/90) |
-| `servicio.MembresiasServicio` | 35.3 % (53/150) | 27.9 % (29/104) |
-| `servicio.PanelSocioServicio` | 33.2 % (128/386) | 28.2 % (98/347) |
+| `servicio.MembresiasServicio` | 35.3 % (53/150) | 28.8 % (30/104) |
+| `servicio.PanelSocioServicio` | 33.7 % (130/386) | 30.0 % (104/347) |
 | `servicio.DashboardServicio` | 7.3 % (10/137) | 0.9 % (1/111) |
 | `servicio.MembresiaJob` | 0.0 % (0/24) | 0.0 % (0/8) |
 | `servicio.HorarioServicio` | 0.0 % (0/129) | 0.0 % (0/106) |
@@ -399,16 +440,16 @@ El porcentaje de la capa `servicio` completa mezcla las reglas con métodos que 
 
 | Clase | Líneas | Ramas |
 |---|---|---|
-| `PanelSocioServicio` | 96.8 % (122/126) | 92.5 % (98/106) |
-| `CambiosReservaServicio` | 98.0 % (99/101) | 88.4 % (76/86) |
-| `MembresiasServicio` | 100.0 % (50/50) | 96.7 % (29/30) |
-| `TarifasServicio` | 96.5 % (82/85) | 85.6 % (77/90) |
+| `PanelSocioServicio` | 98.4 % (124/126) | 98.1 % (104/106) |
+| `CambiosReservaServicio` | 100.0 % (101/101) | 98.8 % (85/86) |
+| `MembresiasServicio` | 100.0 % (50/50) | 100.0 % (30/30) |
+| `TarifasServicio` | 100.0 % (85/85) | 100.0 % (90/90) |
 | `ReservaServicio` | 100.0 % (20/20) | 100.0 % (22/22) |
-| `RegistroServicio` | 88.0 % (73/83) | 78.6 % (55/70) |
+| `RegistroServicio` | 100.0 % (83/83) | 100.0 % (70/70) |
 | `UsuarioServicio` | 100.0 % (8/8) | 100.0 % (10/10) |
 | `PasswordUtil` | 89.5 % (17/19) | 100.0 % (6/6) |
-| `ComprobanteArchivos` | 95.0 % (19/20) | 78.9 % (30/38) |
-| **Núcleo de reglas** | **95.7 % (490/512)** | **88.0 % (403/458)** |
+| `ComprobanteArchivos` | 100.0 % (20/20) | 100.0 % (38/38) |
+| **Núcleo de reglas** | **99.2 % (508/512)** | **99.3 % (455/458)** |
 
 Métodos incluidos: `PanelSocioServicio`: reservar, subirComprobante, valorar, liberar, liberarVencidas, propiaPendiente, sinValorar, debeValorarse, primerDiaReservable, sha256; `CambiosReservaServicio`: fueraDePlazo, solicitar, aprobar, rechazar, cancelarPorElPredio, validarDestino, cancelar, mover, registrar, recortar; `MembresiasServicio`: aceptar, denegar, cancelar, vencerVencidas, congelarSiCorresponde, estaPorValidar, validarPago; `TarifasServicio`: ordenValido, cambiarAlquiler, cambiarMembresia, aplicar, enVigencia, parsear; `ReservaServicio`: confirmar, rechazar, resolver; `RegistroServicio`: validarPasoUno, registrar, resolverCategoria, bajaDe, liberar, archivado; `UsuarioServicio`: autenticar; `PasswordUtil`: generarHash, verificar, hashear; `ComprobanteArchivos`: guardar, borrar, ruta, extension, tipoMime, carpeta.
 
@@ -422,17 +463,12 @@ Métodos incluidos: `PanelSocioServicio`: reservar, subirComprobante, valorar, l
 | 4 | `ReportesServicio` (cargar, resumen, dineroEnJuego, alertas, balance, evolucion, renovacion) | 0.0 % (0/240) | 0.0 % (0/184) | Cálculo de ingresos, dinero en juego, balance y alertas que ve el administrador (541 líneas sin ninguna prueba). | Definir los valores esperados de cada métrica con un conjunto chico de datos fijos (por ejemplo tres pagos de distintos meses) y verificar sumas, porcentajes y la variación contra el mes anterior. |
 | 5 | `ValoracionesServicio` (promedios, listar) | 0.0 % (0/53) | 0.0 % (0/30) | Promedio por instalación y tendencia de los últimos 30 días contra los 30 anteriores; orden de las peor valoradas. | Sin valoraciones (promedio "—"), solo recientes, recientes y previas (tendencia positiva, negativa y sin cambios), valoración justo en el corte de 30 días, orden y desempate por nombre. |
 
-Huecos menores dentro de métodos que sí están probados (líneas y ramas que el informe marca sin cubrir):
+Lo que queda sin cubrir dentro del núcleo de reglas (cuatro líneas y tres ramas) **no se puede ejercer desde una prueba unitaria**:
 
-- `RegistroServicio.liberar` y `archivado` (líneas 73 a 85): el re-registro de una persona dada de baja (se archivan su correo y su DNI con el prefijo `b<id>-`, y el DNI se corta a 15 caracteres) no tiene prueba. Tampoco `resolverCategoria` para Docente y No Docente, ni una `categoriaInterna` desconocida.
-- `CambiosReservaServicio.validarDestino`: faltan "la instalación del turno nuevo no está habilitada" y "el turno pedido ya pasó". En `cancelarPorElPredio` falta la reserva inexistente, y en `solicitar` la reprogramación con fecha nula.
-- `PanelSocioServicio.reservar`: falta el mensaje en plural con dos o más valoraciones pendientes y la fecha nula.
-- `PanelSocioServicio.subirComprobante`: la rama de error al escribir el archivo (`IOException`) no se ejerce. `valorar` y `propiaPendiente` no prueban un `idReserva` nulo.
-- `PanelSocioServicio.liberarVencidas`: falta la reserva que, al releerla con bloqueo, ya no está pendiente (por ejemplo, ya fue confirmada).
-- `TarifasServicio`: faltan la primera carga de precios (categoría sin precio anterior), un historial con más de un precio por categoría, y `ordenValido` sin alumno o sin externo en la lista.
-- `MembresiasServicio.cancelar`: falta la suscripción inexistente.
-- `ComprobanteArchivos`: la carpeta por defecto (`user.home/sigrid-comprobantes`, cuando no hay propiedad `sigrid.comprobantes`), el error de `borrar` por `IOException` y las combinaciones de bytes que cortan la comparación de cada firma en distintos puntos.
-- `PasswordUtil`: las dos líneas restantes son el `catch` de `NoSuchAlgorithmException`, que en una JVM normal no se alcanza.
+- `PanelSocioServicio.sha256` y `PasswordUtil.hashear`: el `catch (NoSuchAlgorithmException…)`. SHA-256 y PBKDF2WithHmacSHA256 los trae toda JVM; solo se alcanzarían alterando la JVM.
+- `CambiosReservaServicio.mover` (`if (r.getEstado() == CANCELADA)`): la rama "la reserva no estaba cancelada" no es alcanzable desde la API pública, porque una reprogramación solo se aprueba si la reserva está cancelada con crédito. Es una condición defensiva.
+
+Un segundo bloque de pruebas cubrió los casos que un primer informe de cobertura había marcado como pendientes: el re-registro de una persona dada de baja, la reprogramación a una instalación no habilitada o a un turno que ya pasó, la primera carga de precios, los precios con fecha de fin posterior y el historial en cualquier orden, y el error de escritura del archivo.
 
 ## 5. Discrepancias y posibles defectos
 
@@ -502,7 +538,7 @@ Los identificadores `D-n` son posibles defectos con una prueba deshabilitada. Lo
 
 1. **Mockito simula los DAO.** No se ejecuta SQL ni JPQL, no hay transacciones (`@Transactional` no actúa en pruebas unitarias) ni concurrencia: el bloqueo pesimista (`buscarParaResolver`) y la carrera por el mismo turno no se ejercen.
 2. **No hay pruebas de interfaz ni de integración.** Nada verifica las páginas JSF, los filtros de seguridad, el despliegue ni la tarea programada.
-3. **La cobertura global es baja (17 %) por alcance, no por descuido.** El núcleo de reglas ronda el 96 % de líneas y el 88 % de ramas; la capa de servicio completa, el 22 %. Una cobertura alta no garantiza que cada verificación sea fuerte: no se aplicaron pruebas de mutación.
+3. **La cobertura global es baja (17 %) por alcance, no por descuido.** El núcleo de reglas está en el 99 % de líneas y de ramas; la capa de servicio completa, en el 23 %. Una cobertura alta no garantiza que cada verificación sea fuerte: no se aplicaron pruebas de mutación.
 4. **Las pruebas fijan los mensajes de error actuales.** Cambiar el texto de un mensaje rompe la prueba correspondiente, aunque la regla siga igual.
 5. **Tres pruebas están deshabilitadas** y expresan la regla confirmada, no el comportamiento actual (D-1, D-2, D-3). D-2 y D-3 dependen de la interpretación indicada y deben confirmarse.
 6. **Datos de prueba ficticios y fechas fijas** (12/10/2026 10:00 como "ahora"), salvo los casos del punto O-4.

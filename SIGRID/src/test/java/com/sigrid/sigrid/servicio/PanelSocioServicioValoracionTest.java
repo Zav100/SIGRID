@@ -183,4 +183,9 @@ class PanelSocioServicioValoracionTest extends PanelSocioServicioPruebaBase {
 
         assertRechazada("La reserva no existe.", 7, 99, 5);
     }
+
+    @Test
+    void rechazaValorarSinIndicarLaReserva() {
+        assertRechazada("La reserva no existe.", 7, null, 5);
+    }
 }

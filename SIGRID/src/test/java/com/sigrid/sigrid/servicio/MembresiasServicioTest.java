@@ -355,4 +355,9 @@ class MembresiasServicioTest {
         assertEquals(0, cantidad);
         assertEquals(Socio.Estado.ACTIVO, socio.getEstado());
     }
+
+    @Test
+    void noCancelaUnaMembresiaInexistente() {
+        assertNull(servicio.cancelar(99, LocalDate.of(2026, 10, 12)));
+    }
 }

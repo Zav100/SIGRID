@@ -585,4 +585,105 @@ class CambiosReservaServicioTest {
 
         assertEquals("Esa reserva ya no está confirmada o el turno ya empezó.", error);
     }
+
+    // ---------- huecos de la reprogramación y de la resolución ----------
+
+    @Test
+    void rechazaReprogramarAUnTurnoDeUnaInstalacionNoHabilitada() {
+        Reserva r = canceladaConCreditoHasta(HOY.plusDays(10));
+        Turno nuevo = turnoNuevo(6, cancha, LocalTime.of(18, 0));
+        cancha.setEstado(Instalacion.Estado.DESHABILITADA_MANTENIMIENTO);
+        when(reservaDAO.buscarPorId(10)).thenReturn(r);
+        when(turnoDAO.buscarPorId(6)).thenReturn(nuevo);
+
+        String error = servicio.solicitar(7, 10, SolicitudCambioReserva.Tipo.REPROGRAMACION, 6, HOY.plusDays(5),
+                "Uso mi crédito", AHORA);
+
+        assertEquals("La instalación no está habilitada.", error);
+        verify(solicitudDAO, never()).crear(any());
+    }
+
+    @Test
+    void rechazaReprogramarAUnTurnoQueYaPaso() {
+        when(reservaDAO.buscarPorId(10)).thenReturn(canceladaConCreditoHasta(HOY.plusDays(10)));
+        when(turnoDAO.buscarPorId(6)).thenReturn(turnoNuevo(6, cancha, LocalTime.of(18, 0)));
+
+        String error = servicio.solicitar(7, 10, SolicitudCambioReserva.Tipo.REPROGRAMACION, 6, HOY.minusDays(1),
+                "Uso mi crédito", AHORA);
+
+        assertEquals("El turno pedido ya pasó.", error);
+    }
+
+    @Test
+    void rechazaReprogramarSinElegirLaFecha() {
+        when(reservaDAO.buscarPorId(10)).thenReturn(canceladaConCreditoHasta(HOY.plusDays(10)));
+        when(turnoDAO.buscarPorId(6)).thenReturn(turnoNuevo(6, cancha, LocalTime.of(18, 0)));
+
+        String error = servicio.solicitar(7, 10, SolicitudCambioReserva.Tipo.REPROGRAMACION, 6, null,
+                "Uso mi crédito", AHORA);
+
+        assertEquals("Falta elegir el turno.", error);
+    }
+
+    @Test
+    void rechazaReprogramarUnaReservaCanceladaSinFechaLimiteDeCredito() {
+        Reserva r = canceladaConCreditoHasta(null);
+        when(reservaDAO.buscarPorId(10)).thenReturn(r);
+
+        String error = servicio.solicitar(7, 10, SolicitudCambioReserva.Tipo.REPROGRAMACION, 6, HOY.plusDays(5),
+                "Uso mi crédito", AHORA);
+
+        assertEquals(MENSAJE_SIN_CREDITO, error);
+    }
+
+    @Test
+    void noApruebaUnaReprogramacionDeUnaReservaCanceladaSinCredito() {
+        Reserva r = canceladaConCreditoHasta(null);
+        SolicitudCambioReserva c = pedido(50, r, SolicitudCambioReserva.Tipo.REPROGRAMACION);
+        when(solicitudDAO.buscarParaResolver(50)).thenReturn(c);
+        when(reservaDAO.buscarParaResolver(10)).thenReturn(r);
+
+        String error = servicio.aprobar(50, 1, AHORA);
+
+        assertEquals("La reserva ya no tiene un crédito para reprogramar. Rechazá el pedido.", error);
+    }
+
+    @Test
+    void noApruebaUnaReprogramacionDeUnaReservaQueNoEstaCancelada() {
+        Reserva r = confirmadaQueEmpieza(AHORA.plusDays(5));
+        SolicitudCambioReserva c = pedido(50, r, SolicitudCambioReserva.Tipo.REPROGRAMACION);
+        when(solicitudDAO.buscarParaResolver(50)).thenReturn(c);
+        when(reservaDAO.buscarParaResolver(10)).thenReturn(r);
+
+        String error = servicio.aprobar(50, 1, AHORA);
+
+        assertEquals("La reserva ya no tiene un crédito para reprogramar. Rechazá el pedido.", error);
+        assertEquals(Reserva.Estado.CONFIRMADA, r.getEstado());
+    }
+
+    @Test
+    void noRechazaUnPedidoInexistente() {
+        when(solicitudDAO.buscarParaResolver(51)).thenReturn(null);
+
+        assertFalse(servicio.rechazar(51, 1, "motivo", AHORA));
+    }
+
+    @Test
+    void rechazarConMotivoNuloNoGuardaMotivo() {
+        SolicitudCambioReserva c = pedido(50, confirmadaQueEmpieza(AHORA.plusDays(5)),
+                SolicitudCambioReserva.Tipo.CANCELACION);
+        when(solicitudDAO.buscarParaResolver(50)).thenReturn(c);
+
+        assertTrue(servicio.rechazar(50, 1, null, AHORA));
+        assertNull(c.getMotivoRechazo());
+    }
+
+    @Test
+    void laCancelacionPorElPredioRechazaUnaReservaInexistente() {
+        when(reservaDAO.buscarParaResolver(99)).thenReturn(null);
+
+        String error = servicio.cancelarPorElPredio(99, "Cancha en mantenimiento", AHORA);
+
+        assertEquals("Esa reserva ya no está confirmada o el turno ya empezó.", error);
+    }
 }

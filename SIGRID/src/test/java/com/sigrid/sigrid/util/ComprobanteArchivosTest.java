@@ -6,15 +6,20 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.stream.Stream;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
 /**
  * Comprobantes de transferencia: el tipo real sale de los primeros bytes (no del nombre) y los archivos se guardan
@@ -179,5 +184,50 @@ class ComprobanteArchivosTest {
     @Test
     void borrarUnArchivoInexistenteNoLanzaExcepcion() {
         assertDoesNotThrow(() -> ComprobanteArchivos.borrar("no-existe.pdf"));
+    }
+
+    // ---------- firmas incompletas, carpeta por defecto y borrado imposible ----------
+
+    static Stream<Arguments> firmasIncompletas() {
+        return Stream.of(
+                Arguments.of((Object) bytes('%', 'X', 'D', 'F', '-')),
+                Arguments.of((Object) bytes('%', 'P', 'X', 'F', '-')),
+                Arguments.of((Object) bytes('%', 'P', 'D', 'X', '-')),
+                Arguments.of((Object) bytes(0x88, 'P', 'N', 'G', 0x0D, 0x0A, 0x1A, 0x0A, 0x00)),
+                Arguments.of((Object) bytes(0x89, 'X', 'N', 'G', 0x0D, 0x0A, 0x1A, 0x0A, 0x00)),
+                Arguments.of((Object) bytes(0x89, 'P', 'X', 'G', 0x0D, 0x0A, 0x1A, 0x0A, 0x00)),
+                Arguments.of((Object) bytes(0x89, 'P', 'N', 'X', 0x0D, 0x0A, 0x1A, 0x0A, 0x00)),
+                Arguments.of((Object) bytes(0xFE, 0xD8, 0xFF, 0xE0)),
+                Arguments.of((Object) bytes(0xFF, 0xD9, 0xFF, 0xE0)));
+    }
+
+    @ParameterizedTest
+    @MethodSource("firmasIncompletas")
+    void rechazaUnaFirmaConUnSoloByteIncorrecto(byte[] datos) {
+        assertNull(ComprobanteArchivos.extension(datos));
+    }
+
+    @Test
+    void sinPropiedadGuardaEnSigridComprobantesDentroDeLaCarpetaDelUsuario() throws IOException {
+        String homeOriginal = System.getProperty("user.home");
+        System.clearProperty(PROPIEDAD);
+        System.setProperty("user.home", raiz.toString());
+        try {
+            ComprobanteArchivos.guardar("reserva-7-3fa9.pdf", "%PDF-1.4".getBytes(StandardCharsets.US_ASCII));
+
+            assertTrue(Files.isRegularFile(raiz.resolve("sigrid-comprobantes").resolve("reserva-7-3fa9.pdf")));
+        } finally {
+            System.setProperty("user.home", homeOriginal);
+        }
+    }
+
+    @Test
+    void borrarNoLanzaExcepcionSiNoSePuedeEliminarElElemento() throws IOException {
+        Path carpetaNoVacia = Files.createDirectories(carpeta.resolve("reserva-7-3fa9.pdf"));
+        Files.write(carpetaNoVacia.resolve("dentro.txt"), "x".getBytes(StandardCharsets.UTF_8));
+
+        assertDoesNotThrow(() -> ComprobanteArchivos.borrar("reserva-7-3fa9.pdf"));
+
+        assertTrue(Files.exists(carpetaNoVacia), "queda el elemento, se limpia a mano");
     }
 }

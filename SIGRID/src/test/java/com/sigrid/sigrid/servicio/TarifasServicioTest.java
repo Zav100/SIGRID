@@ -395,4 +395,110 @@ class TarifasServicioTest {
         assertTrue(lista.get(0).isProgramado());
         assertFalse(lista.get(1).isProgramado());
     }
+
+    // ---------- huecos: primera carga, varios precios por tipo, orden sin alumno ----------
+
+    @Test
+    void cargaLosPrimerosPreciosDeUnaInstalacionSinHistorial() {
+        historial.clear();
+        ArgumentCaptor<TarifaAlquiler> nueva = ArgumentCaptor.forClass(TarifaAlquiler.class);
+
+        String error = servicio.cambiarAlquiler(1, precios("10000", "15000", "15000", "25000"), HOY, HOY);
+
+        assertNull(error);
+        verify(alquilerDAO, times(4)).crear(nueva.capture());
+        assertEquals(HOY, nueva.getAllValues().get(0).getVigenteDesde());
+    }
+
+    @Test
+    void alCambiarSoloCierraElUltimoPrecioDelTipoDeSocioYNoLosAnteriores() {
+        TarifaAlquiler muyViejo = DatosDePrueba.tarifaAlquiler(9, cancha, alumno, "9000", INICIO_DEL_ANIO,
+                LocalDate.of(2026, 6, 30));
+        historial.add(muyViejo);
+        historial.get(0).setVigenteDesde(LocalDate.of(2026, 7, 1));
+
+        String error = servicio.cambiarAlquiler(1, precios("12000", "15000", "15000", "25000"), PROXIMO_MES, HOY);
+
+        assertNull(error);
+        assertEquals(LocalDate.of(2026, 10, 31), historial.get(0).getVigenteHasta());
+        assertEquals(LocalDate.of(2026, 6, 30), muyViejo.getVigenteHasta());
+    }
+
+    @Test
+    void noAcortaNiReabreUnPrecioQueYaEstabaCerradoAntesDeLaNuevaFecha() {
+        historial.get(0).setVigenteHasta(LocalDate.of(2026, 9, 30));
+
+        String error = servicio.cambiarAlquiler(1, precios("12000", "15000", "15000", "25000"), PROXIMO_MES, HOY);
+
+        assertNull(error);
+        assertEquals(LocalDate.of(2026, 9, 30), historial.get(0).getVigenteHasta());
+        verify(alquilerDAO, times(1)).crear(any());
+    }
+
+    @Test
+    void siHayDosPreciosAbiertosRigeElDeFechaDesdeMasReciente() {
+        historial.add(DatosDePrueba.tarifaAlquiler(9, cancha, alumno, "11000", LocalDate.of(2026, 7, 1), null));
+
+        Map<Integer, String> vigentes = servicio.vigentesAlquiler(1, HOY);
+
+        assertEquals("11000", vigentes.get(1));
+    }
+
+    @Test
+    void ordenValidoSiLaListaNoTieneAlumnoNiExterno() {
+        List<CategoriaSocio> sinExtremos = List.of(docente, noDocente);
+
+        assertTrue(TarifasServicio.ordenValido(sinExtremos, importes("15000", "15000")));
+    }
+
+    @Test
+    void ordenValidoSiLaListaTieneAlumnoPeroNoExterno() {
+        List<CategoriaSocio> sinExterno = List.of(alumno, docente);
+
+        assertTrue(TarifasServicio.ordenValido(sinExterno, importes("10000", "15000")));
+    }
+
+    @Test
+    void alCambiarCierraElPrecioMasRecienteAunqueElHistorialVengaEnOrdenAscendente() {
+        TarifaAlquiler muyViejo = DatosDePrueba.tarifaAlquiler(9, cancha, alumno, "9000", INICIO_DEL_ANIO,
+                LocalDate.of(2026, 6, 30));
+        historial.add(0, muyViejo); // el precio más antiguo primero
+        historial.get(1).setVigenteDesde(LocalDate.of(2026, 7, 1));
+
+        String error = servicio.cambiarAlquiler(1, precios("12000", "15000", "15000", "25000"), PROXIMO_MES, HOY);
+
+        assertNull(error);
+        assertEquals(LocalDate.of(2026, 10, 31), historial.get(1).getVigenteHasta());
+        assertEquals(LocalDate.of(2026, 6, 30), muyViejo.getVigenteHasta());
+    }
+
+    @Test
+    void elPrecioVigenteEsElMasRecienteAunqueElHistorialVengaEnOrdenAscendente() {
+        historial.add(0, DatosDePrueba.tarifaAlquiler(9, cancha, alumno, "9000", INICIO_DEL_ANIO, null));
+        historial.get(1).setVigenteDesde(LocalDate.of(2026, 7, 1));
+
+        Map<Integer, String> vigentes = servicio.vigentesAlquiler(1, HOY);
+
+        assertEquals("10000", vigentes.get(1));
+    }
+
+    @Test
+    void acortaUnPrecioCuyaFechaDeFinEraPosteriorALaNuevaVigencia() {
+        historial.get(0).setVigenteHasta(LocalDate.of(2026, 12, 31));
+
+        String error = servicio.cambiarAlquiler(1, precios("12000", "15000", "15000", "25000"), PROXIMO_MES, HOY);
+
+        assertNull(error);
+        assertEquals(LocalDate.of(2026, 10, 31), historial.get(0).getVigenteHasta());
+    }
+
+    @Test
+    void elPrecioVigenteEsElMasRecienteAunqueElHistorialVengaEnOrdenDescendente() {
+        historial.get(0).setVigenteDesde(LocalDate.of(2026, 7, 1));
+        historial.add(DatosDePrueba.tarifaAlquiler(9, cancha, alumno, "9000", INICIO_DEL_ANIO, null)); // el más viejo al final
+
+        Map<Integer, String> vigentes = servicio.vigentesAlquiler(1, HOY);
+
+        assertEquals("10000", vigentes.get(1));
+    }
 }

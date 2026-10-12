@@ -6,7 +6,9 @@ import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.lenient;
+import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -30,6 +32,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
+import org.mockito.InOrder;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
@@ -277,5 +280,146 @@ class RegistroServicioTest {
         assertNull(socio.getValue().getLegajo());
         verify(carnetDigitalDAO).crear(carnet.capture());
         assertEquals(CarnetDigital.TipoCarnet.GENERAL, carnet.getValue().getTipoCarnet());
+    }
+
+    // ---------- re-registro de quien fue dado de baja ----------
+
+    private Socio socioDadoDeBaja(String dni) {
+        Socio baja = DatosDePrueba.socio(7, Socio.Estado.NO_ACTIVO, alumno);
+        baja.setDni(dni);
+        baja.setBajaLogica(true);
+        return baja;
+    }
+
+    @Test
+    void alVolverARegistrarseArchivaElCorreoYElDniDeLaFichaDadaDeBaja() {
+        Socio baja = socioDadoDeBaja("30123456");
+        Usuario usuarioViejo = baja.getIdUsuario();
+        usuarioViejo.setIdUsuario(107);
+        when(usuarioDAO.buscarPorEmail("lucia.gomez@ejemplo.com")).thenReturn(usuarioViejo);
+        when(socioDAO.buscarPorIdUsuario(107)).thenReturn(baja);
+        // la primera búsqueda por DNI encuentra la baja; la segunda, ya archivada, no encuentra a nadie
+        when(socioDAO.buscarPorDni("30123456")).thenReturn(baja, null);
+        RegistroSocio r = altaDeAlumno();
+        r.setEmail("lucia.gomez@ejemplo.com");
+        r.setDni("30123456");
+
+        String error = servicio.registrar(r);
+
+        assertNull(error);
+        assertEquals("b7-lucia.gomez@ejemplo.com", usuarioViejo.getEmail());
+        assertEquals("b7-30123456", baja.getDni());
+        InOrder orden = inOrder(socioDAO);
+        orden.verify(socioDAO, times(1)).flush();
+        orden.verify(socioDAO).crear(any(Socio.class));
+    }
+
+    @Test
+    void elDniArchivadoSeCortaA15CaracteresParaEntrarEnLaColumna() {
+        Socio baja = socioDadoDeBaja("123456789012345");
+        when(socioDAO.buscarPorDni("123456789012345")).thenReturn(baja);
+        RegistroSocio r = altaDeAlumno();
+        r.setDni("123456789012345");
+
+        servicio.registrar(r);
+
+        assertEquals("b7-123456789012", baja.getDni());
+        assertEquals(15, baja.getDni().length());
+    }
+
+    // ---------- categorías internas y datos nulos ----------
+
+    @Test
+    void registraUnDocenteInternoConSuCategoria() {
+        CategoriaSocio docente = DatosDePrueba.categoria(2, "Docente UNSE", true);
+        when(categoriaSocioDAO.buscarPorNombre("Docente UNSE")).thenReturn(docente);
+        RegistroSocio r = altaDeAlumno();
+        r.setCategoriaInterna("DOCENTE");
+        ArgumentCaptor<Socio> socio = ArgumentCaptor.forClass(Socio.class);
+        ArgumentCaptor<CarnetDigital> carnet = ArgumentCaptor.forClass(CarnetDigital.class);
+
+        assertNull(servicio.registrar(r));
+
+        verify(socioDAO).crear(socio.capture());
+        assertSame(docente, socio.getValue().getIdCategoriaSocio());
+        verify(carnetDigitalDAO).crear(carnet.capture());
+        assertEquals(CarnetDigital.TipoCarnet.GENERAL, carnet.getValue().getTipoCarnet());
+    }
+
+    @Test
+    void registraUnNoDocenteInternoConSuCategoria() {
+        CategoriaSocio noDocente = DatosDePrueba.categoria(3, "No Docente UNSE", true);
+        when(categoriaSocioDAO.buscarPorNombre("No Docente UNSE")).thenReturn(noDocente);
+        RegistroSocio r = altaDeAlumno();
+        r.setCategoriaInterna("NO_DOCENTE");
+        ArgumentCaptor<Socio> socio = ArgumentCaptor.forClass(Socio.class);
+
+        assertNull(servicio.registrar(r));
+
+        verify(socioDAO).crear(socio.capture());
+        assertSame(noDocente, socio.getValue().getIdCategoriaSocio());
+    }
+
+    @Test
+    void rechazaUnaCategoriaInternaDesconocida() {
+        RegistroSocio r = altaDeAlumno();
+        r.setCategoriaInterna("JUBILADO");
+
+        assertEquals("Elegí el tipo de socio.", servicio.registrar(r));
+        verify(usuarioDAO, never()).crear(any());
+    }
+
+    @Test
+    void rechazaUnSocioInternoSinCategoria() {
+        RegistroSocio r = altaDeAlumno();
+        r.setCategoriaInterna(null);
+
+        assertEquals("Elegí el tipo de socio.", servicio.registrar(r));
+    }
+
+    @Test
+    void rechazaUnaContrasenaNula() {
+        assertEquals("La contraseña tiene que tener al menos 6 caracteres.",
+                servicio.validarPasoUno("martin.sosa@ejemplo.com", null, null));
+    }
+
+    @Test
+    void unNombreNuloSeTrataComoVacio() {
+        RegistroSocio r = altaDeAlumno();
+        r.setNombre(null);
+
+        assertEquals("Completá nombre y apellido.", servicio.registrar(r));
+    }
+
+    @Test
+    void unDniNuloSeTrataComoVacio() {
+        RegistroSocio r = altaDeAlumno();
+        r.setDni(null);
+
+        assertEquals("El DNI debe tener solo dígitos, sin puntos.", servicio.registrar(r));
+    }
+
+    @Test
+    void unLegajoNuloSeTrataComoVacio() {
+        RegistroSocio r = altaDeAlumno();
+        r.setLegajo(null);
+
+        assertEquals("Un Alumno UNSE necesita legajo.", servicio.registrar(r));
+    }
+
+    @Test
+    void unApellidoNuloSeTrataComoVacio() {
+        RegistroSocio r = altaDeAlumno();
+        r.setApellido(null);
+
+        assertEquals("Completá nombre y apellido.", servicio.registrar(r));
+    }
+
+    @Test
+    void unTelefonoNuloSeTrataComoVacio() {
+        RegistroSocio r = altaDeAlumno();
+        r.setTelefono(null);
+
+        assertEquals("Ingresá un teléfono válido, solo dígitos.", servicio.registrar(r));
     }
 }

@@ -227,4 +227,16 @@ class PanelSocioServicioComprobanteTest extends PanelSocioServicioPruebaBase {
         assertRechazado("Esa reserva ya no espera el pago (si pasó el plazo, el turno se liberó).",
                 DatosDePrueba.pdf(500), AHORA.minusHours(1));
     }
+
+    @Test
+    void siNoSePuedeGuardarElArchivoAvisaAlSocioQueReintente() throws java.io.IOException {
+        // la "carpeta" de comprobantes cuelga de un archivo común, así que no se puede crear
+        Path archivoComun = Files.createFile(raiz.resolve("no-es-una-carpeta"));
+        System.setProperty(PROPIEDAD, archivoComun.resolve("comprobantes").toString());
+
+        ReglaReservaException e = assertThrows(ReglaReservaException.class,
+                () -> servicio.subirComprobante(7, 10, DatosDePrueba.pdf(500), AHORA.minusHours(1), AHORA));
+
+        assertEquals("No pudimos guardar el archivo. Probá de nuevo en un momento.", e.getMessage());
+    }
 }

@@ -348,4 +348,44 @@ class PanelSocioServicioReservaTest extends PanelSocioServicioPruebaBase {
     void elPrimerDiaReservableEsElDeDentroDeDosDias() {
         assertEquals(HOY.plusDays(2), PanelSocioServicio.primerDiaReservable(HOY));
     }
+
+    // ---------- huecos de reservar y liberar ----------
+
+    @Test
+    void elMensajeDeValoracionesPendientesVaEnPluralConDosOMas() {
+        when(reservaDAO.listarPorSocio(7)).thenReturn(List.of(
+                terminadaConfirmada(20, LocalDate.of(2026, 10, 9)), terminadaConfirmada(21, LocalDate.of(2026, 10, 10))));
+
+        assertRechazada("Tenés 2 valoraciones pendientes: valorá tu turno anterior para poder reservar de nuevo.",
+                FECHA_TURNO, AHORA);
+    }
+
+    @Test
+    void exigeElegirElDia() {
+        ReglaReservaException e = assertThrows(ReglaReservaException.class,
+                () -> servicio.reservar(7, 5, null, AHORA));
+
+        assertEquals("Elegí el turno que querés reservar.", e.getMessage());
+    }
+
+    @Test
+    void noLiberaLaReservaQueMientrasTantoFueConfirmada() {
+        Reserva enLista = esperandoElComprobante();
+        Reserva bloqueada = esperandoElComprobante();
+        bloqueada.setEstado(Reserva.Estado.CONFIRMADA);
+        when(reservaDAO.listarPendientesSinComprobanteAntesDe(AHORA.minusMinutes(60))).thenReturn(List.of(enLista));
+        when(reservaDAO.buscarParaResolver(10)).thenReturn(bloqueada);
+
+        int liberadas = servicio.liberarVencidas(AHORA);
+
+        assertEquals(0, liberadas);
+        assertEquals(Reserva.Estado.CONFIRMADA, bloqueada.getEstado());
+    }
+
+    @Test
+    void noLiberaSinIndicarLaReserva() {
+        ReglaReservaException e = assertThrows(ReglaReservaException.class, () -> servicio.liberar(7, null));
+
+        assertEquals("La reserva no existe.", e.getMessage());
+    }
 }
