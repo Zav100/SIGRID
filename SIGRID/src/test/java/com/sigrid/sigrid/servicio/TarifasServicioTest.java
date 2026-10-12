@@ -501,4 +501,14 @@ class TarifasServicioTest {
 
         assertEquals("10000", vigentes.get(1));
     }
+
+    @Test
+    void ordenInvalidoCuandoSoloHayAlumnoYExternoConElMismoPrecio() {
+        assertFalse(TarifasServicio.ordenValido(List.of(alumno, externo), importes("20000", "20000")));
+    }
+
+    @Test
+    void ordenValidoCuandoSoloHayAlumnoYExternoYElExternoPagaMas() {
+        assertTrue(TarifasServicio.ordenValido(List.of(alumno, externo), importes("20000", "20001")));
+    }
 }
