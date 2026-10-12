@@ -78,7 +78,7 @@ class ComprobanteArchivosTest {
     }
 
     @Test
-    void elTipoSalDeLosBytesYNoDelNombreDelArchivo() {
+    void elTipoSaleDeLosBytesYNoDelNombreDelArchivo() {
         // un PNG que el socio nombró "transferencia.pdf" sigue siendo PNG
         byte[] pngConNombreDePdf = bytes(0x89, 'P', 'N', 'G', 0x0D, 0x0A, 0x1A, 0x0A, 0x00);
 

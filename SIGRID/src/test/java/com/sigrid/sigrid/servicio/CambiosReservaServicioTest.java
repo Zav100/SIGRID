@@ -104,22 +104,22 @@ class CambiosReservaServicioTest {
     // ---------- regla de las 48 horas ----------
 
     @Test
-    void unTurnoQueEmpezaEn47HorasEstaFueraDePlazo() {
+    void unTurnoQueEmpiezaEn47HorasEstaFueraDePlazo() {
         assertTrue(CambiosReservaServicio.fueraDePlazo(AHORA.plusHours(47), AHORA));
     }
 
     @Test
-    void unTurnoQueEmpezaEn48HorasExactasEstaEnPlazo() {
+    void unTurnoQueEmpiezaEn48HorasExactasEstaEnPlazo() {
         assertFalse(CambiosReservaServicio.fueraDePlazo(AHORA.plusHours(48), AHORA));
     }
 
     @Test
-    void unTurnoQueEmpezaEn49HorasEstaEnPlazo() {
+    void unTurnoQueEmpiezaEn49HorasEstaEnPlazo() {
         assertFalse(CambiosReservaServicio.fueraDePlazo(AHORA.plusHours(49), AHORA));
     }
 
     @Test
-    void unTurnoQueEmpezaEn47Horas59MinutosEstaFueraDePlazo() {
+    void unTurnoQueEmpiezaEn47Horas59MinutosEstaFueraDePlazo() {
         assertTrue(CambiosReservaServicio.fueraDePlazo(AHORA.plusHours(48).minusMinutes(1), AHORA));
     }
 
@@ -319,7 +319,7 @@ class CambiosReservaServicioTest {
     }
 
     @Test
-    void aceptaReprogramarAUnTurnoQueEmpezaEnExactamente48Horas() {
+    void aceptaReprogramarAUnTurnoQueEmpiezaEnExactamente48Horas() {
         when(reservaDAO.buscarPorId(10)).thenReturn(canceladaConCreditoHasta(HOY.plusDays(10)));
         when(turnoDAO.buscarPorId(6)).thenReturn(turnoNuevo(6, cancha, LocalTime.of(10, 0)));
 
@@ -330,7 +330,7 @@ class CambiosReservaServicioTest {
     }
 
     @Test
-    void rechazaReprogramarAUnTurnoQueEmpezaEn47Horas59Minutos() {
+    void rechazaReprogramarAUnTurnoQueEmpiezaEn47Horas59Minutos() {
         when(reservaDAO.buscarPorId(10)).thenReturn(canceladaConCreditoHasta(HOY.plusDays(10)));
         when(turnoDAO.buscarPorId(6)).thenReturn(turnoNuevo(6, cancha, LocalTime.of(9, 59)));
 
@@ -403,7 +403,7 @@ class CambiosReservaServicioTest {
     }
 
     @Test
-    void noAprobaUnPedidoQueYaEstabaResuelto() {
+    void noApruebaUnPedidoQueYaEstabaResuelto() {
         Reserva r = confirmadaQueEmpieza(AHORA.plusDays(5));
         SolicitudCambioReserva c = pedido(50, r, SolicitudCambioReserva.Tipo.CANCELACION);
         c.setEstado(SolicitudCambioReserva.Estado.APROBADA);
@@ -416,7 +416,7 @@ class CambiosReservaServicioTest {
     }
 
     @Test
-    void noAprobaUnPedidoInexistente() {
+    void noApruebaUnPedidoInexistente() {
         when(solicitudDAO.buscarParaResolver(51)).thenReturn(null);
 
         String error = servicio.aprobar(51, 1, AHORA);
@@ -425,7 +425,7 @@ class CambiosReservaServicioTest {
     }
 
     @Test
-    void noAprobaLaCancelacionDeUnaReservaQueYaNoEstaConfirmada() {
+    void noApruebaLaCancelacionDeUnaReservaQueYaNoEstaConfirmada() {
         Reserva r = confirmadaQueEmpieza(AHORA.plusDays(5));
         r.setEstado(Reserva.Estado.CANCELADA);
         SolicitudCambioReserva c = pedido(50, r, SolicitudCambioReserva.Tipo.CANCELACION);
@@ -460,7 +460,7 @@ class CambiosReservaServicioTest {
     }
 
     @Test
-    void noAprobaUnaReprogramacionSiElCreditoVencioAntesDelPedido() {
+    void noApruebaUnaReprogramacionSiElCreditoVencioAntesDelPedido() {
         Reserva r = canceladaConCreditoHasta(HOY.minusDays(2));
         SolicitudCambioReserva c = pedido(50, r, SolicitudCambioReserva.Tipo.REPROGRAMACION);
         c.setFechaSolicitud(AHORA); // pedido hecho después de vencido el crédito
@@ -476,7 +476,7 @@ class CambiosReservaServicioTest {
     }
 
     @Test
-    void noAprobaUnaReprogramacionSiElTurnoPedidoSeOcupoMientrasTanto() {
+    void noApruebaUnaReprogramacionSiElTurnoPedidoSeOcupoMientrasTanto() {
         Reserva r = canceladaConCreditoHasta(HOY.plusDays(10));
         Turno nuevo = turnoNuevo(6, cancha, LocalTime.of(18, 0));
         LocalDate fechaNueva = HOY.plusDays(5);

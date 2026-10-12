@@ -141,7 +141,7 @@ class TarifasServicioTest {
     }
 
     @Test
-    void ordenValidoSiTodavíaFaltaCargarUnPrecio() {
+    void ordenValidoSiTodaviaFaltaCargarUnPrecio() {
         assertTrue(TarifasServicio.ordenValido(categoriasEnOrden(), importes("10000", null, "15000", "25000")));
     }
 
