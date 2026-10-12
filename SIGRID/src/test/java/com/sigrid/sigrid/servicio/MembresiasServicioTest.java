@@ -165,17 +165,32 @@ class MembresiasServicioTest {
     }
 
     /**
-     * POSIBLE DEFECTO D-3: la regla confirmada es que la membresía "vence el mismo día" del mes siguiente
-     * (empezó el 23/09, vence el 23/10) y que quien renueva por adelantado sigue ese ciclo. El código arranca la
-     * nueva el día SIGUIENTE al vencimiento de la vigente ({@code getFechaVencimiento().plusDays(1)},
-     * MembresiasServicio.aceptar), de modo que cada renovación corre el ciclo un día (23/10 -> 24/10 -> 24/11).
-     * La prueba describe la regla esperada y está deshabilitada porque el código actual no la cumple.
+     * DEFECTO CONFIRMADO D-3 (confirmado por el responsable del proyecto el 12/10/2026): la membresía vence el mismo
+     * día del mes siguiente (empezó el 23/09, vence el 23/10) y quien renueva antes de vencer continúa el ciclo: la
+     * nueva empieza el mismo día en que vence la vigente (23/10) y vence un mes después (23/11). El código arranca la
+     * nueva el día SIGUIENTE ({@code getFechaVencimiento().plusDays(1)}, MembresiasServicio.aceptar), de modo que cada
+     * renovación corre el ciclo un día (23/10 -> 24/10 -> 24/11). La prueba expresa la regla correcta y está
+     * deshabilitada porque el código actual no la cumple; al corregirlo hay que quitarle el {@code @Disabled}.
      */
-    @Disabled("Posible defecto D-3: la renovación por adelantado empieza el día siguiente al vencimiento, no el mismo día")
+    @Disabled("Defecto D-3 confirmado: la renovación por adelantado empieza el día siguiente al vencimiento, no el mismo día")
     @Test
     void laRenovacionPorAdelantadoMantieneElMismoDiaDelMes() {
         SuscripcionSocio vigente = vigenteHasta(29, LocalDate.of(2026, 10, 23));
         LocalDate hoy = LocalDate.of(2026, 10, 20);
+        when(suscripcionDAO.listarVigentesDelSocio(7, hoy)).thenReturn(List.of(vigente));
+
+        LocalDate vence = servicio.aceptar(30, 1, hoy);
+
+        assertEquals(LocalDate.of(2026, 10, 23), solicitud.getFechaInicio());
+        assertEquals(LocalDate.of(2026, 11, 23), vence);
+    }
+
+    /** Mismo defecto D-3, en el día límite: se paga el mismo día en que vence la vigente ("perfecto", dijo el cliente). */
+    @Disabled("Defecto D-3 confirmado: pagando el mismo día del vencimiento la nueva empieza al día siguiente")
+    @Test
+    void siSePagaElMismoDiaDelVencimientoLaNuevaEmpiezaEseDia() {
+        SuscripcionSocio vigente = vigenteHasta(29, LocalDate.of(2026, 10, 23));
+        LocalDate hoy = LocalDate.of(2026, 10, 23);
         when(suscripcionDAO.listarVigentesDelSocio(7, hoy)).thenReturn(List.of(vigente));
 
         LocalDate vence = servicio.aceptar(30, 1, hoy);

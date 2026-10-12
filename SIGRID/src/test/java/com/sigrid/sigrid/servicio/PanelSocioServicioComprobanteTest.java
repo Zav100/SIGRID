@@ -177,12 +177,13 @@ class PanelSocioServicioComprobanteTest extends PanelSocioServicioPruebaBase {
     }
 
     /**
-     * POSIBLE DEFECTO D-2: según la regla confirmada por el cliente, una transferencia se tolera hasta 25 minutos en
-     * el futuro (diferencia de reloj entre el banco y el servidor). El código usa {@code ahora.plusMinutes(5)}
-     * (PanelSocioServicio.subirComprobante), así que una operación 25 minutos adelantada se rechaza. La prueba describe
-     * la regla esperada y está deshabilitada porque el código actual no la cumple.
+     * DEFECTO CONFIRMADO D-2 (confirmado por el responsable del proyecto el 12/10/2026): la regla es que una
+     * transferencia se tolera hasta 25 minutos en el futuro (diferencia de reloj entre el banco y el servidor). El
+     * código usa {@code ahora.plusMinutes(5)} (PanelSocioServicio.subirComprobante), así que una operación 25 minutos
+     * adelantada se rechaza. La prueba expresa la regla correcta y está deshabilitada porque el código actual no la
+     * cumple; al corregir esa línea hay que quitarle el {@code @Disabled}.
      */
-    @Disabled("Posible defecto D-2: el código tolera 5 minutos de adelanto y la regla confirmada es 25")
+    @Disabled("Defecto D-2 confirmado: el código tolera 5 minutos de adelanto y la regla es 25")
     @Test
     void aceptaUnaTransferenciaAdelantadaHasta25Minutos() {
         servicio.subirComprobante(7, 10, DatosDePrueba.pdf(500), AHORA.plusMinutes(25), AHORA);
