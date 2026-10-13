@@ -899,7 +899,7 @@ public class ReportesServicio implements Serializable {
         kpis.add(kpi("Renovación de membresías", "card_membership", ren[1] == 0 ? "—" : pct(tasa), Math.round(tasa),
                 ren[0] + " de " + ren[1] + " que terminaron",
                 ren[1] == 0 || renPrev[1] == 0 ? null : variacionPuntos(tasa, tasaPrevia, true), ren[1] > 0 && tasa < 60));
-        kpis.add(kpi("Valoración promedio", "star", valoracion == 0 ? "—" : ValoracionesServicio.decimal(valoracion),
+        kpis.add(kpi("Grado de satisfacción", "star", valoracion == 0 ? "—" : ValoracionesServicio.decimal(valoracion),
                 valoracion, "sobre 5 estrellas", valoracion == 0 || valoracionPrevia == 0 ? null
                 : variacion(valoracion, valoracionPrevia, true), valoracion > 0 && valoracion < VALORACION_BAJA));
         kpis.add(kpi("Cancelaciones", "event_busy", String.valueOf(canceladas), canceladas,
@@ -944,7 +944,7 @@ public class ReportesServicio implements Serializable {
                 .sorted(Map.Entry.comparingByValue())
                 .map(e -> e.getKey() + " (" + ValoracionesServicio.decimal(e.getValue()) + ")").collect(Collectors.joining(", "));
         if (!bajas.isEmpty()) {
-            lista.add(new ReporteAlerta("star", "Baja valoración de los socios: " + bajas, "off"));
+            lista.add(new ReporteAlerta("star", "Grado de satisfacción bajo: " + bajas, "off"));
         }
 
         long vacios = turnosSinReservas(d, r).size();
