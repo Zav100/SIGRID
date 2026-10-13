@@ -353,6 +353,13 @@
   border-bottom: 0;
 }
 
+.mem-vigencia {
+  display: block;
+  font-size: .72rem;
+  line-height: 1.35;
+  color: var(--adm-ink-3);
+}
+
 .mem-tarifas strong {
   font-size: 1rem;
   font-weight: 700;

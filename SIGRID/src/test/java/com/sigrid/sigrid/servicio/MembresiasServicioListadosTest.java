@@ -269,6 +269,7 @@ class MembresiasServicioListadosTest {
         tiposDeSocio();
         TarifaMembresia cuota = new TarifaMembresia(1);
         cuota.setPrecio(new BigDecimal("5000"));
+        cuota.setVigenteDesde(LocalDate.of(2026, 8, 1));
         when(tarifaDAO.buscarVigente(1, HOY)).thenReturn(cuota);
         when(tarifaDAO.buscarVigente(4, HOY)).thenReturn(null);
 

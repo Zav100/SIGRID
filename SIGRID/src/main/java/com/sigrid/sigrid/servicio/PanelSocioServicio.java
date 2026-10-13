@@ -477,7 +477,9 @@ public class PanelSocioServicio implements Serializable {
             }
             lista.add(new InstalacionReservable(i.getIdInstalacion(), i.getNombre(), DashboardServicio.icono(i.getTipoDisciplina()),
                     i.getTipoDisciplina(), i.getDescripcion(), i.getCapacidad() == null ? null : "Hasta " + i.getCapacidad() + " personas",
-                    tarifa == null ? null : DashboardServicio.monto(tarifa.getPrecio()), null, null,
+                    tarifa == null ? null : DashboardServicio.monto(tarifa.getPrecio()), TarifasServicio.vigencia(tarifa),
+                    TarifasServicio.proximo(tarifaDAO.buscarProxima(i.getIdInstalacion(),
+                            socio.getIdCategoriaSocio().getIdCategoriaSocio(), hoy)),
                     habilitada && tarifa != null, aviso));
         }
         return lista;
@@ -513,9 +515,12 @@ public class PanelSocioServicio implements Serializable {
 
     /** La cuota mensual vigente de su tipo de socio, con desde cuándo rige y el próximo cambio; null si no hay. */
     public TarifaFila cuota(Socio socio, LocalDate hoy) {
-        TarifaMembresia t = tarifaMembresiaDAO.buscarVigente(socio.getIdCategoriaSocio().getIdCategoriaSocio(), hoy);
-        return t == null ? null : new TarifaFila(socio.getIdCategoriaSocio().getNombreCategoria(),
-                DashboardServicio.monto(t.getPrecio()), null, null);
+        Integer categoria = socio.getIdCategoriaSocio().getIdCategoriaSocio();
+        TarifaMembresia t = tarifaMembresiaDAO.buscarVigente(categoria, hoy);
+        TarifaMembresia proxima = tarifaMembresiaDAO.buscarProxima(categoria, hoy);
+        return t == null && proxima == null ? null : new TarifaFila(socio.getIdCategoriaSocio().getNombreCategoria(),
+                t == null ? null : DashboardServicio.monto(t.getPrecio()), TarifasServicio.vigencia(t),
+                TarifasServicio.proximo(proxima));
     }
 
     /** El precio del turno para el socio, con texto; null si no hay tarifa vigente. */

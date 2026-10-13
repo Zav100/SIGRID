@@ -193,14 +193,24 @@
                         <ui:fragment rendered="#{socioBean.cuota ne null}">
                             <li class="so-tarifa-cuota">
                                 <span class="so-ico"><span class="icon" aria-hidden="true">card_membership</span></span>
-                                <div class="so-hist-text"><span class="so-hist-main">Membresía</span><span class="so-hist-sub">Cuota mensual</span></div>
-                                <strong>#{socioBean.cuota.precio}</strong>
+                                <div class="so-hist-text">
+                                    <span class="so-hist-main">Membresía</span>
+                                    <span class="so-hist-sub">Cuota mensual</span>
+                                    <ui:fragment rendered="#{not empty socioBean.cuota.vigencia}"><span class="so-hist-sub">#{socioBean.cuota.vigencia}</span></ui:fragment>
+                                    <span class="so-hist-sub">#{socioBean.cuota.proximo}</span>
+                                </div>
+                                <strong>#{empty socioBean.cuota.precio ? '—' : socioBean.cuota.precio}</strong>
                             </li>
                         </ui:fragment>
                         <ui:repeat var="t" value="#{socioBean.tarifas}">
                             <li>
                                 <span class="so-ico so-ico-soft"><span class="icon" aria-hidden="true">#{t.icono}</span></span>
-                                <div class="so-hist-text"><span class="so-hist-main">#{t.nombre}</span><span class="so-hist-sub">Por turno</span></div>
+                                <div class="so-hist-text">
+                                    <span class="so-hist-main">#{t.nombre}</span>
+                                    <span class="so-hist-sub">Por turno</span>
+                                    <ui:fragment rendered="#{not empty t.vigencia}"><span class="so-hist-sub">#{t.vigencia}</span></ui:fragment>
+                                    <span class="so-hist-sub">#{t.proximo}</span>
+                                </div>
                                 <strong>#{empty t.precio ? '—' : t.precio}</strong>
                             </li>
                         </ui:repeat>

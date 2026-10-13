@@ -170,10 +170,13 @@ public class InstalacionesServicio implements Serializable {
      * ponytail: un solo SELECT de todas las tarifas vigentes; si el catálogo creciera a miles de filas, filtrar por instalación.
      */
     public List<PrecioFila> precios(List<Instalacion> instalaciones, List<CategoriaSocio> categorias, LocalDate hoy) {
-        Map<String, BigDecimal> vigentes = new HashMap<>(); // "instalación-categoría" -> precio; la más reciente pisa a la anterior
+        Map<String, TarifaAlquiler> vigentes = new HashMap<>(); // "instalación-categoría" -> tarifa; la más reciente pisa a la anterior
         for (TarifaAlquiler t : tarifaDAO.listarVigentes(hoy)) {
-            vigentes.put(t.getIdInstalacion().getIdInstalacion() + "-" + t.getIdCategoriaSocio().getIdCategoriaSocio(),
-                    t.getPrecio());
+            vigentes.put(t.getIdInstalacion().getIdInstalacion() + "-" + t.getIdCategoriaSocio().getIdCategoriaSocio(), t);
+        }
+        Map<String, TarifaAlquiler> proximas = new HashMap<>(); // el próximo cambio programado: vienen del más cercano al más lejano
+        for (TarifaAlquiler t : tarifaDAO.listarProgramadas(hoy)) {
+            proximas.putIfAbsent(t.getIdInstalacion().getIdInstalacion() + "-" + t.getIdCategoriaSocio().getIdCategoriaSocio(), t);
         }
         List<PrecioFila> filas = new ArrayList<>();
         for (Instalacion i : instalaciones) {
@@ -185,9 +188,12 @@ public class InstalacionesServicio implements Serializable {
             List<BigDecimal> importes = new ArrayList<>();
             List<PrecioVigente> textos = new ArrayList<>();
             for (CategoriaSocio c : categorias) {
-                BigDecimal precio = vigentes.get(i.getIdInstalacion() + "-" + c.getIdCategoriaSocio());
+                String clave = i.getIdInstalacion() + "-" + c.getIdCategoriaSocio();
+                TarifaAlquiler vigente = vigentes.get(clave);
+                BigDecimal precio = vigente == null ? null : vigente.getPrecio();
                 importes.add(precio);
-                textos.add(new PrecioVigente(precio == null ? null : DashboardServicio.monto(precio), null, null));
+                textos.add(new PrecioVigente(precio == null ? null : DashboardServicio.monto(precio),
+                        TarifasServicio.vigencia(vigente), TarifasServicio.proximo(proximas.get(clave))));
             }
             filas.add(new PrecioFila(i.getIdInstalacion(), i.getNombre(), icono, false, textos,
                     TarifasServicio.ordenValido(categorias, importes)));

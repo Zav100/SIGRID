@@ -136,7 +136,8 @@ public class MembresiasServicio implements Serializable {
         List<TarifaFila> tarifas = new ArrayList<>();
         for (CategoriaSocio c : categoriaDAO.listarTodos()) {
             TarifaMembresia t = tarifaDAO.buscarVigente(c.getIdCategoriaSocio(), hoy);
-            tarifas.add(new TarifaFila(c.getNombreCategoria(), t == null ? null : monto(t.getPrecio()), null, null));
+            tarifas.add(new TarifaFila(c.getNombreCategoria(), t == null ? null : monto(t.getPrecio()),
+                    TarifasServicio.vigencia(t), TarifasServicio.proximo(tarifaDAO.buscarProxima(c.getIdCategoriaSocio(), hoy))));
         }
         return tarifas;
     }

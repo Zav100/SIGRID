@@ -271,6 +271,7 @@ class PanelSocioServicioConsultasTest extends PanelSocioServicioPruebaBase {
     void laCuotaMensualSaleDeLaTarifaVigenteDelTipoDeSocio() {
         TarifaMembresia cuota = new TarifaMembresia(1);
         cuota.setPrecio(new BigDecimal("5000"));
+        cuota.setVigenteDesde(LocalDate.of(2026, 8, 1));
         when(tarifaMembresiaDAO.buscarVigente(1, HOY)).thenReturn(cuota);
 
         assertEquals("$ 5.000", servicio.cuota(socio, HOY).getPrecio());

@@ -123,7 +123,11 @@
                     <ul class="mem-tarifas">
                         <ui:repeat var="t" value="#{adminMembresiasBean.tarifas}">
                             <li>
-                                <span>#{t.tipo}</span>
+                                <span>
+                                    #{t.tipo}
+                                    <ui:fragment rendered="#{not empty t.vigencia}"><small class="mem-vigencia">#{t.vigencia}</small></ui:fragment>
+                                    <small class="mem-vigencia">#{t.proximo}</small>
+                                </span>
                                 <strong>#{empty t.precio ? 'Sin cargar' : t.precio}</strong>
                             </li>
                         </ui:repeat>

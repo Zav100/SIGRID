@@ -154,7 +154,11 @@
                                             </ui:fragment>
                                             <ui:fragment rendered="#{not fila.sinReserva}">
                                                 <ui:repeat var="precio" value="#{fila.precios}">
-                                                    <td class="ins-num">#{empty precio ? 'Sin cargar' : precio}</td>
+                                                    <td class="ins-num">
+                                                        #{empty precio.precio ? 'Sin cargar' : precio.precio}
+                                                        <ui:fragment rendered="#{not empty precio.vigencia}"><small class="ins-vigencia">#{precio.vigencia}</small></ui:fragment>
+                                                        <small class="ins-vigencia">#{precio.proximo}</small>
+                                                    </td>
                                                 </ui:repeat>
                                             </ui:fragment>
                                         </tr>
