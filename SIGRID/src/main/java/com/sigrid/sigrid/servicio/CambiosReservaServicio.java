@@ -36,7 +36,10 @@ import java.util.Locale;
  *   (fechaLimiteReprogramacion) para reprogramarla. El crédito ES la reserva; al usarlo vuelve a CONFIRMADA.
  * - Cancelar o reprogramar exige 48 h de anticipación (medidas contra el momento del pedido). Pasado ese
  *   plazo el socio pierde lo pagado: el sistema ni siquiera admite el pedido.
- * - No hay diferencia de precio y el crédito solo se usa en la misma instalación.
+ * - No hay diferencia de precio y el crédito solo se usa en la misma instalación. Si se la da de baja definitiva, vale
+ *   en otra equivalente (misma disciplina) (CC-02).
+ * - El plazo de 30 días no corre mientras la instalación está en mantenimiento: al reactivarla el crédito retoma los días
+ *   que le quedaban (CC-02, ver limiteDelCredito).
  * - El administrador NO reprograma por el socio: solo aprueba o rechaza los pedidos de reprogramación. Lo único que
  *   puede hacer por su cuenta es cancelar por el predio (mantenimiento, clima), que también deja crédito.
  *
@@ -75,15 +78,45 @@ public class CambiosReservaServicio implements Serializable {
     private UsuarioDAO usuarioDAO;
 
     /**
-     * CC-02 (esqueleto): hasta cuándo vale el crédito de una reserva cancelada. Todavía devuelve la fecha guardada.
+     * CC-02: hasta cuándo vale el crédito de una reserva cancelada. Mientras su instalación está en mantenimiento el plazo
+     * no corre: la base guarda la fecha de antes del mantenimiento y acá se le suman los días que lleva, así que al
+     * crédito le quedan siempre los mismos días y los retoma al reactivarla (InstalacionesServicio.reactivar guarda ese
+     * corrimiento). Un crédito que ya había vencido antes del mantenimiento no revive.
+     * @return la fecha límite, o null si la reserva no tiene crédito.
      */
     static LocalDate limiteDelCredito(Reserva r, LocalDate hoy) {
-        return r.getFechaLimiteReprogramacion();
+        LocalDate limite = r.getFechaLimiteReprogramacion();
+        if (!enPausa(r)) {
+            return limite;
+        }
+        return limite.plusDays(Math.max(0, ChronoUnit.DAYS.between(r.getIdTurno().getIdInstalacion().getFechaInicioBaja(), hoy)));
     }
 
-    /** CC-02 (esqueleto): ¿el plazo del crédito está detenido porque su instalación está en mantenimiento? */
+    /** ¿El plazo del crédito está detenido? Su instalación está en mantenimiento y el crédito seguía vigente al empezar. */
     static boolean enPausa(Reserva r) {
-        return false;
+        LocalDate limite = r.getFechaLimiteReprogramacion();
+        if (limite == null) {
+            return false;
+        }
+        Instalacion i = r.getIdTurno().getIdInstalacion();
+        return i.getEstado() == Instalacion.Estado.DESHABILITADA_MANTENIMIENTO && i.getFechaInicioBaja() != null
+                && !limite.isBefore(i.getFechaInicioBaja());
+    }
+
+    /**
+     * CC-02: con la baja definitiva de una instalación su crédito vale en otra equivalente: de reserva y de la misma
+     * disciplina. Con un mantenimiento (temporal) no hay equivalentes: el crédito espera a que la reactiven.
+     */
+    static boolean equivalente(Instalacion baja, Instalacion otra) {
+        return baja.getEstado() == Instalacion.Estado.DESHABILITADA
+                && otra.getTipoAcceso() == Instalacion.TipoAcceso.ARANCELADO
+                && baja.getTipoDisciplina().trim().equalsIgnoreCase(otra.getTipoDisciplina().trim());
+    }
+
+    /** Desde cuándo corre el plazo de un crédito que nace hoy: en mantenimiento, desde que empezó (queda en pausa). */
+    private static LocalDate inicioDelPlazo(Instalacion i, LocalDate hoy) {
+        return i.getEstado() == Instalacion.Estado.DESHABILITADA_MANTENIMIENTO && i.getFechaInicioBaja() != null
+                ? i.getFechaInicioBaja() : hoy;
     }
 
     // ---------- lectura ----------
@@ -107,8 +140,8 @@ public class CambiosReservaServicio implements Serializable {
             String anticipacion;
             if (conCredito) {
                 anticipacion = "Usa el crédito de una reserva cancelada"
-                        + (r.getFechaLimiteReprogramacion() == null ? "" : " (vence el "
-                        + r.getFechaLimiteReprogramacion().format(FECHA) + ")");
+                        + (r.getFechaLimiteReprogramacion() == null ? "" : enPausa(r) ? " (en pausa por mantenimiento)"
+                        : " (vence el " + r.getFechaLimiteReprogramacion().format(FECHA) + ")");
             } else {
                 long horas = Duration.between(c.getFechaSolicitud(), inicio(r)).toHours();
                 anticipacion = "Pedido con " + (horas >= 72 ? horas / 24 + " días" : horas + " h") + " de anticipación";
@@ -133,10 +166,13 @@ public class CambiosReservaServicio implements Serializable {
             Instalacion instalacion = turno.getIdInstalacion();
             String socio = DashboardServicio.nombreSocio(r.getIdSocio());
             String email = r.getIdSocio().getIdUsuario().getEmail();
-            long dias = ChronoUnit.DAYS.between(hoy, r.getFechaLimiteReprogramacion());
+            LocalDate limite = limiteDelCredito(r, hoy);
+            boolean pausa = enPausa(r);
+            long dias = ChronoUnit.DAYS.between(hoy, limite);
             filas.add(new CreditoFila(r.getIdReserva(), socio, email, instalacion.getNombre(),
                     DashboardServicio.icono(instalacion.getTipoDisciplina()), turnoTexto(r.getFechaTurno(), turno),
-                    r.getFechaLimiteReprogramacion().format(FECHA), dias, dias >= 0, dias >= 0 && dias <= DIAS_POR_VENCER,
+                    pausa ? "En pausa (mantenimiento)" : limite.format(FECHA), dias, dias >= 0,
+                    !pausa && dias >= 0 && dias <= DIAS_POR_VENCER,
                     montoDe(r), ReservaServicio.normalizar(socio + " " + email + " " + r.getIdSocio().getDni() + " "
                     + instalacion.getNombre() + " " + instalacion.getTipoDisciplina())));
         }
@@ -179,8 +215,9 @@ public class CambiosReservaServicio implements Serializable {
             }
             cancelar(r, CANCELACION + ": " + c.getMotivo(), hoy);
         } else {
+            LocalDate pedido = c.getFechaSolicitud().toLocalDate();
             boolean admite = r.getEstado() == Reserva.Estado.CANCELADA && r.getFechaLimiteReprogramacion() != null
-                    && !c.getFechaSolicitud().toLocalDate().isAfter(r.getFechaLimiteReprogramacion());
+                    && !pedido.isAfter(limiteDelCredito(r, pedido));
             if (!admite) {
                 return "La reserva ya no tiene un crédito para reprogramar. Rechazá el pedido.";
             }
@@ -256,7 +293,7 @@ public class CambiosReservaServicio implements Serializable {
         }
 
         boolean conCredito = r.getEstado() == Reserva.Estado.CANCELADA && r.getFechaLimiteReprogramacion() != null
-                && !ahora.toLocalDate().isAfter(r.getFechaLimiteReprogramacion());
+                && !ahora.toLocalDate().isAfter(limiteDelCredito(r, ahora.toLocalDate()));
         if (tipo == SolicitudCambioReserva.Tipo.REPROGRAMACION) {
             if (!conCredito) {
                 return "Una reserva no se reprograma: pedí cancelarla y usá el crédito que te queda.";
@@ -298,7 +335,8 @@ public class CambiosReservaServicio implements Serializable {
             return "Falta elegir el turno.";
         }
         Instalacion instalacion = r.getIdTurno().getIdInstalacion();
-        if (!nuevo.getIdInstalacion().getIdInstalacion().equals(instalacion.getIdInstalacion())) {
+        if (!nuevo.getIdInstalacion().getIdInstalacion().equals(instalacion.getIdInstalacion())
+                && !equivalente(instalacion, nuevo.getIdInstalacion())) {
             return "Solo se puede reprogramar dentro de la misma instalación.";
         }
         if (nuevo.getIdInstalacion().getEstado() != Instalacion.Estado.HABILITADA) {
@@ -316,11 +354,15 @@ public class CambiosReservaServicio implements Serializable {
         return null;
     }
 
-    /** CANCELADA + crédito de 30 días (solo si hubo un pago: sin dinero de por medio no hay nada que reprogramar). */
+    /**
+     * CANCELADA + crédito de 30 días (solo si hubo un pago: sin dinero de por medio no hay nada que reprogramar). Si la
+     * instalación está en mantenimiento el plazo queda en pausa desde el primer día (ver limiteDelCredito).
+     */
     private void cancelar(Reserva r, String motivo, LocalDate hoy) {
         registrar(r, motivo);
         r.setEstado(Reserva.Estado.CANCELADA);
-        r.setFechaLimiteReprogramacion(r.getIdPago() == null ? null : hoy.plusDays(DIAS_CREDITO));
+        r.setFechaLimiteReprogramacion(r.getIdPago() == null ? null
+                : inicioDelPlazo(r.getIdTurno().getIdInstalacion(), hoy).plusDays(DIAS_CREDITO));
     }
 
     /** Pasa la reserva al turno nuevo; si estaba cancelada con crédito, vuelve a CONFIRMADA y el crédito se consume. */

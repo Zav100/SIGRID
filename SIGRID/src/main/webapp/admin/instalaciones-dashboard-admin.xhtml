@@ -438,7 +438,7 @@
                                         <ui:fragment rendered="#{adminInstalacionesBean.ficha.reservable}">
                                             <label class="ins-check">
                                                 <h:selectBooleanCheckbox value="#{adminInstalacionesBean.cancelarReservas}"/>
-                                                <span>Si hay reservas en ese período, cancelarlas (las confirmadas quedan con crédito de 30 días)</span>
+                                                <span>Si hay reservas en ese período, cancelarlas (las confirmadas quedan con crédito de 30 días, que no corren hasta reactivarla)</span>
                                             </label>
                                         </ui:fragment>
                                         <h:commandLink styleClass="adm-act adm-act-ok" action="#{adminInstalacionesBean.ponerEnMantenimiento}">

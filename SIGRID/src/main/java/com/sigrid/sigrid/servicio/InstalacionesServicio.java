@@ -417,6 +417,7 @@ public class InstalacionesServicio implements Serializable {
             }
         }
 
+        retomarCreditos(i, hoy); // si estaba en mantenimiento y pasa a baja definitiva, el plazo vuelve a correr hoy
         i.setEstado(nuevo);
         i.setMotivoBaja(motivo.trim().length() > 255 ? motivo.trim().substring(0, 255) : motivo.trim());
         i.setFechaInicioBaja(hoy);
@@ -425,8 +426,20 @@ public class InstalacionesServicio implements Serializable {
     }
 
     /**
-     * Vuelve a habilitar una instalación en mantenimiento ("hoy" es la reactivación real). La baja definitiva no se
-     * revierte desde acá.
+     * CC-02: al terminar el mantenimiento (reactivación o baja definitiva) los créditos que seguían vigentes cuando empezó
+     * retoman su plazo con los días que les quedaban, contados desde hoy. Va antes de cambiar el estado.
+     */
+    private void retomarCreditos(Instalacion i, LocalDate hoy) {
+        if (i.getEstado() == Instalacion.Estado.DESHABILITADA_MANTENIMIENTO && i.getFechaInicioBaja() != null) {
+            for (Reserva r : reservaDAO.listarConCreditoDesde(i.getIdInstalacion(), i.getFechaInicioBaja())) {
+                r.setFechaLimiteReprogramacion(CambiosReservaServicio.limiteDelCredito(r, hoy));
+            }
+        }
+    }
+
+    /**
+     * Vuelve a habilitar una instalación en mantenimiento ("hoy" es la reactivación real: los créditos retoman ahí sus
+     * días). La baja definitiva no se revierte desde acá.
      */
     @Transactional
     public String reactivar(Integer idInstalacion, LocalDate hoy) {
@@ -438,6 +451,7 @@ public class InstalacionesServicio implements Serializable {
             return i.getEstado() == Instalacion.Estado.DESHABILITADA ? "La baja definitiva no se revierte."
                     : "Esta instalación ya está habilitada.";
         }
+        retomarCreditos(i, hoy);
         i.setEstado(Instalacion.Estado.HABILITADA);
         i.setMotivoBaja(null);
         i.setFechaInicioBaja(null);

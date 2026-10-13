@@ -1,6 +1,7 @@
 package com.sigrid.sigrid.dao;
 
 import com.sigrid.sigrid.dto.FiltroReservas;
+import com.sigrid.sigrid.repositorio.Instalacion;
 import com.sigrid.sigrid.repositorio.Pago;
 import com.sigrid.sigrid.repositorio.Reserva;
 import jakarta.enterprise.context.Dependent;
@@ -439,14 +440,15 @@ public class ReservaDAO extends BaseDAO<Reserva> {
     /**
      * Lo que necesitan los reportes de un período {desde, hasta} (con su período previo ya incluido en "desde"): las
      * reservas con turno en el rango, las que cobraron (pago validado) en el rango, las canceladas con crédito que
-     * vence desde "desde" en adelante y las que esperan validación. Nada más: no se carga toda la tabla.
+     * vence desde "desde" en adelante (o está en pausa por un mantenimiento) y las que esperan validación. Nada más:
+     * no se carga toda la tabla.
      */
     public List<Reserva> listarParaReportes(LocalDate desde, LocalDate hasta) {
         return em.createQuery(
                 "SELECT r FROM Reserva r" + UNIONES_CON_DATOS + " WHERE (r.fechaTurno BETWEEN :desde AND :hasta) "
                 + "OR (p.estado = :confirmado AND p.fechaValidacion >= :desdeHora AND p.fechaValidacion < :hastaHora) "
                 + "OR (r.estado = :cancelada AND r.fechaLimiteReprogramacion IS NOT NULL "
-                + "AND r.fechaLimiteReprogramacion >= :desde) "
+                + "AND (r.fechaLimiteReprogramacion >= :desde OR i.estado = :mantenimiento)) "
                 + "OR (r.estado = :pendiente AND p.estado = :porValidar) "
                 + "ORDER BY r.fechaTurno DESC, t.horaInicio DESC, r.idReserva DESC", Reserva.class)
                 .setParameter("desde", desde)
@@ -455,6 +457,7 @@ public class ReservaDAO extends BaseDAO<Reserva> {
                 .setParameter("hastaHora", hasta.plusDays(1).atStartOfDay())
                 .setParameter("confirmado", Pago.Estado.CONFIRMADO)
                 .setParameter("cancelada", Reserva.Estado.CANCELADA)
+                .setParameter("mantenimiento", Instalacion.Estado.DESHABILITADA_MANTENIMIENTO)
                 .setParameter("pendiente", Reserva.Estado.PENDIENTE_PAGO)
                 .setParameter("porValidar", Pago.Estado.PENDIENTE_VALIDACION)
                 .getResultList();

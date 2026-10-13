@@ -311,7 +311,7 @@ public class ReservaServicio implements Serializable {
             case CANCELADA:
                 estado = "CANCELADA";
                 boolean conCredito = r.getFechaLimiteReprogramacion() != null
-                        && !r.getFechaLimiteReprogramacion().isBefore(hoy);
+                        && !CambiosReservaServicio.limiteDelCredito(r, hoy).isBefore(hoy);
                 texto = conCredito ? "Cancelada · con crédito" : "Cancelada";
                 clase = "off";
                 break;

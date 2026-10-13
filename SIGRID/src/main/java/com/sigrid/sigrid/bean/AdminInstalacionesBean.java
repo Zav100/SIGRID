@@ -220,7 +220,8 @@ public class AdminInstalacionesBean implements Serializable {
 
     private static String textoCanceladas(int canceladas) {
         return canceladas == 0 ? "" : (canceladas == 1 ? " Se canceló 1 reserva" : " Se cancelaron " + canceladas + " reservas")
-                + ": las confirmadas quedan con 30 días de crédito para reprogramar.";
+                + ": las confirmadas quedan con 30 días de crédito para reprogramar (en un mantenimiento, el plazo no corre"
+                + " hasta reactivar).";
     }
 
     // ---------- horario de apertura (solo las instalaciones de acceso libre) ----------

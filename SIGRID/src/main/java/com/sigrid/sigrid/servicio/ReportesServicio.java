@@ -453,7 +453,7 @@ public class ReportesServicio implements Serializable {
         int perdidos = 0;
         int vigentes = 0;
         for (Reserva x : d.reservas) {
-            LocalDate limite = x.getFechaLimiteReprogramacion();
+            LocalDate limite = CambiosReservaServicio.limiteDelCredito(x, d.hoy); // en pausa no vence (CC-02)
             if (x.getEstado() != Reserva.Estado.CANCELADA || limite == null || !cobrado(x.getIdPago())) {
                 continue;
             }
@@ -977,7 +977,8 @@ public class ReportesServicio implements Serializable {
         for (Reserva x : d.reservas) {
             LocalDate limite = x.getFechaLimiteReprogramacion();
             if (x.getEstado() == Reserva.Estado.CANCELADA && limite != null && cobrado(x.getIdPago())
-                    && !limite.isBefore(d.hoy) && !limite.isAfter(d.hoy.plusDays(DIAS_DE_AVISO))) {
+                    && !limite.isBefore(d.hoy) && !limite.isAfter(d.hoy.plusDays(DIAS_DE_AVISO))
+                    && !CambiosReservaServicio.enPausa(x)) {
                 creditos++;
                 porPerderse = porPerderse.add(x.getIdPago().getMonto());
             }

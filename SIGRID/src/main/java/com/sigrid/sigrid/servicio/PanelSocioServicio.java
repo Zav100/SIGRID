@@ -223,13 +223,22 @@ public class PanelSocioServicio implements Serializable {
             case CANCELADA:
                 texto = "Cancelada";
                 clase = "off";
-                if (r.getFechaLimiteReprogramacion() != null && !r.getFechaLimiteReprogramacion().isBefore(hoy)) {
-                    limiteCredito = r.getFechaLimiteReprogramacion().format(FECHA);
-                    if (conPedido.contains(r.getIdReserva())) {
-                        nota = "Pediste reprogramar con tu crédito. Esperando la respuesta del administrador.";
+                LocalDate limiteDelCredito = r.getFechaLimiteReprogramacion() == null ? null
+                        : CambiosReservaServicio.limiteDelCredito(r, hoy);
+                if (limiteDelCredito != null && !limiteDelCredito.isBefore(hoy)) {
+                    if (CambiosReservaServicio.enPausa(r)) { // CC-02: la instalación está en mantenimiento
+                        nota = "Tu crédito está en pausa mientras " + i.getNombre() + " esté en mantenimiento: "
+                                + diasQueQuedan(ChronoUnit.DAYS.between(hoy, limiteDelCredito)) + " desde que se reactive.";
                     } else {
-                        nota = "Tenés un crédito para reprogramar hasta el " + limiteCredito + ".";
-                        reprogramar = true;
+                        limiteCredito = limiteDelCredito.format(FECHA);
+                        if (conPedido.contains(r.getIdReserva())) {
+                            nota = "Pediste reprogramar con tu crédito. Esperando la respuesta del administrador.";
+                        } else {
+                            nota = "Tenés un crédito para reprogramar hasta el " + limiteCredito + "."
+                                    + (i.getEstado() == Instalacion.Estado.DESHABILITADA ? " " + i.getNombre()
+                                    + " se dio de baja: podés usarlo en una instalación equivalente." : "");
+                            reprogramar = true;
+                        }
                     }
                 }
                 break;
@@ -257,6 +266,11 @@ public class PanelSocioServicio implements Serializable {
                 t.getHoraInicio().format(HORA) + " – " + t.getHoraFin().format(HORA),
                 monto == null ? null : DashboardServicio.monto(monto), texto, clase, grupo, inicio, subir, liberar, pedir,
                 nota, limite, pasos(r, pago, finalizada, limite), valorable, reprogramar, limiteCredito);
+    }
+
+    /** "te queda 1 día" o "te quedan 25 días". */
+    private static String diasQueQuedan(long dias) {
+        return dias == 1 ? "te queda 1 día" : "te quedan " + dias + " días";
     }
 
     /** ¿Terminó y cae en las reservas cuya valoración es obligatoria? (no mira si ya se valoró) */
@@ -378,10 +392,18 @@ public class PanelSocioServicio implements Serializable {
                     }
                     break;
                 case CANCELADA:
-                    if (r.getFechaLimiteReprogramacion() != null && !r.getFechaLimiteReprogramacion().isBefore(hoy)
-                            && !conPedido.contains(r.getIdReserva())) {
-                        avisos.add(new Aviso("event_repeat", "Tenés un crédito para reprogramar", detalle
-                                + ". Podés usarlo hasta el " + r.getFechaLimiteReprogramacion().format(FECHA) + ".", "warn", null, 4));
+                    LocalDate limiteDelCredito = r.getFechaLimiteReprogramacion() == null ? null
+                            : CambiosReservaServicio.limiteDelCredito(r, hoy);
+                    if (limiteDelCredito != null && !limiteDelCredito.isBefore(hoy) && !conPedido.contains(r.getIdReserva())) {
+                        if (CambiosReservaServicio.enPausa(r)) {
+                            avisos.add(new Aviso("event_repeat", "Tu crédito está en pausa", detalle
+                                    + ". La instalación está en mantenimiento: "
+                                    + diasQueQuedan(ChronoUnit.DAYS.between(hoy, limiteDelCredito)) + " desde que se reactive.",
+                                    "muted", null, 4));
+                        } else {
+                            avisos.add(new Aviso("event_repeat", "Tenés un crédito para reprogramar", detalle
+                                    + ". Podés usarlo hasta el " + limiteDelCredito.format(FECHA) + ".", "warn", null, 4));
+                        }
                     }
                     break;
                 default:
@@ -504,13 +526,29 @@ public class PanelSocioServicio implements Serializable {
         return lista;
     }
 
-    /** Las franjas de la instalación de una reserva propia con crédito, para elegir a cuál reprogramarla; vacío si no es suya. */
+    /**
+     * Las franjas de la instalación de una reserva propia con crédito, para elegir a cuál reprogramarla; vacío si no es
+     * suya. Si la instalación se dio de baja (CC-02), las de las instalaciones equivalentes, con el nombre de cada una.
+     */
     public List<TurnoDisponible> turnosParaReprogramar(Integer idSocio, Integer idReserva, LocalDate fecha, LocalDateTime ahora) {
         Reserva r = idReserva == null ? null : reservaDAO.buscarPorId(idReserva);
         if (r == null || !r.getIdSocio().getIdSocio().equals(idSocio)) {
             return new ArrayList<>();
         }
-        return turnos(idSocio, r.getIdTurno().getIdInstalacion().getIdInstalacion(), fecha, ahora);
+        Instalacion original = r.getIdTurno().getIdInstalacion();
+        if (original.getEstado() != Instalacion.Estado.DESHABILITADA) {
+            return turnos(idSocio, original.getIdInstalacion(), fecha, ahora);
+        }
+        List<TurnoDisponible> lista = new ArrayList<>();
+        for (Instalacion otra : instalacionDAO.listarReservables()) {
+            if (otra.getEstado() == Instalacion.Estado.HABILITADA && CambiosReservaServicio.equivalente(original, otra)) {
+                for (TurnoDisponible t : turnos(idSocio, otra.getIdInstalacion(), fecha, ahora)) {
+                    lista.add(new TurnoDisponible(t.getIdTurno(), otra.getNombre() + " · " + t.getHorario(), t.isLibre(),
+                            t.getMotivo()));
+                }
+            }
+        }
+        return lista;
     }
 
     /** La cuota mensual vigente de su tipo de socio, con desde cuándo rige y el próximo cambio; null si no hay. */
