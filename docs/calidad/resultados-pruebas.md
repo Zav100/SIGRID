@@ -48,9 +48,9 @@ Dónde ver los resultados:
 | Medida | Valor |
 |---|---|
 | Clases de prueba | 28 |
-| Pruebas (métodos) | 635 |
-| Ejecuciones (casos, contando cada valor de las parametrizadas) | 694 |
-| Pasan | 688 |
+| Pruebas (métodos) | 652 |
+| Ejecuciones (casos, contando cada valor de las parametrizadas) | 711 |
+| Pasan | 705 |
 | Deshabilitadas (defectos D-1 a D-5) | 6 |
 | Fallan | 0 |
 | Tiempo total | unos segundos (la mayor parte es el hash PBKDF2 de 120 000 iteraciones) |
@@ -113,7 +113,7 @@ Cada nombre describe un único comportamiento. En las pruebas parametrizadas, "N
 | `CP-41: el menú dice "Grado de satisfacción" y no "Valoraciones"` | Cp 41 el menú dice grado de satisfacción y no valoraciones | Pasa |
 | `laSeccionRenombradaSigueEnLaMismaDireccion` | La seccion renombrada sigue en la misma direccion | Pasa |
 
-### `servicio.CambiosReservaServicioListadosTest` (11 pruebas, 11 casos)
+### `servicio.CambiosReservaServicioListadosTest` (12 pruebas, 12 casos)
 
 | Prueba | Qué verifica | Resultado |
 |---|---|---|
@@ -123,13 +123,14 @@ Cada nombre describe un único comportamiento. En las pruebas parametrizadas, "N
 | `elPedidoMuestraLaEsperaYElMonto` | El pedido muestra la espera y el monto | Pasa |
 | `elPedidoMuestraElTurnoActualYElNuevoSiEsReprogramacion` | El pedido muestra el turno actual y el nuevo si es reprogramación | Pasa |
 | `unaCancelacionNoTieneTurnoNuevo` | Una cancelación no tiene turno nuevo | Pasa |
+| `cp29_unCreditoEnPausaSeMuestraVigenteConLosDiasQueLeQuedan` | Cp 29 un crédito en pausa se muestra vigente con los días que le quedan | Pasa |
 | `unCreditoQueVenceHoyEstaVigenteYPorVencer` | Un crédito que vence hoy está vigente y por vencer | Pasa |
 | `unCreditoQueVenceEnSieteDiasEstaPorVencerYEnOchoNo` | Un crédito que vence en siete días está por vencer y en ocho no | Pasa |
 | `elPlazoDiceCuantosDiasQuedan` | El plazo dice cuantos días quedan | Pasa |
 | `unCreditoVencidoNoEstaVigenteNiPorVencerYDiceHaceCuanto` | Un crédito vencido no está vigente ni por vencer y dice hace cuanto | Pasa |
 | `laReprogramacionMuestraDeQueTurnoAQueTurnoYCuando` | La reprogramación muestra de que turno a que turno y cuando | Pasa |
 
-### `servicio.CambiosReservaServicioTest` (55 pruebas, 59 casos)
+### `servicio.CambiosReservaServicioTest` (63 pruebas, 67 casos)
 
 | Prueba | Qué verifica | Resultado |
 |---|---|---|
@@ -179,6 +180,14 @@ Cada nombre describe un único comportamiento. En las pruebas parametrizadas, "N
 | `laCancelacionPorElPredioExigeUnMotivo` | La cancelación por el predio exige un motivo | Pasa (3 casos) |
 | `laCancelacionPorElPredioRechazaUnTurnoQueYaEmpezo` | La cancelación por el predio rechaza un turno que ya empezó | Pasa |
 | `laCancelacionPorElPredioRechazaUnaReservaNoConfirmada` | La cancelación por el predio rechaza una reserva no confirmada | Pasa |
+| `cp29_elCreditoNoVenceMientrasDuraElMantenimiento` | Cp 29 el crédito no vence mientras dura el mantenimiento | Pasa |
+| `cp29_losDiasQueLeQuedanNoCambianDuranteElMantenimiento` | Cp 29 los días que le quedan no cambian durante el mantenimiento | Pasa |
+| `cp29_unCreditoVencidoAntesDelMantenimientoSigueVencido` | Cp 29 un crédito vencido antes del mantenimiento sigue vencido | Pasa |
+| `cp28_sinMantenimientoElPlazoNoSeToca` | Cp 28 sin mantenimiento el plazo no se toca | Pasa |
+| `cp29_unaCancelacionDuranteElMantenimientoNoEmpiezaACorrerHastaReactivar` | Cp 29 una cancelación durante el mantenimiento no empieza a correr hasta reactivar | Pasa |
+| `conLaBajaDefinitivaElCreditoSeUsaEnUnaInstalacionEquivalente` | Con la baja definitiva el crédito se usa en una instalación equivalente | Pasa |
+| `conLaBajaDefinitivaUnaInstalacionDeOtraDisciplinaNoServe` | Con la baja definitiva una instalación de otra disciplina no serve | Pasa |
+| `enMantenimientoElCreditoNoSePasaAUnaEquivalente` | En mantenimiento el crédito no se pasa a una equivalente | Pasa |
 | `rechazaReprogramarAUnTurnoDeUnaInstalacionNoHabilitada` | Rechaza reprogramar a un turno de una instalación no habilitada | Pasa |
 | `rechazaReprogramarAUnTurnoQueYaPaso` | Rechaza reprogramar a un turno que ya paso | Pasa |
 | `rechazaReprogramarSinElegirLaFecha` | Rechaza reprogramar sin elegir la fecha | Pasa |
@@ -246,7 +255,7 @@ Cada nombre describe un único comportamiento. En las pruebas parametrizadas, "N
 | `elDiaPuntualPuedeIrDespuesDelHorarioSemanalSinTocarlo` | El día puntual puede ir después del horario semanal sin tocarlo | Pasa |
 | `quitaSoloLasFranjasDeEsaInstalacion` | Quita solo las franjas de esa instalación | Pasa |
 
-### `servicio.InstalacionesServicioTest` (44 pruebas, 47 casos)
+### `servicio.InstalacionesServicioTest` (48 pruebas, 51 casos)
 
 | Prueba | Qué verifica | Resultado |
 |---|---|---|
@@ -273,6 +282,10 @@ Cada nombre describe un único comportamiento. En las pruebas parametrizadas, "N
 | `laBajaDefinitivaNoSeReviertePorReactivar` | La baja definitiva no se revierte por reactivar | Pasa |
 | `noReactivaUnaInstalacionQueYaEstaHabilitada` | No reactiva una instalación que ya está habilitada | Pasa |
 | `noReactivaUnaInstalacionInexistente` | No reactiva una instalación inexistente | Pasa |
+| `cp30_alReactivarElCreditoRetomaLosDiasQueLeQuedaban` | Cp 30 al reactivar el crédito retoma los días que le quedaban | Pasa |
+| `cp30_unCreditoVencidoAntesDelMantenimientoNoRevive` | Cp 30 un crédito vencido antes del mantenimiento no revive | Pasa |
+| `cp30_reactivarElMismoDiaNoCorreElPlazo` | Cp 30 reactivar el mismo día no corre el plazo | Pasa |
+| `laBajaDefinitivaDesdeMantenimientoRetomaElPlazoDeLosCreditos` | La baja definitiva desde mantenimiento retoma el plazo de los creditos | Pasa |
 | `editaLaDescripcionSinEspaciosYLaCapacidad` | Edita la descripcion sin espacios y la capacidad | Pasa |
 | `unaDescripcionEnBlancoQuedaNulaYLaCapacidadVaciaEsSinLimite` | Una descripcion en blanco queda nula y la capacidad vacía es sin limite | Pasa |
 | `rechazaUnaCapacidadQueNoEsMayorACero` | Rechaza una capacidad que no es mayor a cero | Pasa (2 casos) |
@@ -399,7 +412,7 @@ Cada nombre describe un único comportamiento. En las pruebas parametrizadas, "N
 | `rechazaUnaReservaQueYaNoEsperaElPago` | Rechaza una reserva que ya no espera el pago | Pasa |
 | `siNoSePuedeGuardarElArchivoAvisaAlSocioQueReintente` | Si no se puede guardar el archivo avisa al socio que reintente | Pasa |
 
-### `servicio.PanelSocioServicioConsultasTest` (24 pruebas, 24 casos)
+### `servicio.PanelSocioServicioConsultasTest` (25 pruebas, 25 casos)
 
 | Prueba | Qué verifica | Resultado |
 |---|---|---|
@@ -418,6 +431,7 @@ Cada nombre describe un único comportamiento. En las pruebas parametrizadas, "N
 | `unaFranjaReservadaPorElPropioSocioDiceTuReserva` | Una franja reservada por el propio socio dice tu reserva | Pasa |
 | `lasFranjasDeUnDiaConviertenCadaMotivoSegunSuEstado` | Las franjas de un día convierten cada motivo según su estado | Pasa |
 | `lasFranjasParaReprogramarSonLasDeLaInstalacionDeLaReservaPropia` | Las franjas para reprogramar son las de la instalación de la reserva propia | Pasa |
+| `conLaBajaDefinitivaLasFranjasParaReprogramarSonLasDeLasEquivalentes` | Con la baja definitiva las franjas para reprogramar son las de las equivalentes | Pasa |
 | `noMuestraFranjasParaReprogramarUnaReservaAjena` | No muestra franjas para reprogramar una reserva ajena | Pasa |
 | `losDiasReservablesVanDelTercerDiaHastaDentroDe30Dias` | Los días reservables van del tercer día hasta dentro de 30 días | Pasa |
 | `cuentaCuantasReservasProximasTieneElSocioCadaDia` | Cuenta cuantas reservas proximas tiene el socio cada día | Pasa |
@@ -428,7 +442,7 @@ Cada nombre describe un único comportamiento. En las pruebas parametrizadas, "N
 | `cp36_laTarifaDelSocioSinCambioProgramadoLoDice` | Cp 36 la tarifa del socio sin cambio programado lo dice | Pasa |
 | `cp36_laCuotaDelSocioMuestraDesdeCuandoRigeYElProximoCambio` | Cp 36 la cuota del socio muestra desde cuando rige y el proximo cambio | Pasa |
 
-### `servicio.PanelSocioServicioMisReservasTest` (20 pruebas, 20 casos)
+### `servicio.PanelSocioServicioMisReservasTest` (21 pruebas, 21 casos)
 
 | Prueba | Qué verifica | Resultado |
 |---|---|---|
@@ -444,6 +458,7 @@ Cada nombre describe un único comportamiento. En las pruebas parametrizadas, "N
 | `sinComprobanteSeOfreceSubirloYLiberarConElLimiteDe60Minutos` | Sin comprobante se ofrece subirlo y liberar con el limite de 60 minutos | Pasa |
 | `conComprobanteQuedaEnRevisionYNoSePuedeLiberar` | Con comprobante queda en revision y no se puede liberar | Pasa |
 | `unaCanceladaConCreditoVigentePermiteReprogramar` | Una cancelada con crédito vigente permite reprogramar | Pasa |
+| `cp29_conLaInstalacionEnMantenimientoElCreditoEstaEnPausa` | Cp 29 con la instalación en mantenimiento el crédito está en pausa | Pasa |
 | `elUltimoDiaDelCreditoTodaviaPermiteReprogramar` | El último día del crédito todavía permite reprogramar | Pasa |
 | `conElCreditoVencidoAyerNoPermiteReprogramar` | Con el crédito vencido ayer no permite reprogramar | Pasa |
 | `conUnPedidoDeReprogramacionPendienteNoSeOfreceReprogramarOtraVez` | Con un pedido de reprogramación pendiente no se ofrece reprogramar otra vez | Pasa |
@@ -587,7 +602,7 @@ Cada nombre describe un único comportamiento. En las pruebas parametrizadas, "N
 | `cp45_laCargaPideSoloElPeriodoYElPrevio` | Cp 45 la carga pide solo el periodo y el previo | Pasa |
 | `cargaLosTurnosDeCadaInstalacionReservable` | Carga los turnos de cada instalación reservable | Pasa |
 
-### `servicio.ReportesServicioTest` (59 pruebas, 67 casos)
+### `servicio.ReportesServicioTest` (60 pruebas, 68 casos)
 
 | Prueba | Qué verifica | Resultado |
 |---|---|---|
@@ -615,6 +630,7 @@ Cada nombre describe un único comportamiento. En las pruebas parametrizadas, "N
 | `cadaTipoDeSocioAportaPorReservasYPorMembresias` | Cada tipo de socio aporta por reservas y por membresías | Pasa |
 | `elDineroPerdidoSonLosCreditosQueVencieronEnElPeriodoSinUsarse` | El dinero perdido son los creditos que vencieron en el periodo sin usarse | Pasa |
 | `elDineroEnCreditosVigentesEsElQueTodaviaSePuedeReprogramar` | El dinero en creditos vigentes es el que todavía se puede reprogramar | Pasa |
+| `cp29_unCreditoEnPausaNoSeCuentaComoPerdido` | Cp 29 un crédito en pausa no se cuenta como perdido | Pasa |
 | `unaReservaCanceladaSinPagoConfirmadoNoGeneraDineroEnJuego` | Una reserva cancelada sin pago confirmado no genera dinero en juego | Pasa |
 | `loPendienteDeValidarSumaComprobantesDeReservasYDeMembresias` | Lo pendiente de validar suma comprobantes de reservas y de membresías | Pasa |
 | `laProyeccionCuentaLasQueVencenEnLosProximos30DiasConSuCuota` | La proyeccion cuenta las que vencen en los próximos 30 días con su cuota | Pasa |
@@ -671,12 +687,13 @@ Cada nombre describe un único comportamiento. En las pruebas parametrizadas, "N
 | `cp43_sinPeriodoPideElegirlo` | Cp 43 sin periodo pide elegirlo | Pasa |
 | `cp43_unPeriodoAlReves` | Cp 43 un periodo al reves | Pasa |
 
-### `servicio.ReservaServicioListadosTest` (18 pruebas, 18 casos)
+### `servicio.ReservaServicioListadosTest` (19 pruebas, 19 casos)
 
 | Prueba | Qué verifica | Resultado |
 |---|---|---|
 | `unaConfirmadaSeMuestraConfirmadaYCobradaElDiaDeLaConfirmacion` | Una confirmada se muestra confirmada y cobrada el día de la confirmacion | Pasa |
 | `unaCanceladaConCreditoVigenteLoDiceEnElTexto` | Una cancelada con crédito vigente lo dice en el texto | Pasa |
+| `cp29_unaCanceladaConCreditoEnPausaSigueConCredito` | Cp 29 una cancelada con crédito en pausa sigue con crédito | Pasa |
 | `unaCanceladaConCreditoVencidoAyerNoDiceConCredito` | Una cancelada con crédito vencido ayer no dice con crédito | Pasa |
 | `unaPendienteConComprobanteEstaPorConfirmar` | Una pendiente con comprobante está por confirmar | Pasa |
 | `unaPendienteSinComprobanteEstaEsperandoElPago` | Una pendiente sin comprobante está esperando el pago | Pasa |
@@ -845,16 +862,16 @@ La cobertura la mide JaCoCo sobre el código de producción mientras corren las 
 
 | Paquete | Líneas | Ramas | Métodos |
 |---|---|---|---|
-| **`servicio`** | 88.6 % (2312/2609) | 80.5 % (1701/2112) | 80.8 % |
+| **`servicio`** | 88.8 % (2361/2660) | 80.7 % (1751/2170) | 81.1 % |
 | **`util`** | 94.9 % (37/39) | 100.0 % (44/44) | 100.0 % |
 | `repositorio` | 70.0 % (420/600) | 9.4 % (19/202) | 74.5 % |
-| `dto` | 68.7 % (733/1067) | 50.0 % (34/68) | 59.0 % |
-| `dao` | 1.0 % (4/403) | 0.0 % (0/54) | 0.9 % |
+| `dto` | 68.8 % (734/1067) | 50.0 % (34/68) | 59.2 % |
+| `dao` | 1.0 % (4/409) | 0.0 % (0/54) | 0.9 % |
 | `bean` | 1.7 % (22/1333) | 0.2 % (1/527) | 0.6 % |
 | `seguridad` | 0.0 % (0/40) | 0.0 % (0/18) | 0.0 % |
 | `resources` | 0.0 % (0/4) | n/a (0/0) | 0.0 % |
 | `(raíz)` | 0.0 % (0/1) | n/a (0/0) | 0.0 % |
-| **Total** | 57.9 % (3528/6096) | 59.5 % (1799/3025) | 45.7 % |
+| **Total** | 58.2 % (3578/6153) | 60.0 % (1849/3083) | 45.9 % |
 
 Cómo leer esta tabla: `servicio` y `util` son el alcance de este conjunto de pruebas. El total incluye paquetes que no se probaron a propósito (`bean`, con las pantallas JSF; `dao`, con las consultas a la base; y `seguridad`), que figuran en 0 %, por lo que el total solo no es un indicador de calidad. El porcentaje de `repositorio` y `dto` es incidental: son clases de datos que las pruebas construyen o recorren pero no verifican por sí mismas.
 
@@ -869,14 +886,14 @@ Cómo leer esta tabla: `servicio` y `util` son el alcance de este conjunto de pr
 | `servicio.RegistroServicio` | 100.0 % (84/84) | 100.0 % (70/70) |
 | `servicio.UsuarioServicio` | 100.0 % (9/9) | 100.0 % (10/10) |
 | `servicio.ValoracionesServicio` | 100.0 % (58/58) | 100.0 % (32/32) |
-| `servicio.ReportesServicio` | 99.8 % (540/541) | 84.2 % (404/480) |
+| `servicio.ReportesServicio` | 99.8 % (541/542) | 84.2 % (406/482) |
 | `servicio.HorarioServicio` | 99.2 % (128/129) | 98.1 % (104/106) |
 | `servicio.TarifasServicio` | 98.5 % (130/132) | 100.0 % (104/104) |
-| `servicio.PanelSocioServicio` | 98.2 % (385/392) | 89.7 % (315/351) |
-| `servicio.CambiosReservaServicio` | 97.7 % (171/175) | 91.3 % (115/126) |
+| `servicio.CambiosReservaServicio` | 97.9 % (191/195) | 90.9 % (140/154) |
+| `servicio.PanelSocioServicio` | 97.8 % (406/415) | 89.3 % (333/373) |
 | `servicio.ReservaServicio` | 95.9 % (235/245) | 86.6 % (149/172) |
 | `servicio.SociosServicio` | 91.9 % (171/186) | 75.3 % (137/182) |
-| `servicio.InstalacionesServicio` | 80.7 % (192/238) | 71.0 % (137/193) |
+| `servicio.InstalacionesServicio` | 81.2 % (199/245) | 71.4 % (142/199) |
 | `servicio.DashboardServicio` | 19.0 % (26/137) | 16.2 % (18/111) |
 | `servicio.MembresiaJob` | 0.0 % (0/24) | 0.0 % (0/8) |
 | `servicio.CalendarioServicio` | 0.0 % (0/74) | 0.0 % (0/51) |
@@ -888,7 +905,7 @@ El porcentaje de la capa `servicio` completa mezcla las reglas con métodos que 
 | Clase | Líneas | Ramas |
 |---|---|---|
 | `PanelSocioServicio` | 98.4 % (124/126) | 100.0 % (106/106) |
-| `CambiosReservaServicio` | 100.0 % (104/104) | 97.7 % (86/88) |
+| `CambiosReservaServicio` | 100.0 % (107/107) | 97.8 % (88/90) |
 | `MembresiasServicio` | 100.0 % (50/50) | 100.0 % (30/30) |
 | `TarifasServicio` | 100.0 % (85/85) | 100.0 % (90/90) |
 | `ReservaServicio` | 100.0 % (20/20) | 100.0 % (22/22) |
@@ -896,7 +913,7 @@ El porcentaje de la capa `servicio` completa mezcla las reglas con métodos que 
 | `UsuarioServicio` | 100.0 % (8/8) | 100.0 % (10/10) |
 | `PasswordUtil` | 89.5 % (17/19) | 100.0 % (6/6) |
 | `ComprobanteArchivos` | 100.0 % (20/20) | 100.0 % (38/38) |
-| **Núcleo de reglas** | **99.2 % (511/515)** | **99.6 % (458/460)** |
+| **Núcleo de reglas** | **99.2 % (514/518)** | **99.6 % (460/462)** |
 
 Métodos incluidos: `PanelSocioServicio`: reservar, subirComprobante, valorar, liberar, liberarVencidas, propiaPendiente, sinValorar, debeValorarse, primerDiaReservable, sha256; `CambiosReservaServicio`: fueraDePlazo, solicitar, aprobar, rechazar, cancelarPorElPredio, validarDestino, cancelar, mover, registrar, recortar; `MembresiasServicio`: aceptar, denegar, cancelar, vencerVencidas, congelarSiCorresponde, estaPorValidar, validarPago; `TarifasServicio`: ordenValido, cambiarAlquiler, cambiarMembresia, aplicar, enVigencia, parsear; `ReservaServicio`: confirmar, rechazar, resolver; `RegistroServicio`: validarPasoUno, registrar, resolverCategoria, bajaDe, liberar, archivado; `UsuarioServicio`: autenticar; `PasswordUtil`: generarHash, verificar, hashear; `ComprobanteArchivos`: guardar, borrar, ruta, extension, tipoMime, carpeta.
 
@@ -946,7 +963,7 @@ Resultado: **19 de 20 detectadas en la primera pasada**. La que sobrevivió (M11
 
 Alcance de esta comprobación: son 20 roturas elegidas a mano sobre constantes y comparaciones de las reglas pedidas. No reemplaza una herramienta de mutación (por ejemplo PIT), que genera cientos de variantes automáticamente.
 
-La tabla se midió sobre la rama `calidad/pruebas-junit`, antes de CC-01, CC-03, CC-04, CC-05 y CC-06 (sección 10). Las pruebas que cita siguen existiendo; no se volvió a medir.
+La tabla se midió sobre la rama `calidad/pruebas-junit`, antes de CC-01, CC-02, CC-03, CC-04, CC-05 y CC-06 (sección 10). Las pruebas que cita siguen existiendo; no se volvió a medir.
 
 ## 5. Discrepancias y posibles defectos
 
@@ -1140,3 +1157,18 @@ Lo que pide el plan (Tabla 12): antes de exportar se elige el período y los fil
 - **Cambios de comportamiento que conviene saber:** (1) el listado ordena por fecha del turno y número de reserva (más reciente primero); dentro de un mismo día ya no va por hora, para que la base use el índice de la fecha y corte al llegar a 25 filas (el PDF sí sale en orden cronológico); (2) el buscador reconoce fechas completas (`dd/mm/aaaa`) y el número exacto de reserva, y ya no coincide con fechas parciales como `15/10`.
 - **Lo que no se pudo comprobar:** las pantallas en GlassFish (EL y AJAX de la página de reservas y de reportes); el PDF se verificó con una maqueta estática impresa con Edge sin ventana y el `print.css` real (3 páginas, encabezado de tabla repetido, "Página 1 de 3" a "3 de 3"). La numeración usa los cuadros de margen de `@page`, que soportan Chrome y Edge recientes (131 o más); Firefox no los dibuja y el PDF sale sin el "Página N de M".
 - **Pendiente:** los reportes de 12 meses con este volumen siguen leyendo unas 110.000 reservas (6,7 s, más de 500 MB): para esa escala hay que pasar los cálculos a consultas de agregación. El esquema no cambió (el índice de `reserva.fecha_turno` ya existía); un índice sobre `pago.fecha_validacion` aceleraría los reportes y queda para decidir.
+
+### CC-02. Crédito y mantenimiento (rama `cambio/cc-02-credito-y-mantenimiento`, sale de la de CC-06)
+
+Lo que pide el plan (Tabla 12, opción A): el plazo de 30 días del crédito se suspende mientras la instalación está en mantenimiento y se reanuda al reactivarla; el socio no pierde el crédito. Se verifica con CP-29 y CP-30. Las dos dudas abiertas del plan las resolvió el equipo el 13/10/2026:
+
+- **Días conservados, no 30 completos:** si al empezar el mantenimiento le quedaban 25 días, quedan congelados y al reactivar vuelven a contar desde 25 (contados desde la reactivación real).
+- **Baja definitiva:** recién ahí el crédito se puede usar en otra instalación equivalente; con un mantenimiento (temporal) no.
+
+- **Código:** `CambiosReservaServicio.limiteDelCredito(reserva, hoy)` es el único lugar que dice hasta cuándo vale un crédito: si la instalación está en mantenimiento, a la fecha guardada le suma los días que lleva el mantenimiento, así que al crédito le quedan siempre los mismos días. `InstalacionesServicio.reactivar(id, hoy)` (ahora recibe el día de la reactivación real) guarda ese corrimiento en los créditos que seguían vigentes cuando empezó el mantenimiento (`ReservaDAO.listarConCreditoDesde`); lo mismo hace `retirar` si el mantenimiento termina en baja definitiva. Una cancelación hecha durante el mantenimiento deja el crédito en pausa desde el primer día. Un crédito que ya había vencido antes de empezar el mantenimiento no revive. **El esquema de la base no cambia:** se usa `instalacion.fecha_inicio_baja`, que ya existía.
+- **Equivalente:** `CambiosReservaServicio.equivalente`: la instalación original está dada de baja definitiva y la otra es de reserva y de la misma disciplina (por ejemplo, los tres quinchos). `validarDestino` la acepta; el socio ve las franjas de las equivalentes (con el nombre de cada una) y el administrador aprueba como siempre.
+- **Dónde se ve la pausa:** mis reservas y avisos del socio ("Tu crédito está en pausa mientras ... esté en mantenimiento: te quedan N días desde que se reactive"), pestaña "Con crédito" del administrador ("En pausa (mantenimiento)"), listado de reservas ("Cancelada · con crédito") y reportes (el dinero en un crédito en pausa cuenta como retenido, no como perdido, y no entra en el aviso de "vencen en 7 días").
+- **Pruebas escritas primero (fallaban 10 y 3 por stubs sin usar):** `cp29_elCreditoNoVenceMientrasDuraElMantenimiento`, `cp29_losDiasQueLeQuedanNoCambianDuranteElMantenimiento`, `cp29_unaCancelacionDuranteElMantenimientoNoEmpiezaACorrerHastaReactivar` y las de listados, reportes y panel del socio; `cp30_alReactivarElCreditoRetomaLosDiasQueLeQuedaban` y `laBajaDefinitivaDesdeMantenimientoRetomaElPlazoDeLosCreditos`; y las de la instalación equivalente. Se agregan como protección: un crédito vencido antes del mantenimiento no revive, reactivar el mismo día no cambia el plazo y en mantenimiento no hay equivalentes.
+- **Las consultas SQL no las ejercitan las pruebas unitarias.** Se probó de punta a punta contra una base MySQL temporal con los datos de demostración (servicios y DAO reales, ya borrada): a un crédito con 20 días lo siguen mostrando con 20 días hoy y 60 días después, reactivar 50 días más tarde lo deja en la fecha de ese día + 20 (22/12/2026), el reporte trae los créditos en pausa y la baja definitiva del Quincho 1 ofrece las franjas del Quincho 2 y del 3.
+- **Lo que no se pudo comprobar:** las pantallas en GlassFish (el texto de "Mis reservas" y la pestaña "Con crédito" del administrador).
+- **A decidir:** (1) si la instalación se da de baja y no tiene ninguna equivalente (rugby, SUM), el crédito queda sin uso hasta que venza (el plan habla de "reintegro", que el sistema no maneja: no hay devoluciones de dinero); (2) al dar de baja desde un mantenimiento el plazo vuelve a correr ese día, con los días que le quedaban; (3) en el plan hay que actualizar el texto de CP-30 y de la sección de reglas de CC-02 ([A CONFIRMAR] resueltos).

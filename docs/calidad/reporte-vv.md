@@ -10,7 +10,7 @@ Generado automáticamente por `docs/calidad/generar_reporte_vv.py` con la planti
 |---|---|
 | Reporte N.º | V&V-01 |
 | Fecha y responsable de la ejecución | 13/10/2026 — [completar: ingeniero de pruebas] |
-| Versión del código | rama `cambio/cc-06-pdf-con-filtros`, commit `a3df32f` |
+| Versión del código | rama `cambio/cc-02-credito-y-mantenimiento`, commit `171d96a` |
 | Entorno de pruebas | Windows 11, Java 21, Maven; JUnit 5 + Mockito; sin MySQL ni GlassFish |
 | Alcance de la ejecución | Parcial: casos de nivel U (unitarios). Los de nivel I, S y A no se ejecutaron |
 | Datos de prueba utilizados | Ficticios, armados en `DatosDePrueba` (reloj fijo: lunes 12/10/2026 10:00) |
@@ -22,20 +22,20 @@ Generado automáticamente por `docs/calidad/generar_reporte_vv.py` con la planti
 
 | Indicador | Meta | Resultado | ¿Cumple? |
 |---|---|---|---|
-| Casos ejecutados | 53 de 53 | 33 de 53 | No |
-| Casos aprobados, fallidos y no ejecutados | Solo se informa | 31 aprobados, 2 fallidos, 20 no ejecutados | — |
-| Casos críticos aprobados | 100 % | 23 de 29 (79 %) | No |
-| Cobertura de líneas de los servicios (JaCoCo) | 70 % o más | 88.6 % (2312 de 2609 líneas) | Sí |
-| Cobertura de ramas de los servicios (JaCoCo) | Solo se informa | 80.5 % (1701 de 2112 ramas) | — |
+| Casos ejecutados | 53 de 53 | 35 de 53 | No |
+| Casos aprobados, fallidos y no ejecutados | Solo se informa | 33 aprobados, 2 fallidos, 18 no ejecutados | — |
+| Casos críticos aprobados | 100 % | 25 de 29 (86 %) | No |
+| Cobertura de líneas de los servicios (JaCoCo) | 70 % o más | 88.8 % (2361 de 2660 líneas) | Sí |
+| Cobertura de ramas de los servicios (JaCoCo) | Solo se informa | 80.7 % (1751 de 2170 ramas) | — |
 | Defectos críticos y altos abiertos | 0 | 2 (D-3, D-4) | No |
 | Defectos abiertos y cerrados, por severidad | Solo se informa | Abiertos: 2 alta, 2 baja, 1 media. Cerrados: 0 | — |
 | Tiempo medio de corrección de un defecto (días) | Solo se informa | Sin datos: todavía no se corrigió ninguno | — |
 | Requerimientos sin caso de prueba | 0 | 0 | Sí |
 | Contraste en las pantallas clave (CP-47 y CP-48) | 4,5:1 texto normal; 3:1 texto grande y componentes | No medido | No |
 | Exportación a PDF con 500.000 reservas (CP-45) | 6 de 6 | No ejecutado | No |
-| Cambios CC-01 a CC-06 verificados | 6 de 6 | 1 de 6 (CC-01); implementados con revisión manual pendiente: CC-03, CC-04, CC-05, CC-06 | No |
+| Cambios CC-01 a CC-06 verificados | 6 de 6 | 2 de 6 (CC-01, CC-02); implementados con revisión manual pendiente: CC-03, CC-04, CC-05, CC-06 | No |
 
-Pruebas automáticas ejecutadas: **694** (688 pasan, 0 fallan, 6 deshabilitadas). 568 de ellas no corresponden a ningún caso del plan: son pruebas de regresión adicionales sobre las demás reglas del sistema.
+Pruebas automáticas ejecutadas: **711** (705 pasan, 0 fallan, 6 deshabilitadas). 573 de ellas no corresponden a ningún caso del plan: son pruebas de regresión adicionales sobre las demás reglas del sistema.
 
 ### Defectos abiertos
 
@@ -81,10 +81,10 @@ La severidad es una propuesta; la asigna el líder de SQA (Tabla 31). Detalle y 
 | CP-24 | Cancelar exactamente a las 48 horas del turno | U | Sí | Aprobado | — |
 | CP-25 | Pedir la reprogramación con crédito vigente y que el administrador la apruebe | U | Sí | Aprobado | — |
 | CP-26 | El administrador rechaza la reprogramación | U | Sí | Aprobado | — |
-| CP-27 | Reprogramar a otra instalación o enviar una segunda solicitud | U | Sí | Aprobado | — |
+| CP-27 | Reprogramar a otra instalación o enviar una segunda solicitud | U | Sí | Aprobado | Con CC-02, si la instalación se da de baja definitiva el crédito también vale en una equivalente (misma disciplina); en cualquier otro caso (otra instalación, mantenimiento) se rechaza. |
 | CP-28 | Un crédito llega a los 30 días sin mantenimiento | U | Sí | Aprobado | — |
-| CP-29 | Mantenimiento de más de 30 días con un crédito vigente | U | Sí | No ejecutado | No hay prueba automática (cambio CC-02 todavía no implementado). |
-| CP-30 | Se reactiva la instalación que estuvo en mantenimiento | U | Sí | No ejecutado | No hay prueba automática (cambio CC-02 todavía no implementado). |
+| CP-29 | Mantenimiento de más de 30 días con un crédito vigente | U | Sí | Aprobado | — |
+| CP-30 | Se reactiva la instalación que estuvo en mantenimiento | U | Sí | Aprobado | Decisión del equipo (13/10/2026): el crédito conserva los días que le quedaban al empezar el mantenimiento y los retoma desde la reactivación real; no vuelve a tener 30 completos. Hay que actualizar el texto del caso en el plan ([A CONFIRMAR] resuelto). |
 | CP-31 | El predio cancela una reserva por mantenimiento o clima | U | Sí | Aprobado | — |
 | CP-32 | El administrador valida el comprobante de la cuota | U | Sí | Aprobado | Defecto D-3 abierto sobre un detalle de este caso (prueba deshabilitada). |
 | CP-33 | Corre la tarea horaria con una membresía vencida | U | Sí | Aprobado | La prueba cubre el servicio que usa la tarea horaria (MembresiasServicio.vencerVencidas); la clase MembresiaJob (el temporizador) no se prueba en unitarias. |
@@ -131,7 +131,7 @@ Un requerimiento figura como *Aprobado* si todos sus casos lo están.
 | RNF-07 Rendimiento de listados y PDF | CP-45 | Parcial: 0 de 1 aprobados |
 | RNF-08 Accesibilidad visual | CP-47, CP-48, CP-49 | Parcial: 0 de 3 aprobados |
 | CC-01 Cancelación automática | CP-22, CP-23, CP-24, CP-25, CP-26 | Aprobado |
-| CC-02 Crédito y mantenimiento | CP-29, CP-30 | Parcial: 0 de 2 aprobados |
+| CC-02 Crédito y mantenimiento | CP-29, CP-30 | Aprobado |
 | CC-03 Vigencia de tarifas | CP-36 | Parcial: 0 de 1 aprobados |
 | CC-04 Grado de satisfacción (nombre) | CP-41 | Parcial: 0 de 1 aprobados |
 | CC-05 Colores y contrastes | CP-47, CP-48, CP-49 | Parcial: 0 de 3 aprobados |
@@ -201,7 +201,19 @@ Un requerimiento figura como *Aprobado* si todos sus casos lo están.
 | CP-27 | `CambiosReservaServicioTest` | rechaza reprogramar a otra instalación | pasa |
 | CP-27 | `CambiosReservaServicioTest` | rechaza un segundo pedido para la misma reserva | pasa |
 | CP-28 | `CambiosReservaServicioTest` | el crédito todavía se usa el último día | pasa |
+| CP-28 | `CambiosReservaServicioTest` | sin mantenimiento el crédito sigue venciendo en la fecha guardada | pasa |
 | CP-28 | `CambiosReservaServicioTest` | un crédito vencido ayer ya no se puede usar | pasa |
+| CP-29 | `CambiosReservaServicioListadosTest` | el administrador ve en pausa el crédito de una instalación en mantenimiento | pasa |
+| CP-29 | `CambiosReservaServicioTest` | cancelar una reserva durante el mantenimiento deja el crédito en pausa desde el primer día | pasa |
+| CP-29 | `CambiosReservaServicioTest` | durante el mantenimiento al crédito le quedan siempre los mismos días | pasa |
+| CP-29 | `CambiosReservaServicioTest` | un crédito no vence mientras la instalación está en mantenimiento, aunque pasen más de 30 días | pasa |
+| CP-29 | `CambiosReservaServicioTest` | un crédito que ya había vencido antes del mantenimiento sigue vencido | pasa |
+| CP-29 | `PanelSocioServicioMisReservasTest` | con la instalación en mantenimiento el crédito queda en pausa y el socio lo ve | pasa |
+| CP-29 | `ReportesServicioTest` | el crédito de una instalación en mantenimiento no cuenta como dinero perdido | pasa |
+| CP-29 | `ReservaServicioListadosTest` | la cancelada de una instalación en mantenimiento sigue diciendo con crédito | pasa |
+| CP-30 | `InstalacionesServicioTest` | al reactivar, el crédito conserva los días que le quedaban, contados desde la reactivación real | pasa |
+| CP-30 | `InstalacionesServicioTest` | reactivar el mismo día que empezó el mantenimiento no cambia el plazo | pasa |
+| CP-30 | `InstalacionesServicioTest` | un crédito que ya había vencido antes del mantenimiento no revive al reactivar | pasa |
 | CP-31 | `CambiosReservaServicioTest` | cancelación por el predio: CANCELADA con crédito de 30 días | pasa |
 | CP-31 | `InstalacionesServicioTest` | al poner en mantenimiento, las confirmadas se cancelan por el predio | pasa |
 | CP-32 | `MembresiasServicioTest` | al validar, el socio queda ACTIVO y su carnet activo | pasa |
