@@ -32,6 +32,7 @@ public class AdminReportesBean implements Serializable {
 
     private LocalDate hoy;
     private ReportesServicio.Datos datos;
+    private String periodoCargado;      // el período con el que se leyó la base: al cambiarlo se vuelve a leer
     private ReportesServicio.Rango rango;
 
     // lo que el administrador eligió
@@ -67,13 +68,19 @@ public class AdminReportesBean implements Serializable {
     @PostConstruct
     public void init() {
         hoy = LocalDate.now();
-        datos = servicio.cargar(hoy);
         recalcular();
     }
 
-    /** Vuelve a calcular todos los reportes para el período y el agrupado elegidos. */
+    /**
+     * Vuelve a calcular todos los reportes para el período y el agrupado elegidos. La base se lee de nuevo solo si
+     * cambió el período (la consulta trae únicamente ese período y el anterior); el agrupado se resuelve en memoria.
+     */
     public void recalcular() {
         rango = servicio.rango(periodo, hoy);
+        if (datos == null || !periodo.equals(periodoCargado)) {
+            datos = servicio.cargar(hoy, rango);
+            periodoCargado = periodo;
+        }
         resumen = servicio.resumen(datos, rango);
         alertas = servicio.alertas(datos, rango);
 

@@ -5,6 +5,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.lenient;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.sigrid.sigrid.dao.CategoriaSocioDAO;
@@ -30,6 +32,7 @@ import java.time.LocalTime;
 import java.util.Collections;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -71,8 +74,11 @@ class ReportesServicioCargaTest {
             Instalacion.TipoAcceso.ARANCELADO, Instalacion.Estado.HABILITADA);
     private final Turno turno = DatosDePrueba.turno(5, cancha, LocalTime.of(10, 0), LocalTime.of(11, 0));
 
+    private ReportesServicio.Rango r30;
+
     @BeforeEach
     void instalacionesYTurnos() {
+        r30 = servicio.rango("30D", HOY);
         lenient().when(instalacionDAO.listarReservables()).thenReturn(List.of(cancha));
         lenient().when(turnoDAO.listarPorInstalacion(1)).thenReturn(List.of(turno));
     }
@@ -96,7 +102,7 @@ class ReportesServicioCargaTest {
         cuota.setIdSocio(socio);
         cuota.setEstado(SuscripcionSocio.Estado.VIGENTE);
         cuota.setIdPago(pago(4, "5000", Pago.Estado.CONFIRMADO, validado));
-        when(reservaDAO.listarTodasParaAdmin()).thenReturn(List.of(
+        when(reservaDAO.listarParaReportes(r30.getPrevioDesde(), r30.getHasta())).thenReturn(List.of(
                 reserva(1, Reserva.Estado.CONFIRMADA, pago(1, "20000", Pago.Estado.CONFIRMADO, validado)),
                 reserva(2, Reserva.Estado.PENDIENTE_PAGO, pago(2, "20000", Pago.Estado.PENDIENTE_VALIDACION, null)),
                 reserva(3, Reserva.Estado.RECHAZADA, pago(3, "20000", Pago.Estado.RECHAZADO, validado)),
@@ -105,7 +111,7 @@ class ReportesServicioCargaTest {
                 reserva(7, Reserva.Estado.PENDIENTE_PAGO, null)));
         when(suscripcionDAO.listarTodasParaReportes()).thenReturn(List.of(cuota));
 
-        ReportesServicio.Datos d = servicio.cargar(HOY);
+        ReportesServicio.Datos d = servicio.cargar(HOY, r30);
 
         assertEquals(3, d.ingresos.size());
         assertEquals(0, new BigDecimal("20000").compareTo(d.ingresos.get(0).monto));
@@ -124,7 +130,7 @@ class ReportesServicioCargaTest {
                 DatosDePrueba.tarifaAlquiler(2, cancha, DatosDePrueba.categoria(4, "Externo", false), "25000", desde,
                         null)));
 
-        ReportesServicio.Datos d = servicio.cargar(HOY);
+        ReportesServicio.Datos d = servicio.cargar(HOY, r30);
 
         assertEquals(0, new BigDecimal("17500").compareTo(d.precioPromedio.get(1)));
     }
@@ -138,7 +144,7 @@ class ReportesServicioCargaTest {
         when(tarifaMembresiaDAO.buscarVigente(1, HOY)).thenReturn(cuota);
         when(tarifaMembresiaDAO.buscarVigente(4, HOY)).thenReturn(null);
 
-        ReportesServicio.Datos d = servicio.cargar(HOY);
+        ReportesServicio.Datos d = servicio.cargar(HOY, r30);
 
         assertEquals(List.of("Alumno UNSE", "Externo"), d.categorias);
         assertEquals(0, new BigDecimal("5000").compareTo(d.cuotas.get("Alumno UNSE")));
@@ -150,15 +156,24 @@ class ReportesServicioCargaTest {
         when(socioDAO.contarPorEstado(Socio.Estado.ACTIVO)).thenReturn(12L);
         when(socioDAO.listarSinBaja()).thenReturn(Collections.nCopies(15, socio));
 
-        ReportesServicio.Datos d = servicio.cargar(HOY);
+        ReportesServicio.Datos d = servicio.cargar(HOY, r30);
 
         assertEquals(12, d.sociosActivos);
         assertEquals(15, d.sociosTotal);
     }
 
+    @DisplayName("CP-45: la carga pide a la base solo el período y el previo, no toda la tabla de reservas")
+    @Test
+    void cp45_laCargaPideSoloElPeriodoYElPrevio() {
+        servicio.cargar(HOY, r30);
+
+        verify(reservaDAO).listarParaReportes(r30.getPrevioDesde(), r30.getHasta());
+        verify(reservaDAO, never()).listarTodasParaAdmin();
+    }
+
     @Test
     void cargaLosTurnosDeCadaInstalacionReservable() {
-        ReportesServicio.Datos d = servicio.cargar(HOY);
+        ReportesServicio.Datos d = servicio.cargar(HOY, r30);
 
         assertEquals(List.of(turno), d.turnos.get(1));
         assertEquals(HOY, d.hoy);

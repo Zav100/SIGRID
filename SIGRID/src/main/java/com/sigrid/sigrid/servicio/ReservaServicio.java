@@ -3,7 +3,12 @@ package com.sigrid.sigrid.servicio;
 import com.sigrid.sigrid.dao.ReservaDAO;
 import com.sigrid.sigrid.dao.UsuarioDAO;
 import com.sigrid.sigrid.dao.ComprobantePagoDAO;
+import com.sigrid.sigrid.dao.InstalacionDAO;
+import com.sigrid.sigrid.dto.FiltroReservas;
+import com.sigrid.sigrid.dto.InformeReservas;
+import com.sigrid.sigrid.dto.PaginaReservas;
 import com.sigrid.sigrid.dto.ReservaListado;
+import com.sigrid.sigrid.dto.ResumenReservas;
 import com.sigrid.sigrid.dto.SolicitudFila;
 import com.sigrid.sigrid.repositorio.ComprobantePago;
 import com.sigrid.sigrid.repositorio.Socio;
@@ -48,6 +53,32 @@ public class ReservaServicio implements Serializable {
     private UsuarioDAO usuarioDAO;
     @Inject
     private ComprobantePagoDAO comprobanteDAO;
+
+    /** Lo máximo que entra en un PDF: pasado esto se pide acotar el período en vez de armar un documento enorme. */
+    public static final int MAXIMO_INFORME = 2000;
+
+    @Inject
+    private InstalacionDAO instalacionDAO;
+
+    /** Una tanda del listado del administrador con los filtros aplicados por la base (CC-06). */
+    public PaginaReservas listarPagina(FiltroReservas filtro, int cantidad, LocalDate hoy, LocalTime ahora) {
+        return new PaginaReservas(new ArrayList<>(), 0);
+    }
+
+    /** Indicadores y rankings de la página de reservas, calculados por la base. */
+    public ResumenReservas resumen(LocalDateTime ahora) {
+        return null;
+    }
+
+    /** Lo que se exporta a PDF: el período y los filtros elegidos, o el aviso de por qué no se puede. */
+    public InformeReservas informe(FiltroReservas filtro, LocalDateTime ahora) {
+        return null;
+    }
+
+    /** Los tipos de instalación que se reservan, para el filtro. */
+    public List<String> disciplinas() {
+        return new ArrayList<>();
+    }
 
     /** Todas las reservas (en cualquier estado) para el listado del administrador; la de fecha más lejana primero. */
     public List<ReservaListado> listarTodas(LocalDate hoy, LocalTime ahora) {

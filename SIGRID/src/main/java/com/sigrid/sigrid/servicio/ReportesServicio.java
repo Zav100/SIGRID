@@ -155,6 +155,22 @@ public class ReportesServicio implements Serializable {
             return nombre;
         }
 
+        public LocalDate getDesde() {
+            return desde;
+        }
+
+        public LocalDate getHasta() {
+            return hasta;
+        }
+
+        public LocalDate getPrevioDesde() {
+            return previoDesde;
+        }
+
+        public LocalDate getPrevioHasta() {
+            return previoHasta;
+        }
+
         public String getTexto() {
             return desde.format(FECHA) + " al " + hasta.format(FECHA);
         }
@@ -176,7 +192,10 @@ public class ReportesServicio implements Serializable {
         }
     }
 
-    public Datos cargar(LocalDate hoy) {
+    /**
+     * Lee de la base lo que necesitan los reportes del período (y del período previo con el que se compara).
+     */
+    public Datos cargar(LocalDate hoy, Rango rango) {
         Datos d = new Datos();
         d.hoy = hoy;
         d.reservas = reservaDAO.listarTodasParaAdmin();

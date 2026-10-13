@@ -1,13 +1,17 @@
 package com.sigrid.sigrid.dao;
 
+import com.sigrid.sigrid.dto.FiltroReservas;
 import com.sigrid.sigrid.repositorio.Pago;
 import com.sigrid.sigrid.repositorio.Reserva;
 import jakarta.enterprise.context.Dependent;
 import jakarta.persistence.LockModeType;
+import jakarta.persistence.TypedQuery;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * DAO de Reserva. "Activa" = PENDIENTE_PAGO o CONFIRMADA: es la que ocupa el turno.
@@ -243,6 +247,191 @@ public class ReservaDAO extends BaseDAO<Reserva> {
                 Reserva.class)
                 .setParameter("pendiente", Reserva.Estado.PENDIENTE_PAGO)
                 .setParameter("limite", limite)
+                .getResultList();
+    }
+
+    // ---------- listado y PDF del administrador con filtros en SQL (CC-06) ----------
+
+    private static final String UNIONES = " JOIN r.idTurno t JOIN t.idInstalacion i JOIN r.idSocio s JOIN s.idUsuario u "
+            + "LEFT JOIN r.idPago p";
+    private static final String UNIONES_CON_DATOS = " JOIN FETCH r.idTurno t JOIN FETCH t.idInstalacion i "
+            + "JOIN FETCH r.idSocio s JOIN FETCH s.idUsuario u LEFT JOIN FETCH r.idPago p LEFT JOIN FETCH r.idTarifa";
+    private static final java.time.format.DateTimeFormatter FECHA_ESCRITA
+            = java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy");
+
+    /** Un texto para LIKE: sin comodines propios (el caracter de escape es "!"). */
+    private static String comodin(String texto) {
+        return "%" + texto.replace("!", "!!").replace("%", "!%").replace("_", "!_") + "%";
+    }
+
+    /**
+     * Las condiciones del filtro (con la misma regla de estado que ve el administrador) y sus parámetros. El buscador
+     * mira socio, correo, DNI, instalación y disciplina (la colación de la base ignora tildes y mayúsculas) y, si el
+     * texto es un número o una fecha dd/mm/aaaa, también el número de reserva o el día del turno.
+     */
+    private static String donde(FiltroReservas f, LocalDate hoy, LocalTime ahora, Map<String, Object> parametros) {
+        StringBuilder w = new StringBuilder(" WHERE 1 = 1");
+        if (f.getDesde() != null) {
+            w.append(" AND r.fechaTurno >= :desde");
+            parametros.put("desde", f.getDesde());
+        }
+        if (f.getHasta() != null) {
+            w.append(" AND r.fechaTurno <= :hasta");
+            parametros.put("hasta", f.getHasta());
+        }
+        if (!f.getDisciplina().isEmpty()) {
+            w.append(" AND i.tipoDisciplina = :disciplina");
+            parametros.put("disciplina", f.getDisciplina());
+        }
+        switch (f.getEstado()) {
+            case "CONFIRMADA":
+                w.append(" AND r.estado = :estado");
+                parametros.put("estado", Reserva.Estado.CONFIRMADA);
+                break;
+            case "CANCELADA":
+                w.append(" AND r.estado = :estado");
+                parametros.put("estado", Reserva.Estado.CANCELADA);
+                break;
+            case "RECHAZADA":
+                w.append(" AND r.estado = :estado");
+                parametros.put("estado", Reserva.Estado.RECHAZADA);
+                break;
+            case "POR_CONFIRMAR":
+                w.append(" AND r.estado = :estado AND p.estado = :porValidar");
+                parametros.put("estado", Reserva.Estado.PENDIENTE_PAGO);
+                parametros.put("porValidar", Pago.Estado.PENDIENTE_VALIDACION);
+                break;
+            case "ESPERANDO_PAGO":
+                w.append(" AND r.estado = :estado AND (p IS NULL OR p.estado <> :porValidar)");
+                parametros.put("estado", Reserva.Estado.PENDIENTE_PAGO);
+                parametros.put("porValidar", Pago.Estado.PENDIENTE_VALIDACION);
+                break;
+            default:
+                break;
+        }
+        if (f.getFinalizadas() != null) {
+            w.append(f.getFinalizadas()
+                    ? " AND (r.fechaTurno < :hoy OR (r.fechaTurno = :hoy AND t.horaFin <= :ahora))"
+                    : " AND (r.fechaTurno > :hoy OR (r.fechaTurno = :hoy AND t.horaFin > :ahora))");
+            parametros.put("hoy", hoy);
+            parametros.put("ahora", ahora);
+        }
+        if (!f.getTexto().isEmpty()) {
+            w.append(" AND (CONCAT(u.nombre, ' ', u.apellido) LIKE :q ESCAPE '!' OR u.email LIKE :q ESCAPE '!' "
+                    + "OR s.dni LIKE :q ESCAPE '!' OR i.nombre LIKE :q ESCAPE '!' OR i.tipoDisciplina LIKE :q ESCAPE '!'");
+            parametros.put("q", comodin(f.getTexto()));
+            if (f.getTexto().matches("\\d{1,9}")) {
+                w.append(" OR r.idReserva = :numero");
+                parametros.put("numero", Integer.valueOf(f.getTexto()));
+            }
+            try {
+                LocalDate dia = LocalDate.parse(f.getTexto(), FECHA_ESCRITA);
+                w.append(" OR r.fechaTurno = :dia");
+                parametros.put("dia", dia);
+            } catch (java.time.format.DateTimeParseException e) {
+                // no es una fecha completa: se busca solo como texto
+            }
+            w.append(")");
+        }
+        return w.toString();
+    }
+
+    private static <T> TypedQuery<T> con(TypedQuery<T> consulta, Map<String, Object> parametros) {
+        parametros.forEach(consulta::setParameter);
+        return consulta;
+    }
+
+    /**
+     * Reservas del administrador que cumplen el filtro, la de fecha más lejana primero, hasta "maximo" filas. Trae de
+     * una vez turno, instalación, socio, usuario, pago y tarifa. La base aplica todos los filtros y el tope: no se
+     * cargan las reservas que no se van a mostrar.
+     */
+    public List<Reserva> buscarParaAdmin(FiltroReservas f, LocalDate hoy, LocalTime ahora, int maximo) {
+        Map<String, Object> parametros = new HashMap<>();
+        String donde = donde(f, hoy, ahora, parametros);
+        return con(em.createQuery("SELECT r FROM Reserva r" + UNIONES_CON_DATOS + donde
+                + " ORDER BY r.fechaTurno DESC, t.horaInicio DESC, r.idReserva DESC", Reserva.class), parametros)
+                .setMaxResults(maximo)
+                .getResultList();
+    }
+
+    /** Cuántas reservas cumplen el filtro (para "mostrando N de M" y para saber si entran en un PDF). */
+    public long contarParaAdmin(FiltroReservas f, LocalDate hoy, LocalTime ahora) {
+        Map<String, Object> parametros = new HashMap<>();
+        String donde = donde(f, hoy, ahora, parametros);
+        return con(em.createQuery("SELECT COUNT(r) FROM Reserva r" + UNIONES + donde, Long.class), parametros)
+                .getSingleResult();
+    }
+
+    /** Filas {estado de la reserva, estado del pago (null si no hay), cantidad} de todas las reservas. */
+    public List<Object[]> contarPorEstadoYPago() {
+        return em.createQuery("SELECT r.estado, p.estado, COUNT(r) FROM Reserva r LEFT JOIN r.idPago p "
+                + "GROUP BY r.estado, p.estado", Object[].class)
+                .getResultList();
+    }
+
+    /** Cuántas CONFIRMADAS todavía no terminaron (incluye la que está en curso). */
+    public long contarProximasConfirmadas(LocalDate hoy, LocalTime ahora) {
+        return em.createQuery(
+                "SELECT COUNT(r) FROM Reserva r JOIN r.idTurno t WHERE r.estado = :confirmada "
+                + "AND (r.fechaTurno > :hoy OR (r.fechaTurno = :hoy AND t.horaFin > :ahora))", Long.class)
+                .setParameter("confirmada", Reserva.Estado.CONFIRMADA)
+                .setParameter("hoy", hoy)
+                .setParameter("ahora", ahora)
+                .getSingleResult();
+    }
+
+    /** Filas {nombre, disciplina, cantidad} de las instalaciones con más reservas activas, la más reservada primero. */
+    public List<Object[]> rankingDeInstalaciones(int maximo) {
+        return em.createQuery(
+                "SELECT i.nombre, i.tipoDisciplina, COUNT(r) FROM Reserva r JOIN r.idTurno t JOIN t.idInstalacion i "
+                + "WHERE r.estado IN :activas GROUP BY i.nombre, i.tipoDisciplina ORDER BY COUNT(r) DESC, i.nombre",
+                Object[].class)
+                .setParameter("activas", ACTIVAS)
+                .setMaxResults(maximo)
+                .getResultList();
+    }
+
+    /** Filas {hora de inicio del turno, cantidad} de las reservas activas. */
+    public List<Object[]> contarActivasPorHoraDeInicio() {
+        return em.createQuery(
+                "SELECT t.horaInicio, COUNT(r) FROM Reserva r JOIN r.idTurno t WHERE r.estado IN :activas "
+                + "GROUP BY t.horaInicio", Object[].class)
+                .setParameter("activas", ACTIVAS)
+                .getResultList();
+    }
+
+    /** Las confirmadas desde un momento (con su pago): lo recaudado en los últimos días. */
+    public List<Reserva> listarConfirmadasDesde(LocalDateTime desde) {
+        return em.createQuery(
+                "SELECT r FROM Reserva r JOIN FETCH r.idPago WHERE r.estado = :confirmada AND r.fechaConfirmacion >= :desde",
+                Reserva.class)
+                .setParameter("confirmada", Reserva.Estado.CONFIRMADA)
+                .setParameter("desde", desde)
+                .getResultList();
+    }
+
+    /**
+     * Lo que necesitan los reportes de un período {desde, hasta} (con su período previo ya incluido en "desde"): las
+     * reservas con turno en el rango, las que cobraron (pago validado) en el rango, las canceladas con crédito que
+     * vence desde "desde" en adelante y las que esperan validación. Nada más: no se carga toda la tabla.
+     */
+    public List<Reserva> listarParaReportes(LocalDate desde, LocalDate hasta) {
+        return em.createQuery(
+                "SELECT r FROM Reserva r" + UNIONES_CON_DATOS + " WHERE (r.fechaTurno BETWEEN :desde AND :hasta) "
+                + "OR (p.estado = :confirmado AND p.fechaValidacion >= :desdeHora AND p.fechaValidacion < :hastaHora) "
+                + "OR (r.estado = :cancelada AND r.fechaLimiteReprogramacion IS NOT NULL "
+                + "AND r.fechaLimiteReprogramacion >= :desde) "
+                + "OR (r.estado = :pendiente AND p.estado = :porValidar) "
+                + "ORDER BY r.fechaTurno DESC, t.horaInicio DESC, r.idReserva DESC", Reserva.class)
+                .setParameter("desde", desde)
+                .setParameter("hasta", hasta)
+                .setParameter("desdeHora", desde.atStartOfDay())
+                .setParameter("hastaHora", hasta.plusDays(1).atStartOfDay())
+                .setParameter("confirmado", Pago.Estado.CONFIRMADO)
+                .setParameter("cancelada", Reserva.Estado.CANCELADA)
+                .setParameter("pendiente", Reserva.Estado.PENDIENTE_PAGO)
+                .setParameter("porValidar", Pago.Estado.PENDIENTE_VALIDACION)
                 .getResultList();
     }
 }
