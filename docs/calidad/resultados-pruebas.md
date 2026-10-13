@@ -47,10 +47,10 @@ Dónde ver los resultados:
 
 | Medida | Valor |
 |---|---|
-| Clases de prueba | 27 |
-| Pruebas (métodos) | 619 |
-| Ejecuciones (casos, contando cada valor de las parametrizadas) | 678 |
-| Pasan | 672 |
+| Clases de prueba | 28 |
+| Pruebas (métodos) | 635 |
+| Ejecuciones (casos, contando cada valor de las parametrizadas) | 694 |
+| Pasan | 688 |
 | Deshabilitadas (defectos D-1 a D-5) | 6 |
 | Fallan | 0 |
 | Tiempo total | unos segundos (la mayor parte es el hash PBKDF2 de 120 000 iteraciones) |
@@ -576,7 +576,7 @@ Cada nombre describe un único comportamiento. En las pruebas parametrizadas, "N
 | `unApellidoNuloSeTrataComoVacio` | Un apellido nulo se trata como vacío | Pasa |
 | `unTelefonoNuloSeTrataComoVacio` | Un teléfono nulo se trata como vacío | Pasa |
 
-### `servicio.ReportesServicioCargaTest` (5 pruebas, 5 casos)
+### `servicio.ReportesServicioCargaTest` (6 pruebas, 6 casos)
 
 | Prueba | Qué verifica | Resultado |
 |---|---|---|
@@ -584,6 +584,7 @@ Cada nombre describe un único comportamiento. En las pruebas parametrizadas, "N
 | `laTarifaPromedioDeUnaInstalacionEsElPromedioDeSusTarifasVigentes` | La tarifa promedio de una instalación es el promedio de sus tarifas vigentes | Pasa |
 | `laCuotaDeCadaTipoEsLaVigenteOCeroSiNoHay` | La cuota de cada tipo es la vigente o cero si no hay | Pasa |
 | `cuentaLosSociosActivosYElTotalSinLosDadosDeBaja` | Cuenta los socios activos y el total sin los dados de baja | Pasa |
+| `cp45_laCargaPideSoloElPeriodoYElPrevio` | Cp 45 la carga pide solo el periodo y el previo | Pasa |
 | `cargaLosTurnosDeCadaInstalacionReservable` | Carga los turnos de cada instalación reservable | Pasa |
 
 ### `servicio.ReportesServicioTest` (59 pruebas, 67 casos)
@@ -649,6 +650,26 @@ Cada nombre describe un único comportamiento. En las pruebas parametrizadas, "N
 | `avisaLasFranjasSinNingunaReservaEnElPeriodo` | Avisa las franjas sin ninguna reserva en el periodo | Pasa |
 | `avisaLosCreditosQueVencenEnLosProximos7DiasYNoLosDe8` | Avisa los creditos que vencen en los próximos 7 días y no los de 8 | Pasa |
 | `avisaLasInstalacionesEnMantenimientoConSuFechaDeReactivacion` | Avisa las instalaciones en mantenimiento con su fecha de reactivacion | Pasa |
+
+### `servicio.ReservaServicioFiltrosTest` (15 pruebas, 15 casos)
+
+| Prueba | Qué verifica | Resultado |
+|---|---|---|
+| `unaTandaTraeLoQueLaBaseDevuelveYElTotalDeLaConsulta` | Una tanda trae lo que la base devuelve y el total de la consulta | Pasa |
+| `sinMasFilasQueLasMostradasNoHayMas` | Sin más filas que las mostradas no hay más | Pasa |
+| `losTiposDeInstalacionParaElFiltroSonLosQueSeReservanSinRepetir` | Los tipos de instalación para el filtro son los que se reservan sin repetir | Pasa |
+| `lasProximasConfirmadasSeListanConSuEstadoYSinTerminar` | Las proximas confirmadas se listan con su estado y sin terminar | Pasa |
+| `elResumenSaleDeLasConsultasDeAgregacionYNoDeCargarTodasLasReservas` | El resumen sale de las consultas de agregacion y no de cargar todas las reservas | Pasa |
+| `lasHorasSeAgrupanPorHoraAunqueLosTurnosEmpiecenALasYMedia` | Las horas se agrupan por hora aunque los turnos empiecen a las y media | Pasa |
+| `laRecaudacionDeLosUltimosSieteDiasSumaLoCobradoPorDiaDeConfirmacion` | La recaudacion de los ultimos siete días suma lo cobrado por día de confirmacion | Pasa |
+| `cp43_elInformeDeUnDiaTraeEseDiaConPeriodoYEmision` | Cp 43 el informe de un día trae ese día con periodo y emision | Pasa |
+| `cp43_unPeriodoDeVariosDiasDiceDesdeYHasta` | Cp 43 un periodo de varios días dice desde y hasta | Pasa |
+| `cp43_elInformeDiceLosFiltrosAplicados` | Cp 43 el informe dice los filtros aplicados | Pasa |
+| `cp44_unPeriodoSinReservasAvisaYNoArmaDocumento` | Cp 44 un periodo sin reservas avisa y no arma documento | Pasa |
+| `cp45_siSuperaElMaximoPideAcotarSinCargarLasFilas` | Cp 45 si supera el máximo pide acotar sin cargar las filas | Pasa |
+| `cp45_exactamenteElMaximoEntra` | Cp 45 exactamente el máximo entra | Pasa |
+| `cp43_sinPeriodoPideElegirlo` | Cp 43 sin periodo pide elegirlo | Pasa |
+| `cp43_unPeriodoAlReves` | Cp 43 un periodo al reves | Pasa |
 
 ### `servicio.ReservaServicioListadosTest` (18 pruebas, 18 casos)
 
@@ -824,16 +845,16 @@ La cobertura la mide JaCoCo sobre el código de producción mientras corren las 
 
 | Paquete | Líneas | Ramas | Métodos |
 |---|---|---|---|
-| **`servicio`** | 88.1 % (2175/2469) | 80.0 % (1624/2030) | 80.7 % |
+| **`servicio`** | 88.6 % (2312/2609) | 80.5 % (1701/2112) | 80.8 % |
 | **`util`** | 94.9 % (37/39) | 100.0 % (44/44) | 100.0 % |
 | `repositorio` | 70.0 % (420/600) | 9.4 % (19/202) | 74.5 % |
-| `dto` | 65.7 % (659/1003) | 59.5 % (25/42) | 55.3 % |
-| `dao` | 0.7 % (2/301) | 0.0 % (0/14) | 1.0 % |
-| `bean` | 1.6 % (22/1361) | 0.2 % (1/603) | 0.6 % |
+| `dto` | 68.7 % (733/1067) | 50.0 % (34/68) | 59.0 % |
+| `dao` | 1.0 % (4/403) | 0.0 % (0/54) | 0.9 % |
+| `bean` | 1.7 % (22/1333) | 0.2 % (1/527) | 0.6 % |
 | `seguridad` | 0.0 % (0/40) | 0.0 % (0/18) | 0.0 % |
 | `resources` | 0.0 % (0/4) | n/a (0/0) | 0.0 % |
 | `(raíz)` | 0.0 % (0/1) | n/a (0/0) | 0.0 % |
-| **Total** | 57.0 % (3315/5818) | 58.0 % (1713/2953) | 44.4 % |
+| **Total** | 57.9 % (3528/6096) | 59.5 % (1799/3025) | 45.7 % |
 
 Cómo leer esta tabla: `servicio` y `util` son el alcance de este conjunto de pruebas. El total incluye paquetes que no se probaron a propósito (`bean`, con las pantallas JSF; `dao`, con las consultas a la base; y `seguridad`), que figuran en 0 %, por lo que el total solo no es un indicador de calidad. El porcentaje de `repositorio` y `dto` es incidental: son clases de datos que las pruebas construyen o recorren pero no verifican por sí mismas.
 
@@ -846,7 +867,6 @@ Cómo leer esta tabla: `servicio` y `util` son el alcance de este conjunto de pr
 | `servicio.MembresiasServicio` | 100.0 % (151/151) | 93.3 % (97/104) |
 | `servicio.ReglaReservaException` | 100.0 % (2/2) | n/a (0/0) |
 | `servicio.RegistroServicio` | 100.0 % (84/84) | 100.0 % (70/70) |
-| `servicio.ReservaServicio` | 100.0 % (109/109) | 93.3 % (84/90) |
 | `servicio.UsuarioServicio` | 100.0 % (9/9) | 100.0 % (10/10) |
 | `servicio.ValoracionesServicio` | 100.0 % (58/58) | 100.0 % (32/32) |
 | `servicio.ReportesServicio` | 99.8 % (540/541) | 84.2 % (404/480) |
@@ -854,9 +874,10 @@ Cómo leer esta tabla: `servicio` y `util` son el alcance de este conjunto de pr
 | `servicio.TarifasServicio` | 98.5 % (130/132) | 100.0 % (104/104) |
 | `servicio.PanelSocioServicio` | 98.2 % (385/392) | 89.7 % (315/351) |
 | `servicio.CambiosReservaServicio` | 97.7 % (171/175) | 91.3 % (115/126) |
+| `servicio.ReservaServicio` | 95.9 % (235/245) | 86.6 % (149/172) |
 | `servicio.SociosServicio` | 91.9 % (171/186) | 75.3 % (137/182) |
 | `servicio.InstalacionesServicio` | 80.7 % (192/238) | 71.0 % (137/193) |
-| `servicio.DashboardServicio` | 12.4 % (17/137) | 5.4 % (6/111) |
+| `servicio.DashboardServicio` | 19.0 % (26/137) | 16.2 % (18/111) |
 | `servicio.MembresiaJob` | 0.0 % (0/24) | 0.0 % (0/8) |
 | `servicio.CalendarioServicio` | 0.0 % (0/74) | 0.0 % (0/51) |
 
@@ -883,7 +904,7 @@ Métodos incluidos: `PanelSocioServicio`: reservar, subirComprobante, valorar, l
 
 | # | Clase y métodos | Líneas | Ramas | Qué hace / por qué es crítico | Qué pruebas faltan |
 |---|---|---|---|---|---|
-| 1 | `DashboardServicio` (calendario, plano, resumenDelDia, aFilas, estadoInstalaciones, porcentajeOcupacion, cuando, textoEstado, claseEstado, etiquetaDia, icono) | 2.6 % (3/114) | 1.0 % (1/103) | Tablero principal del administrador: resumen del día, plano del predio y calendario. | Resumen con y sin reservas, porcentaje de ocupación, íconos por disciplina y etiquetas del calendario. |
+| 1 | `DashboardServicio` (calendario, plano, resumenDelDia, aFilas, estadoInstalaciones, porcentajeOcupacion, cuando, textoEstado, claseEstado, etiquetaDia, icono) | 10.5 % (12/114) | 12.6 % (13/103) | Tablero principal del administrador: resumen del día, plano del predio y calendario. | Resumen con y sin reservas, porcentaje de ocupación, íconos por disciplina y etiquetas del calendario. |
 | 2 | `CalendarioServicio` (reservasDelMes, reservasDelDia, calendario, proximas, anteriores, inicioGrilla, aDto, cuando, textoEstado, claseEstado, nota, etiquetaDia) | 0.0 % (0/69) | 0.0 % (0/51) | Calendario de reservas del administrador (mes, próximas y anteriores). | Grilla de un mes que empieza a mitad de semana, próximas y anteriores y la nota de cada reserva. |
 | 3 | `MembresiaJob` (iniciar, detener, liberarReservas, vencerMembresias) | 0.0 % (0/22) | 0.0 % (0/8) | Tarea programada: vence membresías cada 60 minutos y libera reservas sin comprobante cada 5. | No se puede sin el contenedor (ver 6.1). Haría falta una prueba de integración. |
 
@@ -925,7 +946,7 @@ Resultado: **19 de 20 detectadas en la primera pasada**. La que sobrevivió (M11
 
 Alcance de esta comprobación: son 20 roturas elegidas a mano sobre constantes y comparaciones de las reglas pedidas. No reemplaza una herramienta de mutación (por ejemplo PIT), que genera cientos de variantes automáticamente.
 
-La tabla se midió sobre la rama `calidad/pruebas-junit`, antes de CC-01, CC-03, CC-04 y CC-05 (sección 10). Las pruebas que cita siguen existiendo; no se volvió a medir.
+La tabla se midió sobre la rama `calidad/pruebas-junit`, antes de CC-01, CC-03, CC-04, CC-05 y CC-06 (sección 10). Las pruebas que cita siguen existiendo; no se volvió a medir.
 
 ## 5. Discrepancias y posibles defectos
 
@@ -1104,3 +1125,18 @@ Lo que pide el plan (Tabla 12): cumplir WCAG 2.1 AA (RNF-08) en las vistas del s
 - **Pruebas escritas primero (fallaban 9):** `ContrasteCssTest` (`SIGRID/src/test/java/com/sigrid/sigrid/estilos/`) lee los CSS reales, resuelve las variables y exige 4,5:1 al texto y 3:1 a series, indicadores, estrellas y foco; cada mensaje de error dice qué par falló y cuánto da. Así queda como regresión si alguien vuelve a tocar un color.
 - **Antes y después del gráfico** (maqueta estática con datos de ejemplo y las hojas de estilo reales, generada con Edge sin ventana; no es una captura del sistema desplegado): [antes](capturas/cc05-barras-antes.png) y [después](capturas/cc05-barras-despues.png).
 - **Lo que no cubre:** (1) es una medición estática de los pares declarados: no ve el color final que resulta de la cascada en cada pantalla ni las imágenes; (2) los bordes de campos y botones (`--border`, `#DDD9D5`, 1,4:1) siguen igual porque cambiarlos modifica toda la estética: el texto de cada campo sí cumple, pero el contorno del campo no llega a 3:1; (3) el tema oscuro (`--d-*`) no se midió; (4) los CP-47 y CP-48 piden medir con un verificador (WCAG 2.1 AA, por ejemplo axe o Lighthouse) sobre las pantallas desplegadas, que sigue pendiente.
+
+### CC-06. PDF prolijos y con filtros de período (rama `cambio/cc-06-pdf-con-filtros`, sale de la de CC-05)
+
+Lo que pide el plan (Tabla 12): antes de exportar se elige el período y los filtros; la consulta los aplica en SQL; el PDF lleva encabezado, período, fecha de emisión y numeración de páginas; se prueba con 500.000 reservas. Se verifica con CP-43 a CP-46 (CP-45 es de rendimiento) y RNF-07.
+
+- **Reservas del administrador (SQL):** el listado, los filtros (estado, instalación, período y buscador) y el tope los aplica la base: la página pide una tanda de 25 filas y su total; los indicadores y rankings salen de consultas de agregación (cuentas por estado, reservas activas por franja, recaudación de 7 días). Antes se leían **todas** las reservas con sus socios, pagos y tarifas y se filtraba en memoria (`ReservaDAO.listarTodasParaAdmin`, que se elimina junto con `ReservaServicio.listarTodas`). La pestaña Predio de Cancelaciones lee solo las próximas confirmadas (acotadas por la regla de 30 días).
+- **Exportar PDF de reservas:** usa los filtros de la barra y **exige** elegir el período (desde y hasta). Si no hay período, está al revés, no hay reservas o son más de 2.000, no se imprime nada y un aviso dice por qué (CP-44: nunca un documento vacío; CP-45: pide acotar sin cargar las filas). Si hay datos, se imprime solo el informe: encabezado con período, filtros aplicados, cantidad y fecha de emisión; tabla en orden cronológico con el encabezado repetido en cada hoja; pie de cada hoja con "Emitido el ..." y "Página N de M". Ejemplo: [cc06-informe-ejemplo.pdf](capturas/cc06-informe-ejemplo.pdf).
+- **Los demás "Exportar PDF"** (socios, membresías, reportes, valoraciones): `print.css` agrega a todos el pie con la fecha de emisión y la numeración de páginas; el encabezado de tabla ya se repetía.
+- **Reportes:** `ReportesServicio.cargar(hoy, rango)` lee solo las reservas del período elegido y del período previo con el que se compara (más los pagos validados del período, los créditos que vencen desde ahí y los comprobantes por validar). Al cambiar de período se vuelve a leer; el agrupado de los gráficos se sigue resolviendo en memoria.
+- **Pruebas escritas primero (fallaban 16):** `ReservaServicioFiltrosTest` (tanda y total, tipos de instalación, indicadores y rankings, recaudación y CP-43 a CP-45 del informe) y `ReportesServicioCargaTest.cp45_laCargaPideSoloElPeriodoYElPrevio`. Las que fijaban la carga total (`unica` de los listados, `ReportesServicioCargaTest`) pasaron a las consultas nuevas.
+- **Las consultas SQL no las ejercitan las pruebas unitarias.** Se validaron con el medidor de `docs/calidad/cp45/`: ejecuta las consultas y los servicios reales (EclipseLink de GlassFish contra una base MySQL de prueba) y comprobó que los filtros en SQL dan el mismo número que clasificar las 500.403 reservas en memoria (16 combinaciones).
+- **Medición (CP-45), 500.403 reservas:** listado de 25 filas 150 ms; por estado, período o disciplina entre 26 y 450 ms; buscador en todo el historial 1,8 a 2,6 s; indicadores 1,2 s; PDF de un día 36 ms y de una semana 140 ms; reportes de 30 días 2,3 s (270 MB). La versión anterior no termina: `OutOfMemoryError` con 512 MB y con 1 GB. Detalle y cómo repetirla en [cp45/README.md](cp45/README.md).
+- **Cambios de comportamiento que conviene saber:** (1) el listado ordena por fecha del turno y número de reserva (más reciente primero); dentro de un mismo día ya no va por hora, para que la base use el índice de la fecha y corte al llegar a 25 filas (el PDF sí sale en orden cronológico); (2) el buscador reconoce fechas completas (`dd/mm/aaaa`) y el número exacto de reserva, y ya no coincide con fechas parciales como `15/10`.
+- **Lo que no se pudo comprobar:** las pantallas en GlassFish (EL y AJAX de la página de reservas y de reportes); el PDF se verificó con una maqueta estática impresa con Edge sin ventana y el `print.css` real (3 páginas, encabezado de tabla repetido, "Página 1 de 3" a "3 de 3"). La numeración usa los cuadros de margen de `@page`, que soportan Chrome y Edge recientes (131 o más); Firefox no los dibuja y el PDF sale sin el "Página N de M".
+- **Pendiente:** los reportes de 12 meses con este volumen siguen leyendo unas 110.000 reservas (6,7 s, más de 500 MB): para esa escala hay que pasar los cálculos a consultas de agregación. El esquema no cambió (el índice de `reserva.fecha_turno` ya existía); un índice sobre `pago.fecha_validacion` aceleraría los reportes y queda para decidir.

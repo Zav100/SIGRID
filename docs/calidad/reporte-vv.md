@@ -10,7 +10,7 @@ Generado automáticamente por `docs/calidad/generar_reporte_vv.py` con la planti
 |---|---|
 | Reporte N.º | V&V-01 |
 | Fecha y responsable de la ejecución | 13/10/2026 — [completar: ingeniero de pruebas] |
-| Versión del código | rama `cambio/cc-05-colores-y-contrastes`, commit `e5d3c36` |
+| Versión del código | rama `cambio/cc-06-pdf-con-filtros`, commit `a3df32f` |
 | Entorno de pruebas | Windows 11, Java 21, Maven; JUnit 5 + Mockito; sin MySQL ni GlassFish |
 | Alcance de la ejecución | Parcial: casos de nivel U (unitarios). Los de nivel I, S y A no se ejecutaron |
 | Datos de prueba utilizados | Ficticios, armados en `DatosDePrueba` (reloj fijo: lunes 12/10/2026 10:00) |
@@ -25,17 +25,17 @@ Generado automáticamente por `docs/calidad/generar_reporte_vv.py` con la planti
 | Casos ejecutados | 53 de 53 | 33 de 53 | No |
 | Casos aprobados, fallidos y no ejecutados | Solo se informa | 31 aprobados, 2 fallidos, 20 no ejecutados | — |
 | Casos críticos aprobados | 100 % | 23 de 29 (79 %) | No |
-| Cobertura de líneas de los servicios (JaCoCo) | 70 % o más | 88.1 % (2175 de 2469 líneas) | Sí |
-| Cobertura de ramas de los servicios (JaCoCo) | Solo se informa | 80.0 % (1624 de 2030 ramas) | — |
+| Cobertura de líneas de los servicios (JaCoCo) | 70 % o más | 88.6 % (2312 de 2609 líneas) | Sí |
+| Cobertura de ramas de los servicios (JaCoCo) | Solo se informa | 80.5 % (1701 de 2112 ramas) | — |
 | Defectos críticos y altos abiertos | 0 | 2 (D-3, D-4) | No |
 | Defectos abiertos y cerrados, por severidad | Solo se informa | Abiertos: 2 alta, 2 baja, 1 media. Cerrados: 0 | — |
 | Tiempo medio de corrección de un defecto (días) | Solo se informa | Sin datos: todavía no se corrigió ninguno | — |
 | Requerimientos sin caso de prueba | 0 | 0 | Sí |
 | Contraste en las pantallas clave (CP-47 y CP-48) | 4,5:1 texto normal; 3:1 texto grande y componentes | No medido | No |
 | Exportación a PDF con 500.000 reservas (CP-45) | 6 de 6 | No ejecutado | No |
-| Cambios CC-01 a CC-06 verificados | 6 de 6 | 1 de 6 (CC-01); implementados con revisión manual pendiente: CC-03, CC-04, CC-05 | No |
+| Cambios CC-01 a CC-06 verificados | 6 de 6 | 1 de 6 (CC-01); implementados con revisión manual pendiente: CC-03, CC-04, CC-05, CC-06 | No |
 
-Pruebas automáticas ejecutadas: **678** (672 pasan, 0 fallan, 6 deshabilitadas). 561 de ellas no corresponden a ningún caso del plan: son pruebas de regresión adicionales sobre las demás reglas del sistema.
+Pruebas automáticas ejecutadas: **694** (688 pasan, 0 fallan, 6 deshabilitadas). 568 de ellas no corresponden a ningún caso del plan: son pruebas de regresión adicionales sobre las demás reglas del sistema.
 
 ### Defectos abiertos
 
@@ -97,10 +97,10 @@ La severidad es una propuesta; la asigna el líder de SQA (Tabla 31). Detalle y 
 | CP-40 | Un turno realizado desde el 25/09/2026 sin calificar | U | Sí | Aprobado | — |
 | CP-41 | Revisar menú, títulos, reportes y PDF ("Grado de satisfacción") | S | Sí | No ejecutado | Falta la prueba de sistema manual (RTF). El cambio CC-04 ya está implementado; falta la revisión manual. Evidencia unitaria: 2 prueba(s) del servicio aprobadas (no reemplazan ese nivel). |
 | CP-42 | Reporte de ocupación de un día para una instalación | I | No | No ejecutado | Falta la prueba de integración con una base MySQL de pruebas (no existe en este conjunto). Evidencia unitaria: 1 prueba(s) del servicio aprobadas (no reemplazan ese nivel). |
-| CP-43 | Exportar el PDF de reservas de un solo día | S | No | No ejecutado | Falta la prueba de sistema manual (RTF). Depende del cambio CC-06, todavía sin implementar. |
-| CP-44 | Exportar el PDF de un período sin reservas | S | No | No ejecutado | Falta la prueba de sistema manual (RTF). Depende del cambio CC-06, todavía sin implementar. |
-| CP-45 | Con 500.000 reservas, listar y exportar un período acotado | A | No | No ejecutado | Falta la medición de accesibilidad o rendimiento. Depende del cambio CC-06, todavía sin implementar. |
-| CP-46 | Exportar un PDF de varias páginas | S | No | No ejecutado | Falta la prueba de sistema manual (RTF). Depende del cambio CC-06, todavía sin implementar. |
+| CP-43 | Exportar el PDF de reservas de un solo día | S | No | No ejecutado | Falta la prueba de sistema manual (RTF). El cambio CC-06 ya está implementado; falta la revisión manual. Evidencia unitaria: 5 prueba(s) del servicio aprobadas (no reemplazan ese nivel). |
+| CP-44 | Exportar el PDF de un período sin reservas | S | No | No ejecutado | Falta la prueba de sistema manual (RTF). El cambio CC-06 ya está implementado; falta la revisión manual. Evidencia unitaria: 1 prueba(s) del servicio aprobadas (no reemplazan ese nivel). |
+| CP-45 | Con 500.000 reservas, listar y exportar un período acotado | A | No | No ejecutado | Falta la medición de accesibilidad o rendimiento. El cambio CC-06 ya está implementado; falta la revisión manual. Evidencia unitaria: 3 prueba(s) del servicio aprobadas (no reemplazan ese nivel). Medido aparte con 500.403 reservas (docs/calidad/cp45/README.md): el listado, el buscador y el PDF de un período acotado responden en menos de 3 s y con unos 10 MB de memoria; el código anterior no termina (OutOfMemoryError con 1 GB). Los reportes de 12 meses tardan 6,7 s y usan más de 500 MB. |
+| CP-46 | Exportar un PDF de varias páginas | S | No | No ejecutado | Falta la prueba de sistema manual (RTF). El cambio CC-06 ya está implementado; falta la revisión manual. |
 | CP-47 | Medir el contraste de las pantallas del socio | A | No | No ejecutado | Falta la medición de accesibilidad o rendimiento. El cambio CC-05 ya está implementado; falta la revisión manual. Evidencia unitaria: 2 prueba(s) del servicio aprobadas (no reemplazan ese nivel). |
 | CP-48 | Medir el contraste de las pantallas del administrador | A | No | No ejecutado | Falta la medición de accesibilidad o rendimiento. El cambio CC-05 ya está implementado; falta la revisión manual. Evidencia unitaria: 6 prueba(s) del servicio aprobadas (no reemplazan ese nivel). |
 | CP-49 | Revisar los estados de reserva sin depender solo del color | S | No | No ejecutado | Falta la prueba de sistema manual (RTF). El cambio CC-05 ya está implementado; falta la revisión manual. Evidencia unitaria: 2 prueba(s) del servicio aprobadas (no reemplazan ese nivel). |
@@ -247,6 +247,15 @@ Un requerimiento figura como *Aprobado* si todos sus casos lo están.
 | CP-41 | `AdminNavBeanTest` | el menú dice "Grado de satisfacción" y no "Valoraciones" | pasa |
 | CP-41 | `ReportesServicioTest` | el resumen de reportes dice "Grado de satisfacción" | pasa |
 | CP-42 | `ReportesServicioTest` | la ocupación es reservados sobre disponibles (regla del servicio) | pasa |
+| CP-43 | `ReservaServicioFiltrosTest` | el informe de un solo día trae esas reservas con período y fecha de emisión | pasa |
+| CP-43 | `ReservaServicioFiltrosTest` | el informe dice qué filtros se aplicaron | pasa |
+| CP-43 | `ReservaServicioFiltrosTest` | el período de varios días dice desde y hasta | pasa |
+| CP-43 | `ReservaServicioFiltrosTest` | sin período no se exporta: hay que elegirlo antes | pasa |
+| CP-43 | `ReservaServicioFiltrosTest` | un período con la fecha desde posterior a la hasta se rechaza | pasa |
+| CP-44 | `ReservaServicioFiltrosTest` | un período sin reservas avisa y no arma un documento vacío | pasa |
+| CP-45 | `ReportesServicioCargaTest` | la carga pide a la base solo el período y el previo, no toda la tabla de reservas | pasa |
+| CP-45 | `ReservaServicioFiltrosTest` | exactamente el máximo todavía entra en un PDF | pasa |
+| CP-45 | `ReservaServicioFiltrosTest` | si el período trae más de lo que entra en un PDF pide acotarlo sin cargar las filas | pasa |
 | CP-47 | `ContrasteCssTest` | el foco del teclado se ve sobre el fondo claro (3:1) en el panel del socio y del administrador | pasa |
 | CP-47 | `ContrasteCssTest` | el texto de las pantallas del socio llega a 4,5:1 sobre las superficies claras | pasa |
 | CP-48 | `ContrasteCssTest` | el texto de las pantallas del administrador llega a 4,5:1 sobre las superficies claras | pasa |

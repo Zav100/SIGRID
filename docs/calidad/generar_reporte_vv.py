@@ -119,11 +119,14 @@ NOTAS = {
     "CP-38": "El plan dice que un comentario de 501 caracteres se rechaza; el equipo decidió (D1) que se recorta a 500. "
              "Hay que actualizar el texto del caso.",
     "CP-20": "Con motivo se rechaza y queda guardado (aprobado); sin motivo el código lo permite (ver D-5).",
+    "CP-45": "Medido aparte con 500.403 reservas (docs/calidad/cp45/README.md): el listado, el buscador y el PDF de un "
+             "período acotado responden en menos de 3 s y con unos 10 MB de memoria; el código anterior no termina "
+             "(OutOfMemoryError con 1 GB). Los reportes de 12 meses tardan 6,7 s y usan más de 500 MB.",
     "CP-33": "La prueba cubre el servicio que usa la tarea horaria (MembresiasServicio.vencerVencidas); la clase "
              "MembresiaJob (el temporizador) no se prueba en unitarias.",
 }
 # cambios de la cátedra ya implementados en el código (los casos S/A siguen necesitando la revisión manual)
-IMPLEMENTADOS = {"CC-01", "CC-03", "CC-04", "CC-05"}
+IMPLEMENTADOS = {"CC-01", "CC-03", "CC-04", "CC-05", "CC-06"}
 PENDIENTE_DE = {"CP-22": "CC-01", "CP-29": "CC-02", "CP-30": "CC-02", "CP-36": "CC-03", "CP-41": "CC-04",
                 "CP-43": "CC-06", "CP-44": "CC-06", "CP-45": "CC-06", "CP-46": "CC-06", "CP-47": "CC-05",
                 "CP-48": "CC-05", "CP-49": "CC-05"}
