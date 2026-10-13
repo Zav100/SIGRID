@@ -4,8 +4,21 @@
    "Guardar como PDF", sale solo el contenido de la página (con sus filtros), sin menú ni controles.
    ===================================================================== */
 
+/* numeración de páginas y fecha de emisión en el pie de cada hoja (la fecha la fija sigridMarcarEmision en admin.js) */
 @page {
-  margin: 14mm;
+  margin: 16mm 14mm 20mm;
+
+  @bottom-right {
+    content: "Página " counter(page) " de " counter(pages);
+    font-size: 8pt;
+    color: #555;
+  }
+
+  @bottom-left {
+    content: var(--emitido, "");
+    font-size: 8pt;
+    color: #555;
+  }
 }
 
 * {
@@ -88,4 +101,63 @@
 
 .adm-card-head {
   break-after: avoid;
+}
+
+/* ---------- informe de reservas (CC-06) ----------
+   Al exportar, el script marca el <body> con "is-informe": se imprime solo el informe que armó el servidor
+   (encabezado con período, filtros y fecha de emisión, y la tabla con su encabezado repetido en cada hoja). */
+body.is-informe .adm-content > *:not(#informe) {
+  display: none !important;
+}
+
+body.is-informe #informe .rv-informe {
+  display: block !important;
+}
+
+.rv-informe-cab h2 {
+  margin: 0 0 8px;
+  font-size: 14pt;
+}
+
+.rv-informe-cab dl {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: 2px 14px;
+  margin: 0 0 12px;
+  font-size: 9.5pt;
+}
+
+.rv-informe-cab dt {
+  font-weight: 700;
+  color: var(--adm-ink-2);
+}
+
+.rv-informe-cab dd {
+  margin: 0;
+}
+
+.rv-informe-tabla {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 9pt;
+}
+
+.rv-informe-tabla thead {
+  display: table-header-group;
+}
+
+.rv-informe-tabla th {
+  padding: 4px 6px;
+  border-bottom: 1.5px solid var(--adm-ink);
+  background: #F1EDE9;
+  text-align: left;
+}
+
+.rv-informe-tabla td {
+  padding: 4px 6px;
+  border-bottom: .5px solid #BDB7B2;
+}
+
+.rv-informe-tabla tr {
+  break-inside: avoid;
 }

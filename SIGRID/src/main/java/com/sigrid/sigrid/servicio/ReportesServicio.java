@@ -198,7 +198,7 @@ public class ReportesServicio implements Serializable {
     public Datos cargar(LocalDate hoy, Rango rango) {
         Datos d = new Datos();
         d.hoy = hoy;
-        d.reservas = reservaDAO.listarTodasParaAdmin();
+        d.reservas = reservaDAO.listarParaReportes(rango.previoDesde, rango.hasta);
         d.suscripciones = suscripcionDAO.listarTodasParaReportes();
         d.instalaciones = instalacionDAO.listarReservables();
         for (Instalacion i : d.instalaciones) {

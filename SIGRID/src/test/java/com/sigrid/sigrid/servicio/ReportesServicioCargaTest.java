@@ -5,7 +5,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.lenient;
-import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -168,7 +167,6 @@ class ReportesServicioCargaTest {
         servicio.cargar(HOY, r30);
 
         verify(reservaDAO).listarParaReportes(r30.getPrevioDesde(), r30.getHasta());
-        verify(reservaDAO, never()).listarTodasParaAdmin();
     }
 
     @Test

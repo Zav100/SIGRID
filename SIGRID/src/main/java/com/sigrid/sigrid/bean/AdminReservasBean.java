@@ -1,10 +1,12 @@
 package com.sigrid.sigrid.bean;
 
-import com.sigrid.sigrid.dto.IngresosMembresias;
+import com.sigrid.sigrid.dto.FiltroReservas;
+import com.sigrid.sigrid.dto.InformeReservas;
+import com.sigrid.sigrid.dto.PaginaReservas;
 import com.sigrid.sigrid.dto.RankingItem;
 import com.sigrid.sigrid.dto.RecaudacionDiaria;
 import com.sigrid.sigrid.dto.ReservaListado;
-import com.sigrid.sigrid.servicio.DashboardServicio;
+import com.sigrid.sigrid.dto.ResumenReservas;
 import com.sigrid.sigrid.servicio.ReservaServicio;
 import jakarta.annotation.PostConstruct;
 import jakarta.faces.application.FacesMessage;
@@ -13,35 +15,24 @@ import jakarta.faces.view.ViewScoped;
 import jakarta.inject.Inject;
 import jakarta.inject.Named;
 import java.io.Serializable;
-import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
-import java.time.YearMonth;
+import java.time.format.DateTimeParseException;
 import java.time.temporal.TemporalAdjusters;
-import java.time.format.TextStyle;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.TreeSet;
 
 /**
- * Bean de admin/reservas-dashboard-admin.xhtml. Las reservas se leen una vez al abrir la página (y al confirmar o
- * denegar una); el buscador y los filtros (AJAX) solo recortan esa lista en memoria. Los indicadores y los
- * rankings se calculan siempre sobre todas las reservas, no sobre las filtradas.
+ * Bean de admin/reservas-dashboard-admin.xhtml. La base aplica los filtros (período, estado, instalación y buscador) y
+ * entrega solo la tanda que se muestra y su total; los indicadores y los rankings salen de consultas de agregación.
+ * Nunca se cargan todas las reservas (CC-06). El PDF se arma con los mismos filtros, con el período obligatorio.
  */
 @Named("adminReservasBean")
 @ViewScoped
 public class AdminReservasBean implements Serializable {
 
     private static final int PAGINA = 25;
-    private static final int TOP = 5;
-    private static final int DIAS_DEL_GRAFICO = 7;
-    private static final Locale ES = Locale.forLanguageTag("es-AR");
 
     @Inject
     private ReservaServicio servicio;
@@ -51,12 +42,11 @@ public class AdminReservasBean implements Serializable {
     private AdminNavBean adminNavBean;
 
     private LocalDate hoy;
-    private List<ReservaListado> reservas;
-    private List<ReservaListado> filtradas;
     private List<String> tipos;
-    private List<RankingItem> masReservadas;
-    private List<RankingItem> horasPico;
-    private RecaudacionDiaria recaudacion;
+    private ResumenReservas resumen;
+    private PaginaReservas pagina;
+    private FiltroReservas filtro = new FiltroReservas();
+    private InformeReservas informe;
     private int limite = PAGINA;
 
     // lo que el administrador eligió en la barra de filtros
@@ -64,67 +54,83 @@ public class AdminReservasBean implements Serializable {
     private String estado = "";  // "", POR_CONFIRMAR, ESPERANDO_PAGO, CONFIRMADA, CANCELADA o RECHAZADA
     private String tiempo = "";  // "", HOY, PROXIMAS, PASADAS, SEMANA o MES
     private String tipo = "";    // "" o una disciplina (tipo de instalación)
+    private String desde = "";   // "" o aaaa-mm-dd (un día elegido a mano pisa al de "tiempo")
+    private String hasta = "";
 
     @PostConstruct
     public void init() {
+        hoy = LocalDate.now();
+        tipos = servicio.disciplinas();
         recargar();
     }
 
     private void recargar() {
         hoy = LocalDate.now();
-        reservas = servicio.listarTodas(hoy, LocalTime.now());
-        TreeSet<String> disciplinas = new TreeSet<>();
-        for (ReservaListado r : reservas) {
-            disciplinas.add(r.getDisciplina());
-        }
-        tipos = new ArrayList<>(disciplinas);
-        masReservadas = ranking(false);
-        horasPico = ranking(true);
-        recaudacion = recaudacion();
+        resumen = servicio.resumen(LocalDateTime.now());
         filtrar();
     }
 
-    /** Recorta la lista según el buscador y los tres filtros, y vuelve a la primera página. */
+    /** Arma el filtro con lo elegido en la barra y vuelve a pedir la primera tanda a la base. */
     public void filtrar() {
         limite = PAGINA;
-        String consulta = ReservaServicio.normalizar(busqueda == null ? "" : busqueda);
-        filtradas = new ArrayList<>();
-        for (ReservaListado r : reservas) {
-            if ((consulta.isEmpty() || r.getBusqueda().contains(consulta))
-                    && (estado.isEmpty() || r.getEstado().equals(estado))
-                    && (tipo.isEmpty() || r.getDisciplina().equals(tipo))
-                    && deTiempo(r)) {
-                filtradas.add(r);
-            }
-        }
+        filtro = armarFiltro();
+        informe = null;
+        consultar();
     }
 
-    private boolean deTiempo(ReservaListado r) {
-        LocalDate f = r.getFecha();
+    private void consultar() {
+        pagina = servicio.listarPagina(filtro, limite, hoy, LocalTime.now());
+    }
+
+    private FiltroReservas armarFiltro() {
+        FiltroReservas f = new FiltroReservas();
+        f.setTexto(busqueda);
+        f.setEstado(estado);
+        f.setDisciplina(tipo);
         switch (tiempo) {
             case "HOY":
-                return f.equals(hoy);
-            case "PROXIMAS":
-                return !r.isFinalizada();
-            case "PASADAS":
-                return r.isFinalizada();
+                f.setDesde(hoy);
+                f.setHasta(hoy);
+                break;
             case "SEMANA":
-                return !f.isBefore(hoy.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY)))
-                        && !f.isAfter(hoy.with(TemporalAdjusters.nextOrSame(DayOfWeek.SUNDAY)));
+                f.setDesde(hoy.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY)));
+                f.setHasta(hoy.with(TemporalAdjusters.nextOrSame(DayOfWeek.SUNDAY)));
+                break;
             case "MES":
-                return YearMonth.from(f).equals(YearMonth.from(hoy));
+                f.setDesde(hoy.withDayOfMonth(1));
+                f.setHasta(hoy.with(TemporalAdjusters.lastDayOfMonth()));
+                break;
+            case "PROXIMAS":
+                f.setFinalizadas(false);
+                break;
+            case "PASADAS":
+                f.setFinalizadas(true);
+                break;
             default:
-                return true;
+                break;
+        }
+        LocalDate d = dia(desde);
+        LocalDate h = dia(hasta);
+        if (d != null) {
+            f.setDesde(d);
+        }
+        if (h != null) {
+            f.setHasta(h);
+        }
+        return f;
+    }
+
+    private static LocalDate dia(String texto) {
+        try {
+            return texto == null || texto.isBlank() ? null : LocalDate.parse(texto.trim());
+        } catch (DateTimeParseException e) {
+            return null;
         }
     }
 
     public void verMas() {
         limite += PAGINA;
-    }
-
-    /** Para exportar a PDF: muestra todas las filas (de las filtradas) y no solo la primera página. */
-    public void mostrarTodo() {
-        limite = Math.max(PAGINA, filtradas.size());
+        consultar();
     }
 
     public void limpiar() {
@@ -132,7 +138,28 @@ public class AdminReservasBean implements Serializable {
         estado = "";
         tiempo = "";
         tipo = "";
+        desde = "";
+        hasta = "";
         filtrar();
+    }
+
+    // ---------- PDF ----------
+
+    /**
+     * Arma el informe con los filtros de la barra (el período es obligatorio). Si no se puede (sin período, sin
+     * reservas o demasiadas), deja el aviso en pantalla y la vista no abre la impresión.
+     */
+    public void prepararInforme() {
+        filtro = armarFiltro();
+        informe = servicio.informe(filtro, LocalDateTime.now());
+        if (informe.getAviso() != null) {
+            FacesContext.getCurrentInstance().addMessage(null,
+                    new FacesMessage(FacesMessage.SEVERITY_WARN, informe.getAviso(), null));
+        }
+    }
+
+    public InformeReservas getInforme() {
+        return informe;
     }
 
     // ---------- acciones sobre las que esperan confirmación (AJAX) ----------
@@ -146,16 +173,17 @@ public class AdminReservasBean implements Serializable {
     }
 
     private void resolver(Integer idReserva, boolean aceptar) {
-        ReservaListado fila = reservas.stream().filter(r -> r.getIdReserva().equals(idReserva)).findFirst().orElse(null);
+        ReservaListado fila = pagina.getFilas().stream().filter(r -> r.getIdReserva().equals(idReserva)).findFirst()
+                .orElse(null);
         Integer admin = loginBean.getIdUsuarioLogueado();
         boolean resuelta = aceptar ? servicio.confirmar(idReserva, admin) : servicio.rechazar(idReserva, admin);
 
         FacesMessage mensaje;
-        if (!resuelta || fila == null) {
+        if (!resuelta) {
             mensaje = new FacesMessage(FacesMessage.SEVERITY_WARN, "Esa solicitud ya no estaba por confirmar.", null);
         } else {
-            String reserva = fila.getSocio() + " · " + fila.getInstalacion() + " · " + fila.getCuando().toLowerCase()
-                    + " " + fila.getHorario();
+            String reserva = fila == null ? "la solicitud" : fila.getSocio() + " · " + fila.getInstalacion() + " · "
+                    + fila.getCuando().toLowerCase() + " " + fila.getHorario();
             mensaje = new FacesMessage(FacesMessage.SEVERITY_INFO,
                     (aceptar ? "Confirmaste la reserva de " : "Rechazaste la solicitud de ") + reserva
                     + (aceptar ? "." : ". El turno quedó libre."), null);
@@ -168,128 +196,57 @@ public class AdminReservasBean implements Serializable {
     // ---------- indicadores y rankings (sobre todas las reservas) ----------
 
     public long getPorConfirmar() {
-        return reservas.stream().filter(ReservaListado::isPorConfirmar).count();
+        return resumen.getPorConfirmar();
     }
 
     public long getDeHoy() {
-        return reservas.stream().filter(r -> r.getFecha().equals(hoy) && r.isActiva()).count();
+        return resumen.getDeHoy();
     }
 
     public long getProximasConfirmadas() {
-        return reservas.stream().filter(r -> "CONFIRMADA".equals(r.getEstado()) && !r.isFinalizada()).count();
+        return resumen.getProximasConfirmadas();
     }
 
     public long getCanceladas() {
-        return reservas.stream().filter(r -> !r.isActiva()).count();
+        return resumen.getCanceladas();
     }
 
-    /** Qué parte de todas las reservas terminó cancelada o rechazada, en %. */
     public int getPorcentajeCanceladas() {
-        return reservas.isEmpty() ? 0 : (int) Math.round(100.0 * getCanceladas() / reservas.size());
+        return resumen.getPorcentajeCanceladas();
     }
 
-    public int getTotal() {
-        return reservas.size();
+    public long getTotal() {
+        return resumen.getTotal();
     }
 
     public RecaudacionDiaria getRecaudacion() {
-        return recaudacion;
-    }
-
-    /** Lo cobrado por reservas confirmadas hoy (por día de confirmación, como el ingreso en la cuenta) y los últimos días. */
-    private RecaudacionDiaria recaudacion() {
-        BigDecimal[] porDia = new BigDecimal[DIAS_DEL_GRAFICO]; // el último es hoy
-        java.util.Arrays.fill(porDia, BigDecimal.ZERO);
-        int cantidadHoy = 0;
-        for (ReservaListado r : reservas) {
-            if (r.getConfirmadaEl() == null) {
-                continue;
-            }
-            long atras = java.time.temporal.ChronoUnit.DAYS.between(r.getConfirmadaEl(), hoy);
-            if (atras >= 0 && atras < DIAS_DEL_GRAFICO) {
-                int i = DIAS_DEL_GRAFICO - 1 - (int) atras;
-                porDia[i] = porDia[i].add(r.getCobrado());
-                cantidadHoy += atras == 0 ? 1 : 0;
-            }
-        }
-
-        BigDecimal maximo = BigDecimal.ZERO;
-        for (BigDecimal m : porDia) {
-            maximo = maximo.max(m);
-        }
-        List<IngresosMembresias.Mes> dias = new ArrayList<>();
-        for (int i = 0; i < DIAS_DEL_GRAFICO; i++) {
-            boolean esHoy = i == DIAS_DEL_GRAFICO - 1;
-            int porcentaje = maximo.signum() == 0 ? 0
-                    : porDia[i].multiply(BigDecimal.valueOf(100)).divide(maximo, 0, RoundingMode.HALF_UP).intValue();
-            dias.add(new IngresosMembresias.Mes(
-                    esHoy ? "hoy" : hoy.minusDays(DIAS_DEL_GRAFICO - 1 - i).getDayOfWeek()
-                    .getDisplayName(TextStyle.SHORT, ES).replace(".", ""),
-                    DashboardServicio.monto(porDia[i]), porcentaje, esHoy));
-        }
-
-        BigDecimal actual = porDia[DIAS_DEL_GRAFICO - 1];
-        BigDecimal ayer = porDia[DIAS_DEL_GRAFICO - 2];
-        String comparacion;
-        String tendencia;
-        if (ayer.signum() == 0) {
-            comparacion = actual.signum() == 0 ? "Todavía sin cobros hoy" : "Sin cobros ayer";
-            tendencia = "flat";
-        } else {
-            long variacion = actual.subtract(ayer).multiply(BigDecimal.valueOf(100))
-                    .divide(ayer, 0, RoundingMode.HALF_UP).longValue();
-            comparacion = (variacion > 0 ? "+" : "") + variacion + " % respecto de ayer";
-            tendencia = variacion > 0 ? "up" : variacion < 0 ? "down" : "flat";
-        }
-        return new RecaudacionDiaria(DashboardServicio.monto(actual), cantidadHoy, comparacion, tendencia, dias);
+        return resumen.getRecaudacion();
     }
 
     public List<RankingItem> getMasReservadas() {
-        return masReservadas;
+        return resumen.getMasReservadas();
     }
 
     public List<RankingItem> getHorasPico() {
-        return horasPico;
-    }
-
-    /** Las {@value #TOP} instalaciones (o horas de inicio) con más reservas que ocupan o ocuparon el turno. */
-    private List<RankingItem> ranking(boolean porHora) {
-        Map<String, Long> cuentas = new LinkedHashMap<>();
-        Map<String, String> iconos = new LinkedHashMap<>();
-        for (ReservaListado r : reservas) {
-            if (r.isActiva()) {
-                String clave = porHora ? String.format("%02d:00 h", r.getHoraInicio()) : r.getInstalacion();
-                cuentas.merge(clave, 1L, Long::sum);
-                iconos.putIfAbsent(clave, porHora ? "schedule" : r.getIcono());
-            }
-        }
-        List<Map.Entry<String, Long>> orden = new ArrayList<>(cuentas.entrySet());
-        orden.sort(Map.Entry.<String, Long>comparingByValue(Comparator.reverseOrder())
-                .thenComparing(Map.Entry.comparingByKey()));
-        List<RankingItem> ranking = new ArrayList<>();
-        for (Map.Entry<String, Long> e : orden.subList(0, Math.min(TOP, orden.size()))) {
-            ranking.add(new RankingItem(e.getKey(), iconos.get(e.getKey()), e.getValue(),
-                    (int) Math.round(100.0 * e.getValue() / orden.get(0).getValue())));
-        }
-        return ranking;
+        return resumen.getHorasPico();
     }
 
     // ---------- lista y filtros ----------
 
     public List<ReservaListado> getVisibles() {
-        return filtradas.subList(0, Math.min(limite, filtradas.size()));
+        return pagina.getFilas();
     }
 
-    public int getTotalFiltradas() {
-        return filtradas.size();
+    public long getTotalFiltradas() {
+        return pagina.getTotal();
     }
 
     public boolean isHayMas() {
-        return filtradas.size() > limite;
+        return pagina.isHayMas();
     }
 
     public boolean isFiltrando() {
-        return !busqueda.isBlank() || !estado.isEmpty() || !tiempo.isEmpty() || !tipo.isEmpty();
+        return filtro.isFiltrando();
     }
 
     public List<String> getTipos() {
@@ -326,5 +283,21 @@ public class AdminReservasBean implements Serializable {
 
     public void setTipo(String tipo) {
         this.tipo = tipo == null ? "" : tipo;
+    }
+
+    public String getDesde() {
+        return desde;
+    }
+
+    public void setDesde(String desde) {
+        this.desde = desde == null ? "" : desde;
+    }
+
+    public String getHasta() {
+        return hasta;
+    }
+
+    public void setHasta(String hasta) {
+        this.hasta = hasta == null ? "" : hasta;
     }
 }

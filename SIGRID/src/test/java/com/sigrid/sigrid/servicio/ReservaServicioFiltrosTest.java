@@ -16,6 +16,7 @@ import static org.mockito.Mockito.when;
 import com.sigrid.sigrid.dao.ComprobantePagoDAO;
 import com.sigrid.sigrid.dao.InstalacionDAO;
 import com.sigrid.sigrid.dao.ReservaDAO;
+import com.sigrid.sigrid.dao.TurnoDAO;
 import com.sigrid.sigrid.dao.UsuarioDAO;
 import com.sigrid.sigrid.dto.FiltroReservas;
 import com.sigrid.sigrid.dto.InformeReservas;
@@ -54,6 +55,8 @@ class ReservaServicioFiltrosTest {
     private ComprobantePagoDAO comprobanteDAO;
     @Mock
     private InstalacionDAO instalacionDAO;
+    @Mock
+    private TurnoDAO turnoDAO;
 
     @InjectMocks
     private ReservaServicio servicio;
@@ -85,11 +88,11 @@ class ReservaServicioFiltrosTest {
     void unaTandaTraeLoQueLaBaseDevuelveYElTotalDeLaConsulta() {
         FiltroReservas f = new FiltroReservas();
         f.setEstado("CONFIRMADA");
-        when(reservaDAO.buscarParaAdmin(f, HOY, HORA, 25))
+        when(reservaDAO.buscarParaAdmin(f, HOY, HORA, 1))
                 .thenReturn(List.of(reserva(10, HOY.plusDays(2), Reserva.Estado.CONFIRMADA)));
         when(reservaDAO.contarParaAdmin(f, HOY, HORA)).thenReturn(130L);
 
-        PaginaReservas pagina = servicio.listarPagina(f, 25, HOY, HORA);
+        PaginaReservas pagina = servicio.listarPagina(f, 1, HOY, HORA);
 
         assertEquals(1, pagina.getFilas().size());
         assertEquals("CONFIRMADA", pagina.getFilas().get(0).getEstado());
@@ -102,9 +105,12 @@ class ReservaServicioFiltrosTest {
         FiltroReservas f = new FiltroReservas();
         when(reservaDAO.buscarParaAdmin(f, HOY, HORA, 25))
                 .thenReturn(List.of(reserva(10, HOY.plusDays(2), Reserva.Estado.CONFIRMADA)));
-        when(reservaDAO.contarParaAdmin(f, HOY, HORA)).thenReturn(1L);
 
-        assertFalse(servicio.listarPagina(f, 25, HOY, HORA).isHayMas());
+        PaginaReservas pagina = servicio.listarPagina(f, 25, HOY, HORA);
+
+        assertFalse(pagina.isHayMas());
+        assertEquals(1, pagina.getTotal(), "la tanda no se llenó: el total es lo que llegó, sin contar de nuevo");
+        verify(reservaDAO, never()).contarParaAdmin(any(), any(), any());
     }
 
     @Test
@@ -121,22 +127,43 @@ class ReservaServicioFiltrosTest {
                 servicio.disciplinas());
     }
 
+    @Test
+    void lasProximasConfirmadasSeListanConSuEstadoYSinTerminar() {
+        when(reservaDAO.listarProximasConfirmadasParaAdmin(HOY, HORA))
+                .thenReturn(List.of(reserva(10, HOY.plusDays(1), Reserva.Estado.CONFIRMADA),
+                        reserva(11, HOY.plusDays(2), Reserva.Estado.CONFIRMADA)));
+
+        var filas = servicio.listarProximasConfirmadas(AHORA);
+
+        assertEquals(2, filas.size());
+        assertEquals("CONFIRMADA", filas.get(0).getEstado());
+        assertFalse(filas.get(0).isFinalizada());
+        assertEquals(HOY.plusDays(2), filas.get(1).getFecha());
+    }
+
     // ---------- indicadores y rankings ----------
+
+    private final Instalacion quincho = DatosDePrueba.instalacion(3, "Quincho 1", Instalacion.TipoAcceso.ARANCELADO,
+            Instalacion.Estado.HABILITADA);
 
     @Test
     void elResumenSaleDeLasConsultasDeAgregacionYNoDeCargarTodasLasReservas() {
-        when(reservaDAO.contarPorEstadoYPago()).thenReturn(List.of(
-                fila(Reserva.Estado.CONFIRMADA, Pago.Estado.CONFIRMADO, 40L),
-                fila(Reserva.Estado.PENDIENTE_PAGO, Pago.Estado.PENDIENTE_VALIDACION, 3L),
-                fila(Reserva.Estado.PENDIENTE_PAGO, null, 2L),
-                fila(Reserva.Estado.CANCELADA, Pago.Estado.CONFIRMADO, 10L),
-                fila(Reserva.Estado.RECHAZADA, Pago.Estado.RECHAZADO, 5L)));
+        quincho.setTipoDisciplina("Quincho");
+        when(reservaDAO.contarPorEstado()).thenReturn(List.of(
+                fila(Reserva.Estado.CONFIRMADA, 40L), fila(Reserva.Estado.PENDIENTE_PAGO, 5L),
+                fila(Reserva.Estado.CANCELADA, 10L), fila(Reserva.Estado.RECHAZADA, 5L)));
+        when(reservaDAO.contarPendientes()).thenReturn(3L);
         when(reservaDAO.contarActivasDelDia(HOY)).thenReturn(6L);
         when(reservaDAO.contarProximasConfirmadas(HOY, HORA)).thenReturn(12L);
-        when(reservaDAO.rankingDeInstalaciones(5)).thenReturn(List.of(
-                fila("Cancha de Fútbol 11", "Fútbol", 30L), fila("Quincho 1", "Quincho", 10L)));
-        when(reservaDAO.contarActivasPorHoraDeInicio()).thenReturn(List.of(
-                fila(LocalTime.of(10, 0), 20L), fila(LocalTime.of(18, 0), 35L), fila(LocalTime.of(19, 0), 5L)));
+        // reservas activas por franja: la cancha 20 a las 10 y 10 a las 18; el quincho 5 a las 18 y 5 a las 19
+        when(reservaDAO.contarActivasPorTurno()).thenReturn(List.of(
+                fila(1, 20L), fila(2, 10L), fila(3, 5L), fila(4, 5L)));
+        when(turnoDAO.listarConInstalacion()).thenReturn(List.of(
+                DatosDePrueba.turno(1, cancha, LocalTime.of(10, 0), LocalTime.of(11, 0)),
+                DatosDePrueba.turno(2, cancha, LocalTime.of(18, 0), LocalTime.of(19, 0)),
+                DatosDePrueba.turno(3, quincho, LocalTime.of(18, 0), LocalTime.of(19, 0)),
+                DatosDePrueba.turno(4, quincho, LocalTime.of(19, 0), LocalTime.of(20, 0)),
+                DatosDePrueba.turno(5, quincho, LocalTime.of(20, 0), LocalTime.of(21, 0))));
         when(reservaDAO.listarConfirmadasDesde(HOY.minusDays(6).atStartOfDay())).thenReturn(List.of());
 
         ResumenReservas r = servicio.resumen(AHORA);
@@ -147,20 +174,27 @@ class ReservaServicioFiltrosTest {
         assertEquals(15, r.getCanceladas(), "canceladas y rechazadas");
         assertEquals(60, r.getTotal());
         assertEquals(25, r.getPorcentajeCanceladas());
+        assertEquals(2, r.getMasReservadas().size(), "la franja sin reservas no suma una instalación vacía");
         assertEquals("Cancha de Fútbol 11", r.getMasReservadas().get(0).getEtiqueta());
         assertEquals(30, r.getMasReservadas().get(0).getCantidad());
+        assertEquals("Quincho 1", r.getMasReservadas().get(1).getEtiqueta());
         assertEquals(33, r.getMasReservadas().get(1).getPorcentaje(), "10 sobre 30");
-        assertEquals("18:00 h", r.getHorasPico().get(0).getEtiqueta());
-        assertEquals("10:00 h", r.getHorasPico().get(1).getEtiqueta());
+        assertEquals("10:00 h", r.getHorasPico().get(0).getEtiqueta());
+        assertEquals(20, r.getHorasPico().get(0).getCantidad());
+        assertEquals("18:00 h", r.getHorasPico().get(1).getEtiqueta());
+        assertEquals(15, r.getHorasPico().get(1).getCantidad(), "cancha y quincho a las 18");
+        assertEquals(75, r.getHorasPico().get(1).getPorcentaje(), "15 sobre 20");
         assertEquals("19:00 h", r.getHorasPico().get(2).getEtiqueta());
-        assertEquals(57, r.getHorasPico().get(1).getPorcentaje(), "20 sobre 35");
     }
 
     @Test
     void lasHorasSeAgrupanPorHoraAunqueLosTurnosEmpiecenALasYMedia() {
-        when(reservaDAO.contarPorEstadoYPago()).thenReturn(List.of());
-        when(reservaDAO.contarActivasPorHoraDeInicio()).thenReturn(List.of(
-                fila(LocalTime.of(10, 0), 4L), fila(LocalTime.of(10, 30), 6L), fila(LocalTime.of(11, 0), 3L)));
+        when(reservaDAO.contarPorEstado()).thenReturn(List.of());
+        when(reservaDAO.contarActivasPorTurno()).thenReturn(List.of(fila(1, 4L), fila(2, 6L), fila(3, 3L)));
+        when(turnoDAO.listarConInstalacion()).thenReturn(List.of(
+                DatosDePrueba.turno(1, cancha, LocalTime.of(10, 0), LocalTime.of(11, 0)),
+                DatosDePrueba.turno(2, cancha, LocalTime.of(10, 30), LocalTime.of(11, 30)),
+                DatosDePrueba.turno(3, cancha, LocalTime.of(11, 0), LocalTime.of(12, 0))));
         when(reservaDAO.listarConfirmadasDesde(HOY.minusDays(6).atStartOfDay())).thenReturn(List.of());
 
         ResumenReservas r = servicio.resumen(AHORA);
@@ -171,7 +205,7 @@ class ReservaServicioFiltrosTest {
 
     @Test
     void laRecaudacionDeLosUltimosSieteDiasSumaLoCobradoPorDiaDeConfirmacion() {
-        when(reservaDAO.contarPorEstadoYPago()).thenReturn(List.of());
+        when(reservaDAO.contarPorEstado()).thenReturn(List.of());
         Reserva hoy = confirmada(10, "20000", AHORA.minusHours(1));
         Reserva ayer = confirmada(11, "10000", AHORA.minusDays(1));
         when(reservaDAO.listarConfirmadasDesde(HOY.minusDays(6).atStartOfDay())).thenReturn(List.of(hoy, ayer));
@@ -199,7 +233,7 @@ class ReservaServicioFiltrosTest {
     void cp43_elInformeDeUnDiaTraeEseDiaConPeriodoYEmision() {
         FiltroReservas f = periodo(LocalDate.of(2026, 10, 14), LocalDate.of(2026, 10, 14));
         when(reservaDAO.contarParaAdmin(eq(f), eq(HOY), any(LocalTime.class))).thenReturn(2L);
-        when(reservaDAO.buscarParaAdmin(eq(f), eq(HOY), any(LocalTime.class), eq(ReservaServicio.MAXIMO_INFORME)))
+        when(reservaDAO.buscarParaInforme(eq(f), eq(HOY), any(LocalTime.class), eq(ReservaServicio.MAXIMO_INFORME)))
                 .thenReturn(List.of(reserva(10, LocalDate.of(2026, 10, 14), Reserva.Estado.CONFIRMADA),
                         reserva(11, LocalDate.of(2026, 10, 14), Reserva.Estado.PENDIENTE_PAGO)));
 
@@ -219,7 +253,7 @@ class ReservaServicioFiltrosTest {
     void cp43_unPeriodoDeVariosDiasDiceDesdeYHasta() {
         FiltroReservas f = periodo(LocalDate.of(2026, 10, 1), LocalDate.of(2026, 10, 31));
         when(reservaDAO.contarParaAdmin(eq(f), eq(HOY), any(LocalTime.class))).thenReturn(1L);
-        when(reservaDAO.buscarParaAdmin(eq(f), eq(HOY), any(LocalTime.class), eq(ReservaServicio.MAXIMO_INFORME)))
+        when(reservaDAO.buscarParaInforme(eq(f), eq(HOY), any(LocalTime.class), eq(ReservaServicio.MAXIMO_INFORME)))
                 .thenReturn(List.of(reserva(10, LocalDate.of(2026, 10, 14), Reserva.Estado.CONFIRMADA)));
 
         assertEquals("01/10/2026 al 31/10/2026", servicio.informe(f, AHORA).getPeriodo());
@@ -233,7 +267,7 @@ class ReservaServicioFiltrosTest {
         f.setDisciplina("Fútbol");
         f.setTexto("gomez");
         when(reservaDAO.contarParaAdmin(eq(f), eq(HOY), any(LocalTime.class))).thenReturn(1L);
-        when(reservaDAO.buscarParaAdmin(eq(f), eq(HOY), any(LocalTime.class), eq(ReservaServicio.MAXIMO_INFORME)))
+        when(reservaDAO.buscarParaInforme(eq(f), eq(HOY), any(LocalTime.class), eq(ReservaServicio.MAXIMO_INFORME)))
                 .thenReturn(List.of(reserva(10, LocalDate.of(2026, 10, 14), Reserva.Estado.CONFIRMADA)));
 
         assertEquals("Estado: Confirmadas · Instalación: Fútbol · Búsqueda: «gomez»",
@@ -251,7 +285,7 @@ class ReservaServicioFiltrosTest {
         assertFalse(informe.isListo());
         assertTrue(informe.getFilas().isEmpty());
         assertEquals("No hay reservas en el período elegido (01/10/2026 al 31/10/2026).", informe.getAviso());
-        verify(reservaDAO, never()).buscarParaAdmin(any(), any(), any(), org.mockito.ArgumentMatchers.anyInt());
+        verify(reservaDAO, never()).buscarParaInforme(any(), any(), any(), org.mockito.ArgumentMatchers.anyInt());
     }
 
     @DisplayName("CP-45: si el período trae más de lo que entra en un PDF pide acotarlo sin cargar las filas")
@@ -266,7 +300,7 @@ class ReservaServicioFiltrosTest {
         assertFalse(informe.isListo());
         assertEquals("El período tiene 2.001 reservas y un PDF admite hasta 2.000: acotá el período o los filtros.",
                 informe.getAviso());
-        verify(reservaDAO, never()).buscarParaAdmin(any(), any(), any(), org.mockito.ArgumentMatchers.anyInt());
+        verify(reservaDAO, never()).buscarParaInforme(any(), any(), any(), org.mockito.ArgumentMatchers.anyInt());
     }
 
     @DisplayName("CP-45: exactamente el máximo todavía entra en un PDF")
@@ -275,7 +309,7 @@ class ReservaServicioFiltrosTest {
         FiltroReservas f = periodo(LocalDate.of(2026, 10, 1), LocalDate.of(2026, 10, 31));
         when(reservaDAO.contarParaAdmin(eq(f), eq(HOY), any(LocalTime.class)))
                 .thenReturn((long) ReservaServicio.MAXIMO_INFORME);
-        when(reservaDAO.buscarParaAdmin(eq(f), eq(HOY), any(LocalTime.class), eq(ReservaServicio.MAXIMO_INFORME)))
+        when(reservaDAO.buscarParaInforme(eq(f), eq(HOY), any(LocalTime.class), eq(ReservaServicio.MAXIMO_INFORME)))
                 .thenReturn(List.of(reserva(10, LocalDate.of(2026, 10, 14), Reserva.Estado.CONFIRMADA)));
 
         assertTrue(servicio.informe(f, AHORA).isListo());

@@ -174,15 +174,17 @@ public class ReservaDAO extends BaseDAO<Reserva> {
     }
 
     /**
-     * Listado de reservas del administrador: todas, en cualquier estado, la de fecha más lejana primero.
-     * Trae de una vez turno, instalación, socio, usuario, pago y tarifa para no consultar fila por fila.
-     * ponytail: sin paginación en la BD; si el historial crece a decenas de miles, filtrar por fecha acá.
+     * Las confirmadas que todavía no terminaron (incluye la que está en curso), la más próxima primero, con turno,
+     * instalación, socio, usuario y pago. Son pocas: no se reserva con más de 30 días de anticipación.
      */
-    public List<Reserva> listarTodasParaAdmin() {
+    public List<Reserva> listarProximasConfirmadasParaAdmin(LocalDate hoy, LocalTime ahora) {
         return em.createQuery(
-                "SELECT r FROM Reserva r JOIN FETCH r.idTurno t JOIN FETCH t.idInstalacion "
-                + "JOIN FETCH r.idSocio s JOIN FETCH s.idUsuario LEFT JOIN FETCH r.idPago LEFT JOIN FETCH r.idTarifa "
-                + "ORDER BY r.fechaTurno DESC, t.horaInicio DESC, r.idReserva DESC", Reserva.class)
+                "SELECT r FROM Reserva r" + UNIONES_CON_DATOS + " WHERE r.estado = :confirmada "
+                + "AND (r.fechaTurno > :hoy OR (r.fechaTurno = :hoy AND t.horaFin > :ahora)) "
+                + "ORDER BY r.fechaTurno, t.horaInicio, r.idReserva", Reserva.class)
+                .setParameter("confirmada", Reserva.Estado.CONFIRMADA)
+                .setParameter("hoy", hoy)
+                .setParameter("ahora", ahora)
                 .getResultList();
     }
 
@@ -252,8 +254,6 @@ public class ReservaDAO extends BaseDAO<Reserva> {
 
     // ---------- listado y PDF del administrador con filtros en SQL (CC-06) ----------
 
-    private static final String UNIONES = " JOIN r.idTurno t JOIN t.idInstalacion i JOIN r.idSocio s JOIN s.idUsuario u "
-            + "LEFT JOIN r.idPago p";
     private static final String UNIONES_CON_DATOS = " JOIN FETCH r.idTurno t JOIN FETCH t.idInstalacion i "
             + "JOIN FETCH r.idSocio s JOIN FETCH s.idUsuario u LEFT JOIN FETCH r.idPago p LEFT JOIN FETCH r.idTarifa";
     private static final java.time.format.DateTimeFormatter FECHA_ESCRITA
@@ -344,13 +344,24 @@ public class ReservaDAO extends BaseDAO<Reserva> {
     /**
      * Reservas del administrador que cumplen el filtro, la de fecha más lejana primero, hasta "maximo" filas. Trae de
      * una vez turno, instalación, socio, usuario, pago y tarifa. La base aplica todos los filtros y el tope: no se
-     * cargan las reservas que no se van a mostrar.
+     * cargan las reservas que no se van a mostrar. Se ordena solo por columnas de la reserva (fecha y número) para
+     * que la base recorra el índice de fecha_turno y corte al llegar al tope, sin ordenar toda la tabla.
      */
     public List<Reserva> buscarParaAdmin(FiltroReservas f, LocalDate hoy, LocalTime ahora, int maximo) {
         Map<String, Object> parametros = new HashMap<>();
         String donde = donde(f, hoy, ahora, parametros);
         return con(em.createQuery("SELECT r FROM Reserva r" + UNIONES_CON_DATOS + donde
-                + " ORDER BY r.fechaTurno DESC, t.horaInicio DESC, r.idReserva DESC", Reserva.class), parametros)
+                + " ORDER BY r.fechaTurno DESC, r.idReserva DESC", Reserva.class), parametros)
+                .setMaxResults(maximo)
+                .getResultList();
+    }
+
+    /** Las del PDF: mismas condiciones, en orden cronológico (día, hora y luego instalación), hasta "maximo" filas. */
+    public List<Reserva> buscarParaInforme(FiltroReservas f, LocalDate hoy, LocalTime ahora, int maximo) {
+        Map<String, Object> parametros = new HashMap<>();
+        String donde = donde(f, hoy, ahora, parametros);
+        return con(em.createQuery("SELECT r FROM Reserva r" + UNIONES_CON_DATOS + donde
+                + " ORDER BY r.fechaTurno, t.horaInicio, i.nombre, r.idReserva", Reserva.class), parametros)
                 .setMaxResults(maximo)
                 .getResultList();
     }
@@ -359,14 +370,21 @@ public class ReservaDAO extends BaseDAO<Reserva> {
     public long contarParaAdmin(FiltroReservas f, LocalDate hoy, LocalTime ahora) {
         Map<String, Object> parametros = new HashMap<>();
         String donde = donde(f, hoy, ahora, parametros);
-        return con(em.createQuery("SELECT COUNT(r) FROM Reserva r" + UNIONES + donde, Long.class), parametros)
+        // solo las uniones que el filtro necesita: cada reserva tiene turno, socio y usuario, así que no cambian la cuenta
+        boolean texto = !f.getTexto().isEmpty();
+        boolean instalacion = texto || !f.getDisciplina().isEmpty();
+        boolean pago = f.getEstado().equals("POR_CONFIRMAR") || f.getEstado().equals("ESPERANDO_PAGO");
+        String uniones = (instalacion || f.getFinalizadas() != null ? " JOIN r.idTurno t" : "")
+                + (instalacion ? " JOIN t.idInstalacion i" : "")
+                + (texto ? " JOIN r.idSocio s JOIN s.idUsuario u" : "")
+                + (pago ? " LEFT JOIN r.idPago p" : "");
+        return con(em.createQuery("SELECT COUNT(r) FROM Reserva r" + uniones + donde, Long.class), parametros)
                 .getSingleResult();
     }
 
-    /** Filas {estado de la reserva, estado del pago (null si no hay), cantidad} de todas las reservas. */
-    public List<Object[]> contarPorEstadoYPago() {
-        return em.createQuery("SELECT r.estado, p.estado, COUNT(r) FROM Reserva r LEFT JOIN r.idPago p "
-                + "GROUP BY r.estado, p.estado", Object[].class)
+    /** Filas {estado de la reserva, cantidad} de todas las reservas. */
+    public List<Object[]> contarPorEstado() {
+        return em.createQuery("SELECT r.estado, COUNT(r) FROM Reserva r GROUP BY r.estado", Object[].class)
                 .getResultList();
     }
 
@@ -381,22 +399,14 @@ public class ReservaDAO extends BaseDAO<Reserva> {
                 .getSingleResult();
     }
 
-    /** Filas {nombre, disciplina, cantidad} de las instalaciones con más reservas activas, la más reservada primero. */
-    public List<Object[]> rankingDeInstalaciones(int maximo) {
+    /**
+     * Filas {id del turno, cantidad} de las reservas activas: una por franja (unas decenas de filas aunque haya
+     * cientos de miles de reservas). De acá salen los rankings por instalación y por hora.
+     */
+    public List<Object[]> contarActivasPorTurno() {
         return em.createQuery(
-                "SELECT i.nombre, i.tipoDisciplina, COUNT(r) FROM Reserva r JOIN r.idTurno t JOIN t.idInstalacion i "
-                + "WHERE r.estado IN :activas GROUP BY i.nombre, i.tipoDisciplina ORDER BY COUNT(r) DESC, i.nombre",
-                Object[].class)
-                .setParameter("activas", ACTIVAS)
-                .setMaxResults(maximo)
-                .getResultList();
-    }
-
-    /** Filas {hora de inicio del turno, cantidad} de las reservas activas. */
-    public List<Object[]> contarActivasPorHoraDeInicio() {
-        return em.createQuery(
-                "SELECT t.horaInicio, COUNT(r) FROM Reserva r JOIN r.idTurno t WHERE r.estado IN :activas "
-                + "GROUP BY t.horaInicio", Object[].class)
+                "SELECT r.idTurno.idTurno, COUNT(r) FROM Reserva r WHERE r.estado IN :activas "
+                + "GROUP BY r.idTurno.idTurno", Object[].class)
                 .setParameter("activas", ACTIVAS)
                 .getResultList();
     }

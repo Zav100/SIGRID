@@ -11,6 +11,7 @@ import static org.mockito.Mockito.when;
 import com.sigrid.sigrid.dao.ComprobantePagoDAO;
 import com.sigrid.sigrid.dao.ReservaDAO;
 import com.sigrid.sigrid.dao.UsuarioDAO;
+import com.sigrid.sigrid.dto.FiltroReservas;
 import com.sigrid.sigrid.dto.ReservaListado;
 import com.sigrid.sigrid.dto.SolicitudFila;
 import com.sigrid.sigrid.repositorio.ComprobantePago;
@@ -57,8 +58,9 @@ class ReservaServicioListadosTest {
     }
 
     private ReservaListado unica(Reserva r) {
-        when(reservaDAO.listarTodasParaAdmin()).thenReturn(List.of(r));
-        return servicio.listarTodas(HOY, AHORA.toLocalTime()).get(0);
+        FiltroReservas todas = new FiltroReservas();
+        when(reservaDAO.buscarParaAdmin(todas, HOY, AHORA.toLocalTime(), 25)).thenReturn(List.of(r));
+        return servicio.listarPagina(todas, 25, HOY, AHORA.toLocalTime()).getFilas().get(0);
     }
 
     // ---------- listado de todas las reservas ----------

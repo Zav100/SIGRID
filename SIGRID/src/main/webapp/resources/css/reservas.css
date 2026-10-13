@@ -105,3 +105,28 @@
     grid-template-columns: minmax(0, 1fr);
   }
 }
+
+/* ============ PERÍODO Y PDF (CC-06) ============ */
+.rv-fecha {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: .82rem;
+  color: var(--adm-ink-2);
+}
+
+.rv-fecha-input {
+  height: 36px;
+  padding: 0 10px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--white);
+  font: inherit;
+  font-size: .86rem;
+  color: var(--adm-ink);
+}
+
+/* el informe es solo para el PDF: en pantalla no se ve (print.css lo muestra al imprimir) */
+.rv-informe {
+  display: none;
+}
