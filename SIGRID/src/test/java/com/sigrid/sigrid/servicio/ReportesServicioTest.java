@@ -742,6 +742,7 @@ class ReportesServicioTest {
 
     // ---------- resumen ----------
 
+    @DisplayName("CP-41: el resumen de reportes dice \"Grado de satisfacción\"")
     @Test
     void elResumenTieneLasOchoCifrasEnSuOrden() {
         List<ReporteKpi> kpis = servicio.resumen(d, r30);
@@ -751,7 +752,7 @@ class ReportesServicioTest {
             etiquetas.add(k.getEtiqueta());
         }
         assertEquals(List.of("Ingresos totales", "Reservas realizadas", "Ocupación", "Ticket promedio", "Socios activos",
-                "Renovación de membresías", "Valoración promedio", "Cancelaciones"), etiquetas);
+                "Renovación de membresías", "Grado de satisfacción", "Cancelaciones"), etiquetas);
     }
 
     @Test
@@ -776,7 +777,7 @@ class ReportesServicioTest {
         d.valoraciones.add(valoracion("Cancha de Fútbol 11", 4, LocalDateTime.of(2026, 9, 20, 10, 0)));
         d.valoraciones.add(valoracion("Cancha de Fútbol 11", 1, LocalDateTime.of(2026, 7, 20, 10, 0))); // fuera
 
-        ReporteKpi v = kpi(servicio.resumen(d, r30), "Valoración promedio");
+        ReporteKpi v = kpi(servicio.resumen(d, r30), "Grado de satisfacción");
 
         assertEquals("4,5", v.getValor());
         assertFalse(v.isAlerta());
@@ -787,7 +788,7 @@ class ReportesServicioTest {
         d.valoraciones.add(valoracion("Cancha de Rugby", 3, LocalDateTime.of(2026, 10, 1, 10, 0)));
         d.valoraciones.add(valoracion("Cancha de Rugby", 3, LocalDateTime.of(2026, 10, 2, 10, 0)));
 
-        assertTrue(kpi(servicio.resumen(d, r30), "Valoración promedio").isAlerta());
+        assertTrue(kpi(servicio.resumen(d, r30), "Grado de satisfacción").isAlerta());
     }
 
     private static ValoracionFila valoracion(String instalacion, int puntaje, LocalDateTime fecha) {
@@ -842,7 +843,7 @@ class ReportesServicioTest {
 
         List<ReporteAlerta> alertas = alertasSinFranjasVacias();
 
-        assertEquals("Baja valoración de los socios: Cancha de Rugby (3,0)", alertas.get(0).getTexto());
+        assertEquals("Grado de satisfacción bajo: Cancha de Rugby (3,0)", alertas.get(0).getTexto());
         assertEquals("off", alertas.get(0).getClase());
     }
 
