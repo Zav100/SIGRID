@@ -38,11 +38,15 @@ public final class PasswordUtil {
         if (partes.length != 3) {
             return false;
         }
-        int iteraciones = Integer.parseInt(partes[0]);
-        byte[] sal = Base64.getDecoder().decode(partes[1]);
-        byte[] hashEsperado = Base64.getDecoder().decode(partes[2]);
-        byte[] hashCalculado = hashear(passwordPlano, sal, iteraciones);
-        return java.security.MessageDigest.isEqual(hashEsperado, hashCalculado);
+        try {
+            int iteraciones = Integer.parseInt(partes[0]);
+            byte[] sal = Base64.getDecoder().decode(partes[1]);
+            byte[] hashEsperado = Base64.getDecoder().decode(partes[2]);
+            byte[] hashCalculado = hashear(passwordPlano, sal, iteraciones);
+            return java.security.MessageDigest.isEqual(hashEsperado, hashCalculado);
+        } catch (IllegalArgumentException e) { // NumberFormatException, Base64 inválido o iteraciones inválidas
+            return false;
+        }
     }
 
     private static byte[] hashear(String passwordPlano, byte[] sal, int iteraciones) {

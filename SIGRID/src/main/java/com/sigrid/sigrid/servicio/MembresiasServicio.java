@@ -168,7 +168,7 @@ public class MembresiasServicio implements Serializable {
         }
         Socio socio = s.getIdSocio();
         List<SuscripcionSocio> vigentes = suscripcionDAO.listarVigentesDelSocio(socio.getIdSocio(), hoy);
-        LocalDate inicio = vigentes.isEmpty() ? hoy : vigentes.get(0).getFechaVencimiento().plusDays(1);
+        LocalDate inicio = vigentes.isEmpty() ? hoy : vigentes.get(0).getFechaVencimiento();
 
         validarPago(s.getIdPago(), idAdmin, Pago.Estado.CONFIRMADO);
         s.setEstado(SuscripcionSocio.Estado.VIGENTE);

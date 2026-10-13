@@ -660,7 +660,7 @@ public class PanelSocioServicio implements Serializable {
         if (operacion == null) {
             throw new ReglaReservaException("Indicá cuándo hiciste la transferencia.");
         }
-        if (operacion.isAfter(ahora.plusMinutes(5))) {
+        if (operacion.isAfter(ahora.plusMinutes(25))) { // diferencia de reloj entre el banco y el servidor
             throw new ReglaReservaException("La fecha de la transferencia no puede ser futura.");
         }
         if (operacion.isBefore(ahora.minusDays(7))) {
