@@ -4,7 +4,7 @@ Documento del Plan de Garantía de Calidad. Reúne qué se probó, con qué resu
 
 | Dato | Valor |
 |---|---|
-| Fecha de ejecución | 12/10/2026 |
+| Fecha de ejecución | 13/10/2026 |
 | Rama | `calidad/pruebas-junit` |
 | Proyecto Maven | `SIGRID/` (carpeta `D:\SIGRID\SIGRID`) |
 | Java | JDK 21.0.10 (el código se compila con `source/target 11`) |
@@ -40,21 +40,22 @@ Dónde ver los resultados:
 |---|---|
 | Informe de cobertura (abrir en el navegador) | `SIGRID/target/site/jacoco/index.html` |
 | Cobertura en CSV / XML | `SIGRID/target/site/jacoco/jacoco.csv` y `jacoco.xml` |
-| Resultado de cada clase de prueba | `SIGRID/target/surefire-reports/` |
+| Resultado de cada clase de prueba | `SIGRID/target/surefire-reports/` (cada caso con su código del plan, por ejemplo `CP-22: ...`) |
+| Reporte de V&V del plan (Apéndice F: tablas 40, 41 y 42) | [reporte-vv.md](reporte-vv.md), generado con `python docs/calidad/generar_reporte_vv.py` después de `mvn test` |
 
 ## 2. Resumen de resultados
 
 | Medida | Valor |
 |---|---|
 | Clases de prueba | 25 |
-| Pruebas (métodos) | 580 |
-| Ejecuciones (casos, contando cada valor de las parametrizadas) | 646 |
-| Pasan | 642 |
-| Deshabilitadas (defectos D-1, D-2, D-3) | 4 |
+| Pruebas (métodos) | 591 |
+| Ejecuciones (casos, contando cada valor de las parametrizadas) | 650 |
+| Pasan | 644 |
+| Deshabilitadas (defectos D-1 a D-5) | 6 |
 | Fallan | 0 |
 | Tiempo total | unos segundos (la mayor parte es el hash PBKDF2 de 120 000 iteraciones) |
 
-Las pruebas deshabilitadas (cuatro, que corresponden a tres defectos) **no son pruebas rotas**: describen la regla esperada y el código actual no la cumple (sección 5.1). D-2 y D-3 están confirmadas por el responsable del proyecto; D-1 está pendiente de confirmar. Se dejaron con `@Disabled` y una explicación, tal como pide la regla de calidad de no modificar una prueba para que "pase" cuando el código está mal. Cada una se ejecutó activada para comprobar que falla por el motivo que se declara.
+Las pruebas deshabilitadas (seis, que corresponden a cinco defectos) **no son pruebas rotas**: describen la regla esperada y el código actual no la cumple (sección 5.1). D-2 y D-3 están confirmadas por el responsable del proyecto; D-1 es un posible defecto, y D-4 y D-5 son discrepancias entre el plan de la cátedra y el código que el equipo todavía no resolvió. Se dejaron con `@Disabled` y una explicación, tal como pide la regla de calidad de no modificar una prueba para que "pase" cuando el código está mal. Cada una se ejecutó activada para comprobar que falla por el motivo que se declara.
 
 ## 3. Pruebas por clase
 
@@ -121,7 +122,7 @@ Cada nombre describe un único comportamiento. En las pruebas parametrizadas, "N
 | `unCreditoVencidoNoEstaVigenteNiPorVencerYDiceHaceCuanto` | Un crédito vencido no está vigente ni por vencer y dice hace cuanto | Pasa |
 | `laReprogramacionMuestraDeQueTurnoAQueTurnoYCuando` | La reprogramación muestra de que turno a que turno y cuando | Pasa |
 
-### `servicio.CambiosReservaServicioTest` (48 pruebas, 52 casos)
+### `servicio.CambiosReservaServicioTest` (49 pruebas, 53 casos)
 
 | Prueba | Qué verifica | Resultado |
 |---|---|---|
@@ -158,6 +159,7 @@ Cada nombre describe un único comportamiento. En las pruebas parametrizadas, "N
 | `noApruebaUnaReprogramacionSiElCreditoVencioAntesDelPedido` | No aprueba una reprogramación si el crédito venció antes del pedido | Pasa |
 | `noApruebaUnaReprogramacionSiElTurnoPedidoSeOcupoMientrasTanto` | No aprueba una reprogramación si el turno pedido se ocupó mientras tanto | Pasa |
 | `alRechazarUnPedidoLaReservaQuedaComoEstabaYSeGuardaElMotivo` | Al rechazar un pedido la reserva queda como estaba y se guarda el motivo | Pasa |
+| `rechazarUnaReprogramacionDejaElCreditoVigenteHastaSuVencimiento` | Rechazar una reprogramación deja el crédito vigente hasta su vencimiento | Pasa |
 | `rechazarSinMotivoNoGuardaMotivo` | Rechazar sin motivo no guarda motivo | Pasa |
 | `noRechazaUnPedidoQueYaEstabaResuelto` | No rechaza un pedido que ya estaba resuelto | Pasa |
 | `laCancelacionPorElPredioNoExige48HorasYDejaCreditoDe30Dias` | La cancelación por el predio no exige 48 horas y deja crédito de 30 días | Pasa |
@@ -457,13 +459,20 @@ Cada nombre describe un único comportamiento. En las pruebas parametrizadas, "N
 | `noLiberaLaReservaQueMientrasTantoFueConfirmada` | No libera la reserva que mientras tanto fue confirmada | Pasa |
 | `noLiberaSinIndicarLaReserva` | No libera sin indicar la reserva | Pasa |
 
-### `servicio.PanelSocioServicioValoracionTest` (17 pruebas, 24 casos)
+### `servicio.PanelSocioServicioValoracionTest` (24 pruebas, 24 casos)
 
 | Prueba | Qué verifica | Resultado |
 |---|---|---|
+| `CP-37: acepta los puntajes de 1 a 5[1] 1` | Cp 37 acepta los puntajes de 1 a 5 1 1 | Pasa |
+| `CP-37: acepta los puntajes de 1 a 5[2] 2` | Cp 37 acepta los puntajes de 1 a 5 2 2 | Pasa |
+| `CP-37: acepta los puntajes de 1 a 5[3] 3` | Cp 37 acepta los puntajes de 1 a 5 3 3 | Pasa |
+| `CP-37: acepta los puntajes de 1 a 5[4] 4` | Cp 37 acepta los puntajes de 1 a 5 4 4 | Pasa |
+| `CP-37: acepta los puntajes de 1 a 5[5] 5` | Cp 37 acepta los puntajes de 1 a 5 5 5 | Pasa |
+| `CP-38: rechaza puntajes 0 y 6[1] -1` | Cp 38 rechaza puntajes 0 y 6 1 1 | Pasa |
+| `CP-38: rechaza puntajes 0 y 6[2] 0` | Cp 38 rechaza puntajes 0 y 6 2 0 | Pasa |
+| `CP-38: rechaza puntajes 0 y 6[3] 6` | Cp 38 rechaza puntajes 0 y 6 3 6 | Pasa |
+| `CP-38: rechaza puntajes 0 y 6[4] 10` | Cp 38 rechaza puntajes 0 y 6 4 10 | Pasa |
 | `guardaLaValoracionConSuPuntajeComentarioYFecha` | Guarda la valoración con su puntaje comentario y fecha | Pasa |
-| `aceptaLosPuntajesDe1A5` | Acepta los puntajes de 1 a 5 | Pasa (5 casos) |
-| `rechazaLosPuntajesFueraDeRango` | Rechaza los puntajes fuera de rango | Pasa (4 casos) |
 | `rechazaUnPuntajeNulo` | Rechaza un puntaje nulo | Pasa |
 | `guardaCompletoUnComentarioDeExactamente500Caracteres` | Guarda completo un comentario de exactamente 500 caracteres | Pasa |
 | `recortaA500CaracteresUnComentarioMasLargo` | Recorta a 500 caracteres un comentario más largo | Pasa |
@@ -495,7 +504,7 @@ Cada nombre describe un único comportamiento. En las pruebas parametrizadas, "N
 |---|---|---|
 | `cargaUnaClaseDeProduccionYGuardaElMensajeTalCual` | Carga una clase de producción y guarda el mensaje tal cual | Pasa |
 
-### `servicio.RegistroServicioTest` (32 pruebas, 40 casos)
+### `servicio.RegistroServicioTest` (33 pruebas, 41 casos, 1 deshabilitada)
 
 | Prueba | Qué verifica | Resultado |
 |---|---|---|
@@ -503,6 +512,7 @@ Cada nombre describe un único comportamiento. En las pruebas parametrizadas, "N
 | `rechazaUnCorreoNulo` | Rechaza un correo nulo | Pasa |
 | `rechazaUnaContrasenaDeCincoCaracteres` | Rechaza una contraseña de cinco caracteres | Pasa |
 | `aceptaUnaContrasenaDeSeisCaracteres` | Acepta una contraseña de seis caracteres | Pasa |
+| `rechazaUnaContrasenaSinLetrasNumerosOSimbolo` | Rechaza una contraseña sin letras numeros o simbolo | Deshabilitada (posible defecto D-4) |
 | `rechazaCuandoLasContrasenasNoCoinciden` | Rechaza cuando las contraseñas no coinciden | Pasa |
 | `rechazaUnCorreoQueYaTieneUnaCuentaActiva` | Rechaza un correo que ya tiene una cuenta activa | Pasa |
 | `permiteRegistrarseConElCorreoDeUnSocioDadoDeBaja` | Permite registrarse con el correo de un socio dado de baja | Pasa |
@@ -629,7 +639,7 @@ Cada nombre describe un único comportamiento. En las pruebas parametrizadas, "N
 | `laSolicitudMuestraCuandoDiceElSocioQueHizoLaTransferencia` | La solicitud muestra cuando dice el socio que hizo la transferencia | Pasa |
 | `sinComprobanteGuardadoNoHayFechaDeOperacion` | Sin comprobante guardado no hay fecha de operación | Pasa |
 
-### `servicio.ReservaServicioTest` (13 pruebas, 19 casos)
+### `servicio.ReservaServicioTest` (14 pruebas, 20 casos, 1 deshabilitada)
 
 | Prueba | Qué verifica | Resultado |
 |---|---|---|
@@ -638,6 +648,7 @@ Cada nombre describe un único comportamiento. En las pruebas parametrizadas, "N
 | `rechazarGuardaElMotivoSinEspaciosSobrantes` | Rechazar guarda el motivo sin espacios sobrantes | Pasa |
 | `rechazarRecortaElMotivoA255Caracteres` | Rechazar recorta el motivo a 255 caracteres | Pasa |
 | `rechazarConMotivoEnBlancoNoGuardaMotivo` | Rechazar con motivo en blanco no guarda motivo | Pasa |
+| `rechazarSinMotivoNoSePermiteYLaSolicitudSigueEsperando` | Rechazar sin motivo no se permite y la solicitud sigue esperando | Deshabilitada (posible defecto D-5) |
 | `noResuelveUnaSolicitudQueYaEstabaConfirmada` | No resuelve una solicitud que ya estaba confirmada | Pasa |
 | `noResuelveUnaReservaSinComprobante` | No resuelve una reserva sin comprobante | Pasa |
 | `noResuelveUnaSolicitudConElPagoYaValidado` | No resuelve una solicitud con el pago ya validado | Pasa |
@@ -733,11 +744,12 @@ Cada nombre describe un único comportamiento. En las pruebas parametrizadas, "N
 | `ordenInvalidoCuandoSoloHayAlumnoYExternoConElMismoPrecio` | Orden inválido cuando solo hay alumno y externo con el mismo precio | Pasa |
 | `ordenValidoCuandoSoloHayAlumnoYExternoYElExternoPagaMas` | Orden válido cuando solo hay alumno y externo y el externo paga más | Pasa |
 
-### `servicio.UsuarioServicioTest` (7 pruebas, 7 casos)
+### `servicio.UsuarioServicioTest` (8 pruebas, 8 casos)
 
 | Prueba | Qué verifica | Resultado |
 |---|---|---|
 | `autenticaConElCorreoYLaContrasenaCorrectos` | Autentica con el correo y la contraseña correctos | Pasa |
+| `unaCuentaHabilitadaIngresaSinConsultarNingunaMembresia` | Una cuenta habilitada ingresa sin consultar ninguna membresía | Pasa |
 | `ignoraLosEspaciosAlrededorDelCorreo` | Ignora los espacios alrededor del correo | Pasa |
 | `rechazaUnaContrasenaIncorrecta` | Rechaza una contraseña incorrecta | Pasa |
 | `rechazaUnaCuentaDeshabilitadaAunConLaContrasenaCorrecta` | Rechaza una cuenta deshabilitada aún con la contraseña correcta | Pasa |
@@ -877,7 +889,7 @@ Alcance de esta comprobación: son 20 roturas elegidas a mano sobre constantes y
 
 ## 5. Discrepancias y posibles defectos
 
-Los identificadores `D-n` son defectos con una prueba deshabilitada: **D-2 y D-3 están confirmados** por el responsable del proyecto y **D-1 es un posible defecto** a confirmar. Los `O-n` son observaciones que no tienen prueba deshabilitada. En ningún caso se modificó el código de producción: corregir un defecto cambia comportamiento y requiere una decisión del equipo.
+Los identificadores `D-n` son defectos con una prueba deshabilitada: **D-2 y D-3 están confirmados** por el responsable del proyecto, **D-1 es un posible defecto** a confirmar y **D-4 y D-5 son discrepancias entre el plan de garantía y el código** que el equipo tiene que resolver (corregir el código o corregir el plan). Los `O-n` son observaciones que no tienen prueba deshabilitada. En ningún caso se modificó el código de producción: corregir un defecto cambia comportamiento y requiere una decisión del equipo.
 
 ### 5.1 Defectos (prueba deshabilitada)
 
@@ -907,6 +919,22 @@ Los identificadores `D-n` son defectos con una prueba deshabilitada: **D-2 y D-3
 - Pruebas (deshabilitadas): `MembresiasServicioTest.laRenovacionPorAdelantadoMantieneElMismoDiaDelMes` y `siSePagaElMismoDiaDelVencimientoLaNuevaEmpiezaEseDia`. Ejecutadas activadas: fallan con `expected: <2026-10-23> but was: <2026-10-24>`.
 - Parte que sí cumple la regla y está probada: sin vigente, la membresía empieza el día de la validación (incluso si se paga después del vencimiento) y vence un mes después (`laMembresiaEmpiezaElDiaDeLaValidacionYVenceUnMesDespues`, `siSePagaDespuesDelVencimientoLaMembresiaEmpiezaElDiaDelPago`), y una renovación nunca empieza antes de que termine la vigente.
 - Corrección sugerida (no aplicada): quitar el `.plusDays(1)` y los `@Disabled` de las dos pruebas.
+
+**D-4. La contraseña no exige letras, números y un símbolo** (discrepancia entre el plan y el código, sin decidir)
+
+- Dónde: `servicio/RegistroServicio.validarPasoUno` (solo comprueba `password.length() < 6`). No se encontró ninguna validación equivalente en `resources/scripts/register.js`.
+- Qué dice el plan: RNF-03 y CP-02 piden que el registro rechace contraseñas sin letras, números o símbolo especial.
+- Comportamiento observado: `Clave2026` (sin símbolo), `Clave#abcd` (sin número) y `123#456` (sin letras) se aceptan.
+- Prueba (deshabilitada): `RegistroServicioTest.rechazaUnaContrasenaSinLetrasNumerosOSimbolo` (3 valores). Ejecutada activada: falla en los tres con `la contraseña "..." debería rechazarse ==> expected: not <null>`.
+- Qué hay que decidir: si se agrega la regla al código (y se actualiza `aceptaUnaContrasenaDeSeisCaracteres`, que hoy acepta `123456`) o si se corrige el plan para que diga "al menos 6 caracteres".
+
+**D-5. El rechazo de una solicitud no exige motivo** (discrepancia entre el plan y el código, sin decidir)
+
+- Dónde: `servicio/ReservaServicio.rechazar` (el motivo es opcional) y la pantalla del administrador ("Motivo (opcional)").
+- Qué dice el plan: RF-05 y CP-20 piden que rechazar sin motivo no se permita.
+- Comportamiento observado: `rechazar(idReserva, idAdmin, "   ")` devuelve `true` y deja la reserva `RECHAZADA`.
+- Prueba (deshabilitada): `ReservaServicioTest.rechazarSinMotivoNoSePermiteYLaSolicitudSigueEsperando`. Ejecutada activada: falla con `expected: <false> but was: <true>`.
+- Qué hay que decidir: si se vuelve obligatorio el motivo (y se actualizan `rechazarLiberaElTurnoYDejaElPagoRechazado` y `rechazarConMotivoEnBlancoNoGuardaMotivo`, que hoy fijan lo contrario) o si se corrige el plan.
 
 ### 5.2 Reglas confirmadas que el código ya cumple
 
@@ -945,7 +973,7 @@ Los identificadores `D-n` son defectos con una prueba deshabilitada: **D-2 y D-3
 2. **No hay pruebas de interfaz ni de integración.** Nada verifica las páginas JSF, los filtros de seguridad, el despliegue ni la tarea programada.
 3. **La cobertura global (56 %) queda por debajo de la de las reglas por alcance, no por descuido.** El núcleo de reglas está en el 99 % de líneas y de ramas; la capa de servicio completa, en el 88 %. Una cobertura alta no garantiza que cada verificación sea fuerte: por eso se hizo la mutación manual de 4.5, que cubre 20 reglas y no reemplaza a una herramienta automática.
 4. **Las pruebas fijan los mensajes de error actuales.** Cambiar el texto de un mensaje rompe la prueba correspondiente, aunque la regla siga igual.
-5. **Cuatro pruebas están deshabilitadas** y expresan la regla esperada, no el comportamiento actual (D-1, D-2 y dos de D-3). D-2 y D-3 están confirmadas por el responsable; D-1 queda por confirmar. Si se corrige el código, hay que quitarles el `@Disabled`.
+5. **Seis pruebas están deshabilitadas** y expresan la regla esperada, no el comportamiento actual (D-1, D-2, dos de D-3, D-4 y D-5). D-2 y D-3 están confirmadas por el responsable; D-1, D-4 y D-5 quedan por decidir. Si se corrige el código, hay que quitarles el `@Disabled`.
 6. **Datos de prueba ficticios y fechas fijas** (12/10/2026 10:00 como "ahora"), salvo los casos del punto O-4.
 7. **Solo se ejecutó en JDK 21.0.10 y Windows.** No se probó en el JDK 11 de destino de compilación ni en otros sistemas.
 8. **Dependen del contenido de `src/main`:** si se renombra un método o se cambia una firma, las pruebas dejan de compilar (a propósito: avisan del cambio).
@@ -959,6 +987,8 @@ JAVA_HOME="/c/Program Files/Java/jdk-21.0.10" mvn test
 ```
 
 Las tablas de las secciones 3 y 4 se generaron a partir de `target/surefire-reports/TEST-*.xml` y `target/site/jacoco/jacoco.csv`/`jacoco.xml` de esa corrida.
+
+La relación con los casos de prueba del plan (CP-01 a CP-53, tablas 41 y 42 del Apéndice F) está en [reporte-vv.md](reporte-vv.md). El código del caso va en el `@DisplayName` de cada prueba (convención de la sección 4.2.3.6 del plan) y el `pom.xml` configura Surefire para que ese nombre salga en el XML de resultados.
 
 ## 9. Ejecución automática en GitHub (opcional)
 
@@ -975,6 +1005,6 @@ Detalles que conviene saber:
 
 - **Está en la rama pero no activado.** GitHub solo lo ejecuta cuando la rama se sube (`push`). Mientras no se suba, no hace nada.
 - **Usa `clean` a propósito.** La carpeta `SIGRID/target/` está versionada y trae clases compiladas viejas; sin limpiarla, Maven podría probar clases que no corresponden al código fuente actual.
-- **No se pudo comprobar en GitHub desde esta máquina.** Lo que sí se verificó es la receta: en una copia limpia del proyecto (sin `target/`), `mvn clean test` con JDK 21 corrió 646 casos, 0 fallas, 4 deshabilitadas y generó `target/site/jacoco/index.html`. La primera corrida real en GitHub puede necesitar algún ajuste de entorno. En principio no debería depender de la zona horaria ni del idioma del servidor: las pruebas usan fechas fijas (salvo los casos de O-4) y el código fija el idioma `es-AR` de forma explícita.
+- **No se pudo comprobar en GitHub desde esta máquina.** Lo que sí se verificó es la receta: en una copia limpia del proyecto (sin `target/`), `mvn clean test` con JDK 21 corrió 650 casos, 0 fallas, 6 deshabilitadas y generó `target/site/jacoco/index.html`. La primera corrida real en GitHub puede necesitar algún ajuste de entorno. En principio no debería depender de la zona horaria ni del idioma del servidor: las pruebas usan fechas fijas (salvo los casos de O-4) y el código fija el idioma `es-AR` de forma explícita.
 - **No falla por cobertura baja:** no hay un umbral configurado, igual que en la corrida local.
 
