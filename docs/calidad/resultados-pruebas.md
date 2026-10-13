@@ -47,10 +47,10 @@ Dónde ver los resultados:
 
 | Medida | Valor |
 |---|---|
-| Clases de prueba | 25 |
-| Pruebas (métodos) | 607 |
-| Ejecuciones (casos, contando cada valor de las parametrizadas) | 666 |
-| Pasan | 660 |
+| Clases de prueba | 26 |
+| Pruebas (métodos) | 609 |
+| Ejecuciones (casos, contando cada valor de las parametrizadas) | 668 |
+| Pasan | 662 |
 | Deshabilitadas (defectos D-1 a D-5) | 6 |
 | Fallan | 0 |
 | Tiempo total | unos segundos (la mayor parte es el hash PBKDF2 de 120 000 iteraciones) |
@@ -105,6 +105,13 @@ Cada nombre describe un único comportamiento. En las pruebas parametrizadas, "N
 | `laContrasenaVaciaSeHasheaYSoloVerificaConVacia` | La contraseña vacía se hashea y solo verifica con vacía | Pasa |
 | `generarHashConContrasenaNulaLanzaNullPointerException` | Generar hash con contraseña nula lanza null pointer exception | Pasa |
 | `rechazaUnHashMalFormadoSinLanzarExcepcion` | Rechaza un hash mal formado sin lanzar excepción | Deshabilitada (posible defecto D-1) |
+
+### `bean.AdminNavBeanTest` (2 pruebas, 2 casos)
+
+| Prueba | Qué verifica | Resultado |
+|---|---|---|
+| `CP-41: el menú dice "Grado de satisfacción" y no "Valoraciones"` | Cp 41 el menú dice grado de satisfacción y no valoraciones | Pasa |
+| `laSeccionRenombradaSigueEnLaMismaDireccion` | La seccion renombrada sigue en la misma direccion | Pasa |
 
 ### `servicio.CambiosReservaServicioListadosTest` (11 pruebas, 11 casos)
 
@@ -568,6 +575,7 @@ Cada nombre describe un único comportamiento. En las pruebas parametrizadas, "N
 
 | Prueba | Qué verifica | Resultado |
 |---|---|---|
+| `CP-41: el resumen de reportes dice "Grado de satisfacción"` | Cp 41 el resumen de reportes dice grado de satisfacción | Pasa |
 | `losUltimos7DiasTerminanHoyYSeComparanConLos7Anteriores` | Los ultimos 7 días terminan hoy y se comparan con los 7 anteriores | Pasa |
 | `losUltimos30DiasIncluyenHoyYSeComparanConLos30Anteriores` | Los ultimos 30 días incluyen hoy y se comparan con los 30 anteriores | Pasa |
 | `losUltimos90DiasSeComparanConLos90Anteriores` | Los ultimos 90 días se comparan con los 90 anteriores | Pasa |
@@ -616,7 +624,6 @@ Cada nombre describe un único comportamiento. En las pruebas parametrizadas, "N
 | `loCobradoPorMembresiasSeAgrupaPorTipoDeSocio` | Lo cobrado por membresías se agrupa por tipo de socio | Pasa |
 | `laValidacionEsElTiempoMedioEntreQueElSocioPagaYElAdministradorValida` | La validación es el tiempo medio entre que el socio paga y el administrador valida | Pasa |
 | `laDuracionSeEscribeEnMinutosHorasODias` | La duracion se escribe en minutos horas o días | Pasa (9 casos) |
-| `elResumenTieneLasOchoCifrasEnSuOrden` | El resumen tiene las ocho cifras en su orden | Pasa |
 | `elResumenCuentaLasConfirmadasYElPorcentajeDeCancelaciones` | El resumen cuenta las confirmadas y el porcentaje de cancelaciones | Pasa |
 | `laValoracionPromedioDelResumenSoloCuentaLasDelPeriodo` | La valoración promedio del resumen solo cuenta las del periodo | Pasa |
 | `unaValoracionPromedioPorDebajoDe3Coma5SeMarcaComoAlerta` | Una valoración promedio por debajo de 3 coma 5 se marca como alerta | Pasa |
@@ -805,13 +812,13 @@ La cobertura la mide JaCoCo sobre el código de producción mientras corren las 
 | **`servicio`** | 88.1 % (2175/2469) | 80.0 % (1624/2030) | 80.7 % |
 | **`util`** | 94.9 % (37/39) | 100.0 % (44/44) | 100.0 % |
 | `repositorio` | 70.0 % (420/600) | 9.4 % (19/202) | 74.5 % |
-| `dto` | 64.4 % (646/1003) | 59.5 % (25/42) | 54.4 % |
+| `dto` | 65.7 % (659/1003) | 59.5 % (25/42) | 55.3 % |
 | `dao` | 0.7 % (2/301) | 0.0 % (0/14) | 1.0 % |
-| `bean` | 0.0 % (0/1361) | 0.0 % (0/603) | 0.0 % |
+| `bean` | 1.6 % (22/1361) | 0.2 % (1/603) | 0.6 % |
 | `seguridad` | 0.0 % (0/40) | 0.0 % (0/18) | 0.0 % |
 | `resources` | 0.0 % (0/4) | n/a (0/0) | 0.0 % |
 | `(raíz)` | 0.0 % (0/1) | n/a (0/0) | 0.0 % |
-| **Total** | 56.4 % (3280/5818) | 58.0 % (1712/2953) | 44.0 % |
+| **Total** | 57.0 % (3315/5818) | 58.0 % (1713/2953) | 44.4 % |
 
 Cómo leer esta tabla: `servicio` y `util` son el alcance de este conjunto de pruebas. El total incluye paquetes que no se probaron a propósito (`bean`, con las pantallas JSF; `dao`, con las consultas a la base; y `seguridad`), que figuran en 0 %, por lo que el total solo no es un indicador de calidad. El porcentaje de `repositorio` y `dto` es incidental: son clases de datos que las pruebas construyen o recorren pero no verifican por sí mismas.
 
@@ -903,7 +910,7 @@ Resultado: **19 de 20 detectadas en la primera pasada**. La que sobrevivió (M11
 
 Alcance de esta comprobación: son 20 roturas elegidas a mano sobre constantes y comparaciones de las reglas pedidas. No reemplaza una herramienta de mutación (por ejemplo PIT), que genera cientos de variantes automáticamente.
 
-La tabla se midió sobre la rama `calidad/pruebas-junit`, antes de CC-01 y CC-03 (sección 10). Las pruebas que cita siguen existiendo; no se volvió a medir.
+La tabla se midió sobre la rama `calidad/pruebas-junit`, antes de CC-01, CC-03 y CC-04 (sección 10). Las pruebas que cita siguen existiendo; no se volvió a medir.
 
 ## 5. Discrepancias y posibles defectos
 
@@ -1047,3 +1054,13 @@ Lo que pide el plan (Tabla 12): cada pantalla de tarifas muestra, por instalaci�
 - **Pruebas escritas primero (fallaban 9):** `cp36_laVigenciaDiceDesdeCuandoRigeElPrecio`, `cp36_elProximoCambioDiceElPrecioYLaFecha`, `cp36_sinCambioProgramadoLoDice`, `cp36_cadaPrecioMuestraDesdeCuandoRigeYElProximoCambio`, `cp36_unPrecioQueTodaviaNoRigeSeVeComoProximoCambio`, `cp36_laTarifaDelSocioMuestraDesdeCuandoRigeYElProximoCambio`, `cp36_laTarifaDelSocioSinCambioProgramadoLoDice`, `cp36_laCuotaDelSocioMuestraDesdeCuandoRigeYElProximoCambio` y `cp36_cadaCuotaMuestraDesdeCuandoRigeYElProximoCambio`.
 - **Pruebas que cambiaron:** las dos de la cuota y la de precios del administrador se ajustaron al tipo nuevo; a las de la cuota se les agregó la fecha `vigenteDesde`, que la columna exige (`NOT NULL`).
 - **Lo que no se pudo comprobar:** las consultas JPQL nuevas y las tres pantallas (inicio del socio, precios de instalaciones y cuota de membresías) no se ejercitaron contra la base ni en el navegador; solo se comprobó que las vistas son XML bien formado. Antes de dar CP-36 por aprobado hay que desplegar y mirarlas.
+
+### CC-04. "Grado de satisfacción" en lugar de "Valoraciones" (rama `cambio/cc-04-grado-de-satisfaccion`, sale de la de CC-03)
+
+Lo que pide el plan (Tabla 12): el nombre nuevo aparece en el menú, los títulos, los reportes y los PDF. El propio plan deja abierto si también se renombra en el panel del socio. Se verifica con CP-41 (nivel S, revisión manual).
+
+- **Alcance aplicado:** el panel del administrador. Menú lateral (`AdminNavBean`), título de la pestaña y encabezado de la página (`valoraciones-dashboard-admin.xhtml`; el PDF sale de esa misma página por impresión, así que toma el título nuevo) y el resumen y las alertas de reportes (`ReportesServicio`: el indicador "Valoración promedio" pasa a "Grado de satisfacción" y la alerta "Baja valoración de los socios" pasa a "Grado de satisfacción bajo").
+- **Lo que no se renombró:** el panel del socio ("Valorá tu turno", "Valoración pendiente", los avisos y el bloqueo para reservar), a la espera de la decisión del equipo. Tampoco cambian la dirección de la página (`/admin/valoraciones-dashboard-admin`), los nombres de clases, la tabla `valoracion_reserva` ni la regla de negocio.
+- **Vocabulario:** el nombre de la sección es "Grado de satisfacción"; cada respuesta individual pasa a llamarse "calificación" (como en CP-37 a CP-40 del plan), para que la palabra "Valoraciones" no quede en ninguna pantalla del administrador.
+- **Pruebas escritas primero (fallaban 6):** `AdminNavBeanTest.cp41_elMenuDiceGradoDeSatisfaccionYNoValoraciones` y `laSeccionRenombradaSigueEnLaMismaDireccion` (nuevas) y cuatro de `ReportesServicioTest` que fijaban los textos viejos.
+- **Lo que no se pudo comprobar:** la página renombrada no se abrió en el navegador (solo se comprobó que es XML bien formado).

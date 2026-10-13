@@ -10,7 +10,7 @@ Generado automáticamente por `docs/calidad/generar_reporte_vv.py` con la planti
 |---|---|
 | Reporte N.º | V&V-01 |
 | Fecha y responsable de la ejecución | 13/10/2026 — [completar: ingeniero de pruebas] |
-| Versión del código | rama `cambio/cc-03-vigencia-de-tarifas`, commit `61d932e` |
+| Versión del código | rama `cambio/cc-04-grado-de-satisfaccion`, commit `283d4f5` |
 | Entorno de pruebas | Windows 11, Java 21, Maven; JUnit 5 + Mockito; sin MySQL ni GlassFish |
 | Alcance de la ejecución | Parcial: casos de nivel U (unitarios). Los de nivel I, S y A no se ejecutaron |
 | Datos de prueba utilizados | Ficticios, armados en `DatosDePrueba` (reloj fijo: lunes 12/10/2026 10:00) |
@@ -33,9 +33,9 @@ Generado automáticamente por `docs/calidad/generar_reporte_vv.py` con la planti
 | Requerimientos sin caso de prueba | 0 | 0 | Sí |
 | Contraste en las pantallas clave (CP-47 y CP-48) | 4,5:1 texto normal; 3:1 texto grande y componentes | No medido | No |
 | Exportación a PDF con 500.000 reservas (CP-45) | 6 de 6 | No ejecutado | No |
-| Cambios CC-01 a CC-06 verificados | 6 de 6 | 1 de 6 (CC-01); implementados con revisión manual pendiente: CC-03 | No |
+| Cambios CC-01 a CC-06 verificados | 6 de 6 | 1 de 6 (CC-01); implementados con revisión manual pendiente: CC-03, CC-04 | No |
 
-Pruebas automáticas ejecutadas: **666** (660 pasan, 0 fallan, 6 deshabilitadas). 561 de ellas no corresponden a ningún caso del plan: son pruebas de regresión adicionales sobre las demás reglas del sistema.
+Pruebas automáticas ejecutadas: **668** (662 pasan, 0 fallan, 6 deshabilitadas). 561 de ellas no corresponden a ningún caso del plan: son pruebas de regresión adicionales sobre las demás reglas del sistema.
 
 ### Defectos abiertos
 
@@ -95,7 +95,7 @@ La severidad es una propuesta; la asigna el líder de SQA (Tabla 31). Detalle y 
 | CP-38 | Calificar con puntaje 0 o 6, o con un comentario de 501 caracteres | U | Sí | Aprobado | El plan dice que un comentario de 501 caracteres se rechaza; el equipo decidió (D1) que se recorta a 500. Hay que actualizar el texto del caso. |
 | CP-39 | Calificar por segunda vez la misma reserva | U | Sí | Aprobado | — |
 | CP-40 | Un turno realizado desde el 25/09/2026 sin calificar | U | Sí | Aprobado | — |
-| CP-41 | Revisar menú, títulos, reportes y PDF ("Grado de satisfacción") | S | Sí | No ejecutado | Falta la prueba de sistema manual (RTF). Depende del cambio CC-04, todavía sin implementar. |
+| CP-41 | Revisar menú, títulos, reportes y PDF ("Grado de satisfacción") | S | Sí | No ejecutado | Falta la prueba de sistema manual (RTF). El cambio CC-04 ya está implementado; falta la revisión manual. Evidencia unitaria: 2 prueba(s) del servicio aprobadas (no reemplazan ese nivel). |
 | CP-42 | Reporte de ocupación de un día para una instalación | I | No | No ejecutado | Falta la prueba de integración con una base MySQL de pruebas (no existe en este conjunto). Evidencia unitaria: 1 prueba(s) del servicio aprobadas (no reemplazan ese nivel). |
 | CP-43 | Exportar el PDF de reservas de un solo día | S | No | No ejecutado | Falta la prueba de sistema manual (RTF). Depende del cambio CC-06, todavía sin implementar. |
 | CP-44 | Exportar el PDF de un período sin reservas | S | No | No ejecutado | Falta la prueba de sistema manual (RTF). Depende del cambio CC-06, todavía sin implementar. |
@@ -244,5 +244,7 @@ Un requerimiento figura como *Aprobado* si todos sus casos lo están.
 | CP-40 | `PanelSocioServicioReservaTest` | con un turno sin valorar no puede reservar | pasa |
 | CP-40 | `PanelSocioServicioReservaTest` | los turnos anteriores al 25/09/2026 no se exigen | pasa |
 | CP-40 | `PanelSocioServicioReservaTest` | un turno ya valorado no bloquea | pasa |
+| CP-41 | `AdminNavBeanTest` | el menú dice "Grado de satisfacción" y no "Valoraciones" | pasa |
+| CP-41 | `ReportesServicioTest` | el resumen de reportes dice "Grado de satisfacción" | pasa |
 | CP-42 | `ReportesServicioTest` | la ocupación es reservados sobre disponibles (regla del servicio) | pasa |
 | CP-51 | `PanelSocioServicioMisReservasTest` | el socio ve cada reserva con su estado (regla del servicio) | pasa |
