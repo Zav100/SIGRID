@@ -245,35 +245,6 @@ class CambiosReservaServicioTest {
 
     // ---------- pedido de cancelación del socio ----------
 
-    @DisplayName("CP-24: acepta cancelar a exactamente 48 h")
-    @Test
-    void aceptaPedirLaCancelacionConExactamente48Horas() {
-        Reserva r = confirmadaQueEmpieza(AHORA.plusHours(48));
-        when(reservaDAO.buscarPorId(10)).thenReturn(r);
-        ArgumentCaptor<SolicitudCambioReserva> pedido = ArgumentCaptor.forClass(SolicitudCambioReserva.class);
-
-        String error = servicio.solicitar(7, 10, SolicitudCambioReserva.Tipo.CANCELACION, null, null,
-                "Me lesioné la rodilla", AHORA);
-
-        assertNull(error);
-        verify(solicitudDAO).crear(pedido.capture());
-        assertEquals(SolicitudCambioReserva.Tipo.CANCELACION, pedido.getValue().getTipo());
-        assertSame(r, pedido.getValue().getIdReserva());
-        assertEquals("Me lesioné la rodilla", pedido.getValue().getMotivo());
-        assertEquals(AHORA, pedido.getValue().getFechaSolicitud());
-        assertEquals(SolicitudCambioReserva.Estado.PENDIENTE, pedido.getValue().getEstado());
-    }
-
-    @Test
-    void aceptaPedirLaCancelacionConMasDe48Horas() {
-        when(reservaDAO.buscarPorId(10)).thenReturn(confirmadaQueEmpieza(AHORA.plusHours(49)));
-
-        String error = servicio.solicitar(7, 10, SolicitudCambioReserva.Tipo.CANCELACION, null, null, "Viaje", AHORA);
-
-        assertNull(error);
-        verify(solicitudDAO).crear(any());
-    }
-
     @DisplayName("CP-23: rechaza cancelar con menos de 48 h")
     @Test
     void rechazaPedirLaCancelacionConMenosDe48Horas() {
@@ -352,11 +323,25 @@ class CambiosReservaServicioTest {
     }
 
     @Test
-    void recortaElMotivoA255Caracteres() {
+    void elMotivoDeLaCancelacionSeRecortaA255CaracteresEnElHistorial() {
         when(reservaDAO.buscarPorId(10)).thenReturn(confirmadaQueEmpieza(AHORA.plusDays(5)));
-        ArgumentCaptor<SolicitudCambioReserva> pedido = ArgumentCaptor.forClass(SolicitudCambioReserva.class);
+        ArgumentCaptor<HistorialReserva> historial = ArgumentCaptor.forClass(HistorialReserva.class);
 
         servicio.solicitar(7, 10, SolicitudCambioReserva.Tipo.CANCELACION, null, null, "a".repeat(300), AHORA);
+
+        verify(historialDAO).crear(historial.capture());
+        assertEquals(255, historial.getValue().getMotivo().length());
+        assertTrue(historial.getValue().getMotivo().startsWith("Cancelación: aaa"));
+    }
+
+    @Test
+    void elMotivoDeLaReprogramacionSeRecortaA255Caracteres() {
+        when(reservaDAO.buscarPorId(10)).thenReturn(canceladaConCreditoHasta(HOY.plusDays(10)));
+        when(turnoDAO.buscarPorId(6)).thenReturn(turnoNuevo(6, cancha, LocalTime.of(18, 0)));
+        ArgumentCaptor<SolicitudCambioReserva> pedido = ArgumentCaptor.forClass(SolicitudCambioReserva.class);
+
+        servicio.solicitar(7, 10, SolicitudCambioReserva.Tipo.REPROGRAMACION, 6, HOY.plusDays(5), "a".repeat(300),
+                AHORA);
 
         verify(solicitudDAO).crear(pedido.capture());
         assertEquals(255, pedido.getValue().getMotivo().length());

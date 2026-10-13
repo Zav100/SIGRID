@@ -51,7 +51,7 @@ public class SocioReservasBean implements Serializable {
     private Integer idValorando;      // la reserva que se está valorando
     private Integer puntaje;             // 1 a 5 (lo carga el widget de estrellas)
     private String comentario;
-    private String motivo = "";          // motivo del pedido de cancelación (lo carga un prompt del navegador)
+    private String motivo = "";          // motivo de la cancelación (lo carga un prompt del navegador)
     private Integer idReprogramando;     // la reserva con crédito que se está reprogramando
     private LocalDate fechaNueva;
     private Integer idTurnoNuevo;
@@ -263,13 +263,14 @@ public class SocioReservasBean implements Serializable {
         recargar();
     }
 
-    /** Pide cancelar una reserva confirmada; el administrador lo aprueba o rechaza. */
-    public void pedirCancelacion(Integer idReserva) {
+    /** Cancela una reserva confirmada en el acto (CC-01): queda con un crédito de 30 días, sin aprobación. */
+    public void cancelarReserva(Integer idReserva) {
         String error = cambiosServicio.solicitar(socioBean.getSocio().getIdSocio(), idReserva,
                 SolicitudCambioReserva.Tipo.CANCELACION, null, null, motivo, LocalDateTime.now());
         motivo = "";
         if (error == null) {
-            aviso(FacesMessage.SEVERITY_INFO, "Enviamos tu pedido de cancelación. El administrador lo va a revisar.");
+            aviso(FacesMessage.SEVERITY_INFO,
+                    "Cancelaste la reserva. Te queda un crédito de 30 días para reprogramarla en la misma instalación.");
         } else {
             aviso(FacesMessage.SEVERITY_ERROR, error);
         }

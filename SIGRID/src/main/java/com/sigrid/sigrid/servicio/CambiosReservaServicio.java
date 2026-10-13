@@ -31,13 +31,13 @@ import java.util.Locale;
 
 /**
  * Cancelaciones y reprogramaciones. Reglas del polideportivo:
- * - Una reserva confirmada NO se reprograma: el socio solo puede pedir cancelarla.
+ * - Una reserva confirmada NO se reprograma: el socio solo puede cancelarla, y la cancelación es automática (CC-01).
  * - No hay devoluciones de dinero: cancelar una reserva pagada la deja CANCELADA con un crédito de 30 días
  *   (fechaLimiteReprogramacion) para reprogramarla. El crédito ES la reserva; al usarlo vuelve a CONFIRMADA.
  * - Cancelar o reprogramar exige 48 h de anticipación (medidas contra el momento del pedido). Pasado ese
  *   plazo el socio pierde lo pagado: el sistema ni siquiera admite el pedido.
  * - No hay diferencia de precio y el crédito solo se usa en la misma instalación.
- * - El administrador NO reprograma por el socio: solo aprueba o rechaza lo que el socio pide. Lo único que
+ * - El administrador NO reprograma por el socio: solo aprueba o rechaza los pedidos de reprogramación. Lo único que
  *   puede hacer por su cuenta es cancelar por el predio (mantenimiento, clima), que también deja crédito.
  *
  * CDI simple (no EJB) y Serializable, igual que DashboardServicio. Las transacciones las abre este servicio.
@@ -222,10 +222,12 @@ public class CambiosReservaServicio implements Serializable {
     // ---------- pedidos del socio (los usará la vista del socio, que todavía no existe) ----------
 
     /**
-     * Registra un pedido del socio, con las reglas del polideportivo: reserva propia, un solo pedido a la vez, 48 h de
+     * Pedido del socio, con las reglas del polideportivo: reserva propia, un solo pedido a la vez, 48 h de
      * anticipación para cancelar y, para reprogramar, un crédito vigente y un turno libre de la misma instalación.
+     * La CANCELACION se hace en el acto (CC-01): la reserva queda CANCELADA con su crédito y el historial, sin pedido
+     * ni administrador de por medio. La REPROGRAMACION queda PENDIENTE hasta que el administrador la resuelva.
      * @param idTurnoNuevo y fechaNueva solo para REPROGRAMACION
-     * @return null si quedó registrado, o el motivo por el que no se admite.
+     * @return null si quedó cancelada o registrada, o el motivo por el que no se admite.
      */
     @Transactional
     public String solicitar(Integer idSocio, Integer idReserva, SolicitudCambioReserva.Tipo tipo,
@@ -251,6 +253,11 @@ public class CambiosReservaServicio implements Serializable {
             return "Solo se puede pedir la cancelación de una reserva confirmada.";
         } else if (inicio(r).isBefore(ahora.plusHours(HORAS_ANTICIPACION))) {
             return "Ya pasó el plazo: hay que pedirlo con al menos " + HORAS_ANTICIPACION + " h de anticipación.";
+        }
+
+        if (tipo == SolicitudCambioReserva.Tipo.CANCELACION) {
+            cancelar(r, CANCELACION + ": " + recortar(motivo.trim()), ahora.toLocalDate());
+            return null;
         }
 
         SolicitudCambioReserva c = new SolicitudCambioReserva();

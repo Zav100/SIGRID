@@ -229,7 +229,7 @@
             </ui:fragment>
 
             <h:form id="filas">
-                <!-- motivo del pedido de cancelación: lo carga el prompt del botón -->
+                <!-- motivo de la cancelación: lo carga el prompt del botón -->
                 <h:inputHidden id="motivo" value="#{socioReservasBean.motivo}"/>
                 <div class="so-list">
                     <ui:repeat var="r" value="#{socioReservasBean.visibles}">
@@ -273,10 +273,10 @@
                                     <span class="icon" aria-hidden="true">close</span>Liberar turno
                                 </h:commandLink>
                                 <h:commandLink rendered="#{r.puedePedirCancelacion}" styleClass="so-act"
-                                               action="#{socioReservasBean.pedirCancelacion(r.idReserva)}"
-                                               onclick="var m = prompt('Pedir la cancelación de esta reserva.\n\nNo hay devolución de dinero: si el administrador la aprueba te queda un crédito de 30 días para reprogramar.\n\nContanos el motivo:', ''); if (m === null || m.trim() === '') { return false; } document.getElementById('filas:motivo').value = m;">
+                                               action="#{socioReservasBean.cancelarReserva(r.idReserva)}"
+                                               onclick="var m = prompt('Cancelar esta reserva.\n\nNo hay devolución de dinero: la cancelación es inmediata y te queda un crédito de 30 días para reprogramar en la misma instalación.\n\nContanos el motivo:', ''); if (m === null || m.trim() === '') { return false; } document.getElementById('filas:motivo').value = m;">
                                     <f:ajax execute="@this :filas:motivo" render=":mensajes :pago :cuerpo"/>
-                                    <span class="icon" aria-hidden="true">event_busy</span>Pedir cancelación
+                                    <span class="icon" aria-hidden="true">event_busy</span>Cancelar reserva
                                 </h:commandLink>
                             </div>
                         </article>
