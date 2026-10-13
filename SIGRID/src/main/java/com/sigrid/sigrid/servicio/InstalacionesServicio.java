@@ -424,9 +424,12 @@ public class InstalacionesServicio implements Serializable {
         return null;
     }
 
-    /** Vuelve a habilitar una instalación en mantenimiento. La baja definitiva no se revierte desde acá. */
+    /**
+     * Vuelve a habilitar una instalación en mantenimiento ("hoy" es la reactivación real). La baja definitiva no se
+     * revierte desde acá.
+     */
     @Transactional
-    public String reactivar(Integer idInstalacion) {
+    public String reactivar(Integer idInstalacion, LocalDate hoy) {
         Instalacion i = instalacionDAO.buscarPorId(idInstalacion);
         if (i == null) {
             return "La instalación no existe.";

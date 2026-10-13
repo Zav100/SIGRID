@@ -10,6 +10,7 @@ import static org.mockito.Mockito.when;
 
 import com.sigrid.sigrid.dto.MiReserva;
 import com.sigrid.sigrid.dto.PasoSeguimiento;
+import com.sigrid.sigrid.repositorio.Instalacion;
 import com.sigrid.sigrid.repositorio.Pago;
 import com.sigrid.sigrid.repositorio.Reserva;
 import com.sigrid.sigrid.repositorio.SolicitudCambioReserva;
@@ -176,6 +177,20 @@ class PanelSocioServicioMisReservasTest extends PanelSocioServicioPruebaBase {
         assertTrue(m.isPuedeReprogramar());
         assertEquals("22/10/2026", m.getLimiteCredito());
         assertEquals("Tenés un crédito para reprogramar hasta el 22/10/2026.", m.getNota());
+    }
+
+    @DisplayName("CP-29: con la instalación en mantenimiento el crédito queda en pausa y el socio lo ve")
+    @Test
+    void cp29_conLaInstalacionEnMantenimientoElCreditoEstaEnPausa() {
+        cancha.setEstado(Instalacion.Estado.DESHABILITADA_MANTENIMIENTO);
+        cancha.setFechaInicioBaja(HOY.minusDays(40));
+
+        MiReserva m = unica(canceladaConCreditoHasta(HOY.minusDays(40).plusDays(10)), AHORA);
+
+        assertFalse(m.isPuedeReprogramar(), "la instalación está cerrada: todavía no se puede usar");
+        assertNull(m.getLimiteCredito());
+        assertEquals("Tu crédito está en pausa mientras Cancha de Fútbol 11 esté en mantenimiento: "
+                + "te quedan 10 días desde que se reactive.", m.getNota());
     }
 
     @Test

@@ -24,6 +24,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.List;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -92,6 +93,17 @@ class ReservaServicioListadosTest {
         assertEquals("Cancelada · con crédito", l.getEstadoTexto());
         assertEquals("off", l.getEstadoClase());
         assertFalse(l.isActiva());
+    }
+
+    @DisplayName("CP-29: la cancelada de una instalación en mantenimiento sigue diciendo con crédito")
+    @Test
+    void cp29_unaCanceladaConCreditoEnPausaSigueConCredito() {
+        Reserva r = reserva(10, HOY.plusDays(3), Reserva.Estado.CANCELADA);
+        r.getIdTurno().getIdInstalacion().setEstado(Instalacion.Estado.DESHABILITADA_MANTENIMIENTO);
+        r.getIdTurno().getIdInstalacion().setFechaInicioBaja(HOY.minusDays(30));
+        r.setFechaLimiteReprogramacion(HOY.minusDays(20)); // al empezar el mantenimiento le quedaban 10 días
+
+        assertEquals("Cancelada · con crédito", unica(r).getEstadoTexto());
     }
 
     @Test

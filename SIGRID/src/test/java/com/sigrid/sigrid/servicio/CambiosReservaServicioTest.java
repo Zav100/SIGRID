@@ -726,6 +726,138 @@ class CambiosReservaServicioTest {
         assertEquals("Esa reserva ya no está confirmada o el turno ya empezó.", error);
     }
 
+    // ---------- crédito y mantenimiento de la instalación (CC-02) ----------
+
+    private void enMantenimientoDesde(Instalacion instalacion, LocalDate inicio) {
+        instalacion.setEstado(Instalacion.Estado.DESHABILITADA_MANTENIMIENTO);
+        instalacion.setFechaInicioBaja(inicio);
+    }
+
+    private Instalacion quincho(int id, String nombre) {
+        Instalacion i = DatosDePrueba.instalacion(id, nombre, Instalacion.TipoAcceso.ARANCELADO,
+                Instalacion.Estado.HABILITADA);
+        i.setTipoDisciplina("Quincho con asador");
+        return i;
+    }
+
+    /** Reserva cancelada con crédito hasta la fecha, de un turno de la instalación pedida. */
+    private Reserva canceladaDe(Instalacion instalacion, LocalDate limite) {
+        Turno turno = DatosDePrueba.turno(5, instalacion, LocalTime.of(18, 0), LocalTime.of(19, 0));
+        Reserva r = DatosDePrueba.reserva(10, socio, turno, AHORA.plusDays(3).toLocalDate(), Reserva.Estado.CANCELADA);
+        r.setIdPago(DatosDePrueba.pago(1, "20000", Pago.Estado.CONFIRMADO));
+        r.setFechaLimiteReprogramacion(limite);
+        return r;
+    }
+
+    @DisplayName("CP-29: un crédito no vence mientras la instalación está en mantenimiento, aunque pasen más de 30 días")
+    @Test
+    void cp29_elCreditoNoVenceMientrasDuraElMantenimiento() {
+        enMantenimientoDesde(cancha, HOY.minusDays(45));
+        Reserva r = canceladaConCreditoHasta(HOY.minusDays(45).plusDays(10)); // al empezar le quedaban 10 días
+        when(reservaDAO.buscarPorId(10)).thenReturn(r);
+        when(turnoDAO.buscarPorId(6)).thenReturn(turnoNuevo(6, cancha, LocalTime.of(18, 0)));
+
+        assertTrue(CambiosReservaServicio.enPausa(r));
+        assertEquals(HOY.plusDays(10), CambiosReservaServicio.limiteDelCredito(r, HOY));
+        // sigue siendo un crédito vigente: lo único que impide usarlo es que la instalación está cerrada
+        String error = servicio.solicitar(7, 10, SolicitudCambioReserva.Tipo.REPROGRAMACION, 6, HOY.plusDays(5),
+                "Uso mi crédito", AHORA);
+        assertEquals("La instalación no está habilitada.", error);
+    }
+
+    @DisplayName("CP-29: durante el mantenimiento al crédito le quedan siempre los mismos días")
+    @Test
+    void cp29_losDiasQueLeQuedanNoCambianDuranteElMantenimiento() {
+        enMantenimientoDesde(cancha, HOY.minusDays(20));
+        Reserva r = canceladaConCreditoHasta(HOY.minusDays(20).plusDays(25)); // al empezar le quedaban 25 días
+
+        assertEquals(HOY.plusDays(25), CambiosReservaServicio.limiteDelCredito(r, HOY));
+        assertEquals(HOY.plusDays(65), CambiosReservaServicio.limiteDelCredito(r, HOY.plusDays(40)));
+    }
+
+    @DisplayName("CP-29: un crédito que ya había vencido antes del mantenimiento sigue vencido")
+    @Test
+    void cp29_unCreditoVencidoAntesDelMantenimientoSigueVencido() {
+        enMantenimientoDesde(cancha, HOY.minusDays(5));
+        Reserva r = canceladaConCreditoHasta(HOY.minusDays(8));
+
+        assertFalse(CambiosReservaServicio.enPausa(r));
+        assertEquals(HOY.minusDays(8), CambiosReservaServicio.limiteDelCredito(r, HOY));
+    }
+
+    @DisplayName("CP-28: sin mantenimiento el crédito sigue venciendo en la fecha guardada")
+    @Test
+    void cp28_sinMantenimientoElPlazoNoSeToca() {
+        Reserva r = canceladaConCreditoHasta(HOY.plusDays(3));
+
+        assertFalse(CambiosReservaServicio.enPausa(r));
+        assertEquals(HOY.plusDays(3), CambiosReservaServicio.limiteDelCredito(r, HOY));
+    }
+
+    @DisplayName("CP-29: cancelar una reserva durante el mantenimiento deja el crédito en pausa desde el primer día")
+    @Test
+    void cp29_unaCancelacionDuranteElMantenimientoNoEmpiezaACorrerHastaReactivar() {
+        enMantenimientoDesde(cancha, HOY.minusDays(5));
+        Reserva r = confirmadaQueEmpieza(AHORA.plusDays(10)); // un turno posterior a la fecha estimada de reactivación
+        when(reservaDAO.buscarPorId(10)).thenReturn(r);
+
+        String error = servicio.solicitar(7, 10, SolicitudCambioReserva.Tipo.CANCELACION, null, null, "Viaje", AHORA);
+
+        assertNull(error);
+        assertEquals(HOY.plusDays(30), CambiosReservaServicio.limiteDelCredito(r, HOY), "30 días completos");
+        assertEquals(HOY.plusDays(50), CambiosReservaServicio.limiteDelCredito(r, HOY.plusDays(20)), "y no corren");
+    }
+
+    @DisplayName("CC-02: con la instalación dada de baja, el crédito se usa en una instalación equivalente")
+    @Test
+    void conLaBajaDefinitivaElCreditoSeUsaEnUnaInstalacionEquivalente() {
+        Instalacion quincho1 = quincho(3, "Quincho 1");
+        quincho1.setEstado(Instalacion.Estado.DESHABILITADA);
+        Instalacion quincho2 = quincho(4, "Quincho 2");
+        Turno nuevo = turnoNuevo(6, quincho2, LocalTime.of(18, 0));
+        when(reservaDAO.buscarPorId(10)).thenReturn(canceladaDe(quincho1, HOY.plusDays(10)));
+        when(turnoDAO.buscarPorId(6)).thenReturn(nuevo);
+        ArgumentCaptor<SolicitudCambioReserva> pedido = ArgumentCaptor.forClass(SolicitudCambioReserva.class);
+
+        String error = servicio.solicitar(7, 10, SolicitudCambioReserva.Tipo.REPROGRAMACION, 6, HOY.plusDays(5),
+                "Uso mi crédito", AHORA);
+
+        assertNull(error);
+        verify(solicitudDAO).crear(pedido.capture());
+        assertSame(nuevo, pedido.getValue().getIdTurnoNuevo());
+    }
+
+    @DisplayName("CC-02: con la baja definitiva, otra disciplina no es equivalente")
+    @Test
+    void conLaBajaDefinitivaUnaInstalacionDeOtraDisciplinaNoServe() {
+        Instalacion quincho1 = quincho(3, "Quincho 1");
+        quincho1.setEstado(Instalacion.Estado.DESHABILITADA);
+        when(reservaDAO.buscarPorId(10)).thenReturn(canceladaDe(quincho1, HOY.plusDays(10)));
+        when(turnoDAO.buscarPorId(6)).thenReturn(turnoNuevo(6, cancha, LocalTime.of(18, 0)));
+
+        String error = servicio.solicitar(7, 10, SolicitudCambioReserva.Tipo.REPROGRAMACION, 6, HOY.plusDays(5),
+                "Uso mi crédito", AHORA);
+
+        assertEquals("Solo se puede reprogramar dentro de la misma instalación.", error);
+        verify(solicitudDAO, never()).crear(any());
+    }
+
+    @DisplayName("CC-02: en mantenimiento (temporal) el crédito no se pasa a otra instalación, ni equivalente")
+    @Test
+    void enMantenimientoElCreditoNoSePasaAUnaEquivalente() {
+        Instalacion quincho1 = quincho(3, "Quincho 1");
+        enMantenimientoDesde(quincho1, HOY.minusDays(2));
+        Instalacion quincho2 = quincho(4, "Quincho 2");
+        when(reservaDAO.buscarPorId(10)).thenReturn(canceladaDe(quincho1, HOY.plusDays(10)));
+        when(turnoDAO.buscarPorId(6)).thenReturn(turnoNuevo(6, quincho2, LocalTime.of(18, 0)));
+
+        String error = servicio.solicitar(7, 10, SolicitudCambioReserva.Tipo.REPROGRAMACION, 6, HOY.plusDays(5),
+                "Uso mi crédito", AHORA);
+
+        assertEquals("Solo se puede reprogramar dentro de la misma instalación.", error);
+        verify(solicitudDAO, never()).crear(any());
+    }
+
     // ---------- huecos de la reprogramación y de la resolución ----------
 
     @Test

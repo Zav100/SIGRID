@@ -27,6 +27,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.List;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -160,6 +161,21 @@ class CambiosReservaServicioListadosTest {
         r.setFechaLimiteReprogramacion(limite);
         when(reservaDAO.listarConCredito()).thenReturn(List.of(r));
         return servicio.listarCreditos(HOY).get(0);
+    }
+
+    @DisplayName("CP-29: el administrador ve en pausa el crédito de una instalación en mantenimiento")
+    @Test
+    void cp29_unCreditoEnPausaSeMuestraVigenteConLosDiasQueLeQuedan() {
+        cancha.setEstado(Instalacion.Estado.DESHABILITADA_MANTENIMIENTO);
+        cancha.setFechaInicioBaja(HOY.minusDays(45));
+
+        CreditoFila c = credito(HOY.minusDays(45).plusDays(25)); // al empezar le quedaban 25 días
+
+        assertTrue(c.isVigente());
+        assertFalse(c.isPorVencer(), "no vence mientras dure el mantenimiento");
+        assertEquals(25, c.getDiasRestantes());
+        assertEquals("En pausa (mantenimiento)", c.getLimite());
+        assertEquals("quedan 25 días", c.getPlazo());
     }
 
     @Test

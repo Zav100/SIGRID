@@ -229,6 +229,28 @@ class PanelSocioServicioConsultasTest extends PanelSocioServicioPruebaBase {
         assertEquals(1, lista.size());
     }
 
+    @DisplayName("CC-02: con la baja definitiva las franjas para reprogramar son las de las instalaciones equivalentes")
+    @Test
+    void conLaBajaDefinitivaLasFranjasParaReprogramarSonLasDeLasEquivalentes() {
+        cancha.setEstado(Instalacion.Estado.DESHABILITADA);
+        Instalacion otra = DatosDePrueba.instalacion(2, "Cancha de Fútbol 5", Instalacion.TipoAcceso.ARANCELADO,
+                Instalacion.Estado.HABILITADA);
+        Instalacion rugby = DatosDePrueba.instalacion(3, "Cancha de Rugby", Instalacion.TipoAcceso.ARANCELADO,
+                Instalacion.Estado.HABILITADA);
+        rugby.setTipoDisciplina("Rugby");
+        Reserva r = DatosDePrueba.reserva(10, socio, turno, FECHA_TURNO, Reserva.Estado.CANCELADA);
+        when(reservaDAO.buscarPorId(10)).thenReturn(r);
+        when(instalacionDAO.listarReservables()).thenReturn(List.of(cancha, otra, rugby));
+        when(turnoDAO.listarPorInstalacion(2))
+                .thenReturn(List.of(DatosDePrueba.turno(8, otra, LocalTime.of(10, 0), LocalTime.of(11, 0))));
+
+        List<TurnoDisponible> lista = servicio.turnosParaReprogramar(7, 10, FECHA_TURNO, AHORA);
+
+        assertEquals(1, lista.size());
+        assertEquals(8, lista.get(0).getIdTurno());
+        assertEquals("Cancha de Fútbol 5 · 10:00 – 11:00", lista.get(0).getHorario());
+    }
+
     @Test
     void noMuestraFranjasParaReprogramarUnaReservaAjena() {
         Reserva r = DatosDePrueba.reserva(10, socio, turno, FECHA_TURNO, Reserva.Estado.CANCELADA);

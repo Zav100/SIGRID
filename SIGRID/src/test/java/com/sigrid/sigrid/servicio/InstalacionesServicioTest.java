@@ -329,7 +329,7 @@ class InstalacionesServicioTest {
         cancha.setFechaInicioBaja(HOY.minusDays(3));
         cancha.setFechaFinBaja(HOY.plusDays(2));
 
-        String error = servicio.reactivar(1);
+        String error = servicio.reactivar(1, HOY);
 
         assertNull(error);
         assertEquals(Instalacion.Estado.HABILITADA, cancha.getEstado());
@@ -342,20 +342,89 @@ class InstalacionesServicioTest {
     void laBajaDefinitivaNoSeReviertePorReactivar() {
         cancha.setEstado(Instalacion.Estado.DESHABILITADA);
 
-        assertEquals("La baja definitiva no se revierte.", servicio.reactivar(1));
+        assertEquals("La baja definitiva no se revierte.", servicio.reactivar(1, HOY));
         assertEquals(Instalacion.Estado.DESHABILITADA, cancha.getEstado());
     }
 
     @Test
     void noReactivaUnaInstalacionQueYaEstaHabilitada() {
-        assertEquals("Esta instalación ya está habilitada.", servicio.reactivar(1));
+        assertEquals("Esta instalación ya está habilitada.", servicio.reactivar(1, HOY));
     }
 
     @Test
     void noReactivaUnaInstalacionInexistente() {
         when(instalacionDAO.buscarPorId(99)).thenReturn(null);
 
-        assertEquals("La instalación no existe.", servicio.reactivar(99));
+        assertEquals("La instalación no existe.", servicio.reactivar(99, HOY));
+    }
+
+    // ---------- créditos de reprogramación y mantenimiento (CC-02) ----------
+
+    private void enMantenimientoDesde(LocalDate inicio) {
+        cancha.setEstado(Instalacion.Estado.DESHABILITADA_MANTENIMIENTO);
+        cancha.setMotivoBaja("Cambio de césped");
+        cancha.setFechaInicioBaja(inicio);
+    }
+
+    /** Reserva cancelada con un crédito al que, cuando empezó el mantenimiento, le quedaban esos días. */
+    private Reserva creditoConDiasAlEmpezar(LocalDate inicioDelMantenimiento, int dias) {
+        Reserva r = reserva(30, HOY.minusDays(45), Reserva.Estado.CANCELADA, pago(Pago.Estado.CONFIRMADO));
+        r.setFechaLimiteReprogramacion(inicioDelMantenimiento.plusDays(dias));
+        return r;
+    }
+
+    @DisplayName("CP-30: al reactivar, el crédito conserva los días que le quedaban, contados desde la reactivación real")
+    @Test
+    void cp30_alReactivarElCreditoRetomaLosDiasQueLeQuedaban() {
+        LocalDate inicio = HOY.minusDays(40); // el mantenimiento duró 40 días
+        enMantenimientoDesde(inicio);
+        Reserva credito = creditoConDiasAlEmpezar(inicio, 25);
+        when(reservaDAO.listarConCreditoDesde(1, inicio)).thenReturn(List.of(credito));
+
+        String error = servicio.reactivar(1, HOY);
+
+        assertNull(error);
+        assertEquals(HOY.plusDays(25), credito.getFechaLimiteReprogramacion(), "25 días desde la reactivación, no 30");
+    }
+
+    @DisplayName("CP-30: un crédito que ya había vencido antes del mantenimiento no revive al reactivar")
+    @Test
+    void cp30_unCreditoVencidoAntesDelMantenimientoNoRevive() {
+        LocalDate inicio = HOY.minusDays(10);
+        enMantenimientoDesde(inicio);
+        Reserva vencido = creditoConDiasAlEmpezar(inicio, -2);
+        when(reservaDAO.listarConCreditoDesde(1, inicio)).thenReturn(List.of(vencido));
+
+        servicio.reactivar(1, HOY);
+
+        assertEquals(inicio.minusDays(2), vencido.getFechaLimiteReprogramacion());
+    }
+
+    @DisplayName("CP-30: reactivar el mismo día que empezó el mantenimiento no cambia el plazo")
+    @Test
+    void cp30_reactivarElMismoDiaNoCorreElPlazo() {
+        enMantenimientoDesde(HOY);
+        Reserva credito = creditoConDiasAlEmpezar(HOY, 30);
+        when(reservaDAO.listarConCreditoDesde(1, HOY)).thenReturn(List.of(credito));
+
+        servicio.reactivar(1, HOY);
+
+        assertEquals(HOY.plusDays(30), credito.getFechaLimiteReprogramacion());
+    }
+
+    @DisplayName("CC-02: si el mantenimiento termina en baja definitiva, los créditos retoman su plazo ese día")
+    @Test
+    void laBajaDefinitivaDesdeMantenimientoRetomaElPlazoDeLosCreditos() {
+        LocalDate inicio = HOY.minusDays(10);
+        enMantenimientoDesde(inicio);
+        Reserva credito = creditoConDiasAlEmpezar(inicio, 20);
+        when(reservaDAO.listarConCreditoDesde(1, inicio)).thenReturn(List.of(credito));
+
+        String error = servicio.retirar(1, Instalacion.Estado.DESHABILITADA, "Obra definitiva", null, false, AHORA);
+
+        assertNull(error);
+        assertEquals(Instalacion.Estado.DESHABILITADA, cancha.getEstado());
+        assertEquals(HOY.plusDays(20), credito.getFechaLimiteReprogramacion());
     }
 
     @Test

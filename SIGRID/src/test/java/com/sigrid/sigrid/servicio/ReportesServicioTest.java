@@ -394,6 +394,19 @@ class ReportesServicioTest {
         assertEquals("2 créditos por reprogramar; si vencen se pierde", retenido.getSub());
     }
 
+    @DisplayName("CP-29: el crédito de una instalación en mantenimiento no cuenta como dinero perdido")
+    @Test
+    void cp29_unCreditoEnPausaNoSeCuentaComoPerdido() {
+        cancha.setEstado(Instalacion.Estado.DESHABILITADA_MANTENIMIENTO);
+        cancha.setFechaInicioBaja(LocalDate.of(2026, 9, 20));
+        creditoDeEjemplo("20000", LocalDate.of(2026, 10, 5)); // al empezar el mantenimiento le quedaban 15 días
+
+        List<ReporteKpi> kpis = servicio.dineroEnJuego(d, r30);
+
+        assertEquals("$ 0", kpi(kpis, "Dinero perdido").getValor());
+        assertEquals("$ 20.000", kpi(kpis, "En créditos vigentes").getValor());
+    }
+
     @Test
     void unaReservaCanceladaSinPagoConfirmadoNoGeneraDineroEnJuego() {
         Reserva sinPago = reserva(id(), t1, LocalDate.of(2026, 10, 20), Reserva.Estado.CANCELADA);

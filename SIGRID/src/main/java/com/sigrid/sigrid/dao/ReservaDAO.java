@@ -203,6 +203,21 @@ public class ReservaDAO extends BaseDAO<Reserva> {
     }
 
     /**
+     * Los créditos de una instalación que seguían vigentes cuando empezó su mantenimiento (CC-02): CANCELADA, con fecha
+     * límite igual o posterior al primer día del mantenimiento. Son los que hay que retomar al reactivarla.
+     */
+    public List<Reserva> listarConCreditoDesde(Integer idInstalacion, LocalDate desde) {
+        return em.createQuery(
+                "SELECT r FROM Reserva r JOIN FETCH r.idTurno t JOIN FETCH t.idInstalacion i "
+                + "WHERE i.idInstalacion = :instalacion AND r.estado = :cancelada "
+                + "AND r.fechaLimiteReprogramacion IS NOT NULL AND r.fechaLimiteReprogramacion >= :desde", Reserva.class)
+                .setParameter("instalacion", idInstalacion)
+                .setParameter("cancelada", Reserva.Estado.CANCELADA)
+                .setParameter("desde", desde)
+                .getResultList();
+    }
+
+    /**
      * Demanda por instalación entre dos días: filas {id de la instalación, estado, cantidad, monto cobrado} de las
      * reservas activas (PENDIENTE_PAGO o CONFIRMADA). El monto es la suma de los pagos ya cargados (puede ser null).
      */

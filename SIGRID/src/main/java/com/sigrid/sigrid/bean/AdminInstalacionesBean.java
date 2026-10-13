@@ -215,7 +215,7 @@ public class AdminInstalacionesBean implements Serializable {
     }
 
     public void reactivar() {
-        resolver(servicio.reactivar(seleccionada), ficha.getNombre() + " volvió a estar habilitada.");
+        resolver(servicio.reactivar(seleccionada, LocalDate.now()), ficha.getNombre() + " volvió a estar habilitada.");
     }
 
     private static String textoCanceladas(int canceladas) {

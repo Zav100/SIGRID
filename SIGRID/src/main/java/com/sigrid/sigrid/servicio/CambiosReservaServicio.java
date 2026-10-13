@@ -74,6 +74,18 @@ public class CambiosReservaServicio implements Serializable {
     @Inject
     private UsuarioDAO usuarioDAO;
 
+    /**
+     * CC-02 (esqueleto): hasta cuándo vale el crédito de una reserva cancelada. Todavía devuelve la fecha guardada.
+     */
+    static LocalDate limiteDelCredito(Reserva r, LocalDate hoy) {
+        return r.getFechaLimiteReprogramacion();
+    }
+
+    /** CC-02 (esqueleto): ¿el plazo del crédito está detenido porque su instalación está en mantenimiento? */
+    static boolean enPausa(Reserva r) {
+        return false;
+    }
+
     // ---------- lectura ----------
 
     public long contarPedidos() {
