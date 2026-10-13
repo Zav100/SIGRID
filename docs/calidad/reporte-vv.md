@@ -10,7 +10,7 @@ Generado automáticamente por `docs/calidad/generar_reporte_vv.py` con la planti
 |---|---|
 | Reporte N.º | V&V-01 |
 | Fecha y responsable de la ejecución | 13/10/2026 — [completar: ingeniero de pruebas] |
-| Versión del código | rama `cambio/cc-01-cancelacion-automatica`, commit `c052305` |
+| Versión del código | rama `cambio/cc-03-vigencia-de-tarifas`, commit `61d932e` |
 | Entorno de pruebas | Windows 11, Java 21, Maven; JUnit 5 + Mockito; sin MySQL ni GlassFish |
 | Alcance de la ejecución | Parcial: casos de nivel U (unitarios). Los de nivel I, S y A no se ejecutaron |
 | Datos de prueba utilizados | Ficticios, armados en `DatosDePrueba` (reloj fijo: lunes 12/10/2026 10:00) |
@@ -25,17 +25,17 @@ Generado automáticamente por `docs/calidad/generar_reporte_vv.py` con la planti
 | Casos ejecutados | 53 de 53 | 33 de 53 | No |
 | Casos aprobados, fallidos y no ejecutados | Solo se informa | 31 aprobados, 2 fallidos, 20 no ejecutados | — |
 | Casos críticos aprobados | 100 % | 23 de 29 (79 %) | No |
-| Cobertura de líneas de los servicios (JaCoCo) | 70 % o más | 88.0 % (2159 de 2453 líneas) | Sí |
-| Cobertura de ramas de los servicios (JaCoCo) | Solo se informa | 79.9 % (1613 de 2018 ramas) | — |
+| Cobertura de líneas de los servicios (JaCoCo) | 70 % o más | 88.1 % (2175 de 2469 líneas) | Sí |
+| Cobertura de ramas de los servicios (JaCoCo) | Solo se informa | 80.0 % (1624 de 2030 ramas) | — |
 | Defectos críticos y altos abiertos | 0 | 2 (D-3, D-4) | No |
 | Defectos abiertos y cerrados, por severidad | Solo se informa | Abiertos: 2 alta, 2 baja, 1 media. Cerrados: 0 | — |
 | Tiempo medio de corrección de un defecto (días) | Solo se informa | Sin datos: todavía no se corrigió ninguno | — |
 | Requerimientos sin caso de prueba | 0 | 0 | Sí |
 | Contraste en las pantallas clave (CP-47 y CP-48) | 4,5:1 texto normal; 3:1 texto grande y componentes | No medido | No |
 | Exportación a PDF con 500.000 reservas (CP-45) | 6 de 6 | No ejecutado | No |
-| Cambios CC-01 a CC-06 verificados | 6 de 6 | 1 de 6 (CC-01) | No |
+| Cambios CC-01 a CC-06 verificados | 6 de 6 | 1 de 6 (CC-01); implementados con revisión manual pendiente: CC-03 | No |
 
-Pruebas automáticas ejecutadas: **656** (650 pasan, 0 fallan, 6 deshabilitadas). 561 de ellas no corresponden a ningún caso del plan: son pruebas de regresión adicionales sobre las demás reglas del sistema.
+Pruebas automáticas ejecutadas: **666** (660 pasan, 0 fallan, 6 deshabilitadas). 561 de ellas no corresponden a ningún caso del plan: son pruebas de regresión adicionales sobre las demás reglas del sistema.
 
 ### Defectos abiertos
 
@@ -90,20 +90,20 @@ La severidad es una propuesta; la asigna el líder de SQA (Tabla 31). Detalle y 
 | CP-33 | Corre la tarea horaria con una membresía vencida | U | Sí | Aprobado | La prueba cubre el servicio que usa la tarea horaria (MembresiasServicio.vencerVencidas); la clase MembresiaJob (el temporizador) no se prueba en unitarias. |
 | CP-34 | Cargar una tarifa nueva con vigencia futura | U | Sí | Aprobado | — |
 | CP-35 | Cargar tarifas fuera de orden o repetidas | U | Sí | Aprobado | — |
-| CP-36 | Abrir las pantallas de tarifas del socio y del administrador | S | Sí | No ejecutado | Falta la prueba de sistema manual (RTF). Depende del cambio CC-03. Evidencia unitaria: 1 prueba(s) del servicio aprobadas (no reemplazan ese nivel). |
+| CP-36 | Abrir las pantallas de tarifas del socio y del administrador | S | Sí | No ejecutado | Falta la prueba de sistema manual (RTF). El cambio CC-03 ya está implementado; falta la revisión manual. Evidencia unitaria: 11 prueba(s) del servicio aprobadas (no reemplazan ese nivel). |
 | CP-37 | Calificar un turno realizado con puntaje de 1 a 5 y comentario de hasta 500 | U | Sí | Aprobado | — |
 | CP-38 | Calificar con puntaje 0 o 6, o con un comentario de 501 caracteres | U | Sí | Aprobado | El plan dice que un comentario de 501 caracteres se rechaza; el equipo decidió (D1) que se recorta a 500. Hay que actualizar el texto del caso. |
 | CP-39 | Calificar por segunda vez la misma reserva | U | Sí | Aprobado | — |
 | CP-40 | Un turno realizado desde el 25/09/2026 sin calificar | U | Sí | Aprobado | — |
-| CP-41 | Revisar menú, títulos, reportes y PDF ("Grado de satisfacción") | S | Sí | No ejecutado | Falta la prueba de sistema manual (RTF). Depende del cambio CC-04. |
+| CP-41 | Revisar menú, títulos, reportes y PDF ("Grado de satisfacción") | S | Sí | No ejecutado | Falta la prueba de sistema manual (RTF). Depende del cambio CC-04, todavía sin implementar. |
 | CP-42 | Reporte de ocupación de un día para una instalación | I | No | No ejecutado | Falta la prueba de integración con una base MySQL de pruebas (no existe en este conjunto). Evidencia unitaria: 1 prueba(s) del servicio aprobadas (no reemplazan ese nivel). |
-| CP-43 | Exportar el PDF de reservas de un solo día | S | No | No ejecutado | Falta la prueba de sistema manual (RTF). Depende del cambio CC-06. |
-| CP-44 | Exportar el PDF de un período sin reservas | S | No | No ejecutado | Falta la prueba de sistema manual (RTF). Depende del cambio CC-06. |
-| CP-45 | Con 500.000 reservas, listar y exportar un período acotado | A | No | No ejecutado | Falta la medición de accesibilidad o rendimiento. Depende del cambio CC-06. |
-| CP-46 | Exportar un PDF de varias páginas | S | No | No ejecutado | Falta la prueba de sistema manual (RTF). Depende del cambio CC-06. |
-| CP-47 | Medir el contraste de las pantallas del socio | A | No | No ejecutado | Falta la medición de accesibilidad o rendimiento. Depende del cambio CC-05. |
-| CP-48 | Medir el contraste de las pantallas del administrador | A | No | No ejecutado | Falta la medición de accesibilidad o rendimiento. Depende del cambio CC-05. |
-| CP-49 | Revisar los estados de reserva sin depender solo del color | S | No | No ejecutado | Falta la prueba de sistema manual (RTF). Depende del cambio CC-05. |
+| CP-43 | Exportar el PDF de reservas de un solo día | S | No | No ejecutado | Falta la prueba de sistema manual (RTF). Depende del cambio CC-06, todavía sin implementar. |
+| CP-44 | Exportar el PDF de un período sin reservas | S | No | No ejecutado | Falta la prueba de sistema manual (RTF). Depende del cambio CC-06, todavía sin implementar. |
+| CP-45 | Con 500.000 reservas, listar y exportar un período acotado | A | No | No ejecutado | Falta la medición de accesibilidad o rendimiento. Depende del cambio CC-06, todavía sin implementar. |
+| CP-46 | Exportar un PDF de varias páginas | S | No | No ejecutado | Falta la prueba de sistema manual (RTF). Depende del cambio CC-06, todavía sin implementar. |
+| CP-47 | Medir el contraste de las pantallas del socio | A | No | No ejecutado | Falta la medición de accesibilidad o rendimiento. Depende del cambio CC-05, todavía sin implementar. |
+| CP-48 | Medir el contraste de las pantallas del administrador | A | No | No ejecutado | Falta la medición de accesibilidad o rendimiento. Depende del cambio CC-05, todavía sin implementar. |
+| CP-49 | Revisar los estados de reserva sin depender solo del color | S | No | No ejecutado | Falta la prueba de sistema manual (RTF). Depende del cambio CC-05, todavía sin implementar. |
 | CP-50 | Abrir las pantallas principales en 360, 768 y 1280 px | A | No | No ejecutado | Falta la medición de accesibilidad o rendimiento. |
 | CP-51 | El socio abre su historial de reservas | S | No | No ejecutado | Falta la prueba de sistema manual (RTF). Evidencia unitaria: 1 prueba(s) del servicio aprobadas (no reemplazan ese nivel). |
 | CP-52 | El administrador filtra el listado de reservas | I | No | No ejecutado | Falta la prueba de integración con una base MySQL de pruebas (no existe en este conjunto). |
@@ -216,7 +216,17 @@ Un requerimiento figura como *Aprobado* si todos sus casos lo están.
 | CP-35 | `TarifasServicioTest` | rechaza alumno igual a externo | pasa |
 | CP-35 | `TarifasServicioTest` | rechaza tarifas fuera de orden (alumno más que externo) | pasa |
 | CP-35 | `TarifasServicioTest` | rechaza una tarifa repetida para la misma fecha | pasa |
+| CP-36 | `InstalacionesServicioTest` | cada precio muestra desde cuándo rige y el próximo cambio programado | pasa |
+| CP-36 | `InstalacionesServicioTest` | un precio que todavía no rige se ve como próximo cambio | pasa |
+| CP-36 | `MembresiasServicioListadosTest` | cada cuota muestra desde cuándo rige y el próximo cambio programado | pasa |
+| CP-36 | `PanelSocioServicioConsultasTest` | la cuota del socio muestra desde cuándo rige y el próximo cambio | pasa |
+| CP-36 | `PanelSocioServicioConsultasTest` | la tarifa del socio muestra desde cuándo rige y el próximo cambio | pasa |
+| CP-36 | `PanelSocioServicioConsultasTest` | sin cambio programado la tarifa del socio lo dice | pasa |
 | CP-36 | `TarifasServicioTest` | el historial marca el cambio futuro como programado | pasa |
+| CP-36 | `TarifasServicioTest` | el precio vigente dice desde cuándo rige | pasa |
+| CP-36 | `TarifasServicioTest` | el próximo cambio dice el precio y desde cuándo | pasa |
+| CP-36 | `TarifasServicioTest` | sin cambio programado lo dice | pasa |
+| CP-36 | `TarifasServicioTest` | sin precio vigente no hay desde cuándo | pasa |
 | CP-37 | `PanelSocioServicioValoracionTest` | acepta los puntajes de 1 a 5[1] 1 | pasa |
 | CP-37 | `PanelSocioServicioValoracionTest` | acepta los puntajes de 1 a 5[2] 2 | pasa |
 | CP-37 | `PanelSocioServicioValoracionTest` | acepta los puntajes de 1 a 5[3] 3 | pasa |

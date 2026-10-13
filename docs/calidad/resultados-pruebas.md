@@ -48,9 +48,9 @@ Dónde ver los resultados:
 | Medida | Valor |
 |---|---|
 | Clases de prueba | 25 |
-| Pruebas (métodos) | 597 |
-| Ejecuciones (casos, contando cada valor de las parametrizadas) | 656 |
-| Pasan | 650 |
+| Pruebas (métodos) | 607 |
+| Ejecuciones (casos, contando cada valor de las parametrizadas) | 666 |
+| Pasan | 660 |
 | Deshabilitadas (defectos D-1 a D-5) | 6 |
 | Fallan | 0 |
 | Tiempo total | unos segundos (la mayor parte es el hash PBKDF2 de 120 000 iteraciones) |
@@ -224,7 +224,7 @@ Cada nombre describe un único comportamiento. En las pruebas parametrizadas, "N
 | `elDiaPuntualPuedeIrDespuesDelHorarioSemanalSinTocarlo` | El día puntual puede ir después del horario semanal sin tocarlo | Pasa |
 | `quitaSoloLasFranjasDeEsaInstalacion` | Quita solo las franjas de esa instalación | Pasa |
 
-### `servicio.InstalacionesServicioTest` (42 pruebas, 45 casos)
+### `servicio.InstalacionesServicioTest` (44 pruebas, 47 casos)
 
 | Prueba | Qué verifica | Resultado |
 |---|---|---|
@@ -270,8 +270,10 @@ Cada nombre describe un único comportamiento. En las pruebas parametrizadas, "N
 | `laFichaAvisaQueLaFechaEstimadaDeReactivacionYaPaso` | La ficha avisa que la fecha estimada de reactivacion ya paso | Pasa |
 | `laFichaDeUnaBajaDefinitivaLoDice` | La ficha de una baja definitiva lo dice | Pasa |
 | `laFichaMuestraSoloLasTresProximasReservasQueTodaviaNoTerminaron` | La ficha muestra solo las tres proximas reservas que todavía no terminaron | Pasa |
+| `cp36_cadaPrecioMuestraDesdeCuandoRigeYElProximoCambio` | Cp 36 cada precio muestra desde cuando rige y el proximo cambio | Pasa |
+| `cp36_unPrecioQueTodaviaNoRigeSeVeComoProximoCambio` | Cp 36 un precio que todavía no rige se ve como proximo cambio | Pasa |
 
-### `servicio.MembresiasServicioListadosTest` (15 pruebas, 15 casos)
+### `servicio.MembresiasServicioListadosTest` (16 pruebas, 16 casos)
 
 | Prueba | Qué verifica | Resultado |
 |---|---|---|
@@ -290,6 +292,7 @@ Cada nombre describe un único comportamiento. En las pruebas parametrizadas, "N
 | `sinIngresosEnNingunMesLoDice` | Sin ingresos en ningún mes lo dice | Pasa |
 | `lasCuotasSonLaTarifaVigenteDeCadaTipoONulaSiNoHay` | Las cuotas son la tarifa vigente de cada tipo o nula si no hay | Pasa |
 | `losTiposDeSocioSonLosNombresDeLasCategorias` | Los tipos de socio son los nombres de las categorias | Pasa |
+| `cp36_cadaCuotaMuestraDesdeCuandoRigeYElProximoCambio` | Cp 36 cada cuota muestra desde cuando rige y el proximo cambio | Pasa |
 
 ### `servicio.MembresiasServicioTest` (24 pruebas, 24 casos, 2 deshabilitadas)
 
@@ -374,7 +377,7 @@ Cada nombre describe un único comportamiento. En las pruebas parametrizadas, "N
 | `rechazaUnaReservaQueYaNoEsperaElPago` | Rechaza una reserva que ya no espera el pago | Pasa |
 | `siNoSePuedeGuardarElArchivoAvisaAlSocioQueReintente` | Si no se puede guardar el archivo avisa al socio que reintente | Pasa |
 
-### `servicio.PanelSocioServicioConsultasTest` (21 pruebas, 21 casos)
+### `servicio.PanelSocioServicioConsultasTest` (24 pruebas, 24 casos)
 
 | Prueba | Qué verifica | Resultado |
 |---|---|---|
@@ -399,6 +402,9 @@ Cada nombre describe un único comportamiento. En las pruebas parametrizadas, "N
 | `laCuotaMensualSaleDeLaTarifaVigenteDelTipoDeSocio` | La cuota mensual sale de la tarifa vigente del tipo de socio | Pasa |
 | `sinTarifaVigenteNoHayCuotaNiPrecio` | Sin tarifa vigente no hay cuota ni precio | Pasa |
 | `elPrecioDelTurnoEsElDeLaTarifaVigenteEseDia` | El precio del turno es el de la tarifa vigente ese día | Pasa |
+| `cp36_laTarifaDelSocioMuestraDesdeCuandoRigeYElProximoCambio` | Cp 36 la tarifa del socio muestra desde cuando rige y el proximo cambio | Pasa |
+| `cp36_laTarifaDelSocioSinCambioProgramadoLoDice` | Cp 36 la tarifa del socio sin cambio programado lo dice | Pasa |
+| `cp36_laCuotaDelSocioMuestraDesdeCuandoRigeYElProximoCambio` | Cp 36 la cuota del socio muestra desde cuando rige y el proximo cambio | Pasa |
 
 ### `servicio.PanelSocioServicioMisReservasTest` (20 pruebas, 20 casos)
 
@@ -704,7 +710,7 @@ Cada nombre describe un único comportamiento. En las pruebas parametrizadas, "N
 | `noDaDeBajaUnSocioQueYaEstabaDadoDeBaja` | No da de baja un socio que ya estaba dado de baja | Pasa |
 | `noDaDeBajaUnSocioInexistente` | No da de baja un socio inexistente | Pasa |
 
-### `servicio.TarifasServicioTest` (41 pruebas, 46 casos)
+### `servicio.TarifasServicioTest` (45 pruebas, 50 casos)
 
 | Prueba | Qué verifica | Resultado |
 |---|---|---|
@@ -749,6 +755,10 @@ Cada nombre describe un único comportamiento. En las pruebas parametrizadas, "N
 | `elPrecioVigenteEsElMasRecienteAunqueElHistorialVengaEnOrdenDescendente` | El precio vigente es el más reciente aunque el historial venga en orden descendente | Pasa |
 | `ordenInvalidoCuandoSoloHayAlumnoYExternoConElMismoPrecio` | Orden inválido cuando solo hay alumno y externo con el mismo precio | Pasa |
 | `ordenValidoCuandoSoloHayAlumnoYExternoYElExternoPagaMas` | Orden válido cuando solo hay alumno y externo y el externo paga más | Pasa |
+| `cp36_laVigenciaDiceDesdeCuandoRigeElPrecio` | Cp 36 la vigencia dice desde cuando rige el precio | Pasa |
+| `cp36_sinPrecioVigenteNoHayVigencia` | Cp 36 sin precio vigente no hay vigencia | Pasa |
+| `cp36_elProximoCambioDiceElPrecioYLaFecha` | Cp 36 el proximo cambio dice el precio y la fecha | Pasa |
+| `cp36_sinCambioProgramadoLoDice` | Cp 36 sin cambio programado lo dice | Pasa |
 
 ### `servicio.UsuarioServicioTest` (8 pruebas, 8 casos)
 
@@ -792,16 +802,16 @@ La cobertura la mide JaCoCo sobre el código de producción mientras corren las 
 
 | Paquete | Líneas | Ramas | Métodos |
 |---|---|---|---|
-| **`servicio`** | 88.0 % (2159/2453) | 79.9 % (1613/2018) | 80.5 % |
+| **`servicio`** | 88.1 % (2175/2469) | 80.0 % (1624/2030) | 80.7 % |
 | **`util`** | 94.9 % (37/39) | 100.0 % (44/44) | 100.0 % |
 | `repositorio` | 70.0 % (420/600) | 9.4 % (19/202) | 74.5 % |
-| `dto` | 63.8 % (630/987) | 59.5 % (25/42) | 53.7 % |
-| `dao` | 0.7 % (2/291) | 0.0 % (0/14) | 1.0 % |
+| `dto` | 64.4 % (646/1003) | 59.5 % (25/42) | 54.4 % |
+| `dao` | 0.7 % (2/301) | 0.0 % (0/14) | 1.0 % |
 | `bean` | 0.0 % (0/1361) | 0.0 % (0/603) | 0.0 % |
 | `seguridad` | 0.0 % (0/40) | 0.0 % (0/18) | 0.0 % |
 | `resources` | 0.0 % (0/4) | n/a (0/0) | 0.0 % |
 | `(raíz)` | 0.0 % (0/1) | n/a (0/0) | 0.0 % |
-| **Total** | 56.2 % (3248/5776) | 57.8 % (1701/2941) | 43.8 % |
+| **Total** | 56.4 % (3280/5818) | 58.0 % (1712/2953) | 44.0 % |
 
 Cómo leer esta tabla: `servicio` y `util` son el alcance de este conjunto de pruebas. El total incluye paquetes que no se probaron a propósito (`bean`, con las pantallas JSF; `dao`, con las consultas a la base; y `seguridad`), que figuran en 0 %, por lo que el total solo no es un indicador de calidad. El porcentaje de `repositorio` y `dto` es incidental: son clases de datos que las pruebas construyen o recorren pero no verifican por sí mismas.
 
@@ -811,7 +821,7 @@ Cómo leer esta tabla: `servicio` y `util` son el alcance de este conjunto de pr
 |---|---|---|
 | `util.ComprobanteArchivos` | 100.0 % (20/20) | 100.0 % (38/38) |
 | `util.PasswordUtil` | 89.5 % (17/19) | 100.0 % (6/6) |
-| `servicio.MembresiasServicio` | 100.0 % (150/150) | 93.3 % (97/104) |
+| `servicio.MembresiasServicio` | 100.0 % (151/151) | 93.3 % (97/104) |
 | `servicio.ReglaReservaException` | 100.0 % (2/2) | n/a (0/0) |
 | `servicio.RegistroServicio` | 100.0 % (84/84) | 100.0 % (70/70) |
 | `servicio.ReservaServicio` | 100.0 % (109/109) | 93.3 % (84/90) |
@@ -819,11 +829,11 @@ Cómo leer esta tabla: `servicio` y `util` son el alcance de este conjunto de pr
 | `servicio.ValoracionesServicio` | 100.0 % (58/58) | 100.0 % (32/32) |
 | `servicio.ReportesServicio` | 99.8 % (540/541) | 84.2 % (404/480) |
 | `servicio.HorarioServicio` | 99.2 % (128/129) | 98.1 % (104/106) |
-| `servicio.TarifasServicio` | 98.4 % (127/129) | 100.0 % (100/100) |
-| `servicio.PanelSocioServicio` | 98.2 % (379/386) | 90.2 % (313/347) |
+| `servicio.TarifasServicio` | 98.5 % (130/132) | 100.0 % (104/104) |
+| `servicio.PanelSocioServicio` | 98.2 % (385/392) | 89.7 % (315/351) |
 | `servicio.CambiosReservaServicio` | 97.7 % (171/175) | 91.3 % (115/126) |
 | `servicio.SociosServicio` | 91.9 % (171/186) | 75.3 % (137/182) |
-| `servicio.InstalacionesServicio` | 80.2 % (186/232) | 69.8 % (132/189) |
+| `servicio.InstalacionesServicio` | 80.7 % (192/238) | 71.0 % (137/193) |
 | `servicio.DashboardServicio` | 12.4 % (17/137) | 5.4 % (6/111) |
 | `servicio.MembresiaJob` | 0.0 % (0/24) | 0.0 % (0/8) |
 | `servicio.CalendarioServicio` | 0.0 % (0/74) | 0.0 % (0/51) |
@@ -893,7 +903,7 @@ Resultado: **19 de 20 detectadas en la primera pasada**. La que sobrevivió (M11
 
 Alcance de esta comprobación: son 20 roturas elegidas a mano sobre constantes y comparaciones de las reglas pedidas. No reemplaza una herramienta de mutación (por ejemplo PIT), que genera cientos de variantes automáticamente.
 
-La tabla se midió sobre la rama `calidad/pruebas-junit`, antes de CC-01 (sección 10). Las pruebas que cita siguen existiendo; no se volvió a medir.
+La tabla se midió sobre la rama `calidad/pruebas-junit`, antes de CC-01 y CC-03 (sección 10). Las pruebas que cita siguen existiendo; no se volvió a medir.
 
 ## 5. Discrepancias y posibles defectos
 
@@ -1027,3 +1037,13 @@ Lo que pide el plan (Tabla 12): si se cumple la regla de anticipación, el siste
 - **Pruebas que cambiaron a propósito** (fijaban el comportamiento anterior, un pedido pendiente): `aceptaPedirLaCancelacionConExactamente48Horas` y `aceptaPedirLaCancelacionConMasDe48Horas` se eliminan (las reemplazan `cp24_` y `cp22_`), y `recortaElMotivoA255Caracteres` se reparte en `elMotivoDeLaCancelacionSeRecortaA255CaracteresEnElHistorial` y `elMotivoDeLaReprogramacionSeRecortaA255Caracteres`.
 - **Lo que no se tocó:** los pedidos de cancelación que ya estuvieran `PENDIENTE` en la base siguen pudiendo aprobarse o rechazarse (`aprobar`/`rechazar` conservan esa rama), igual que los avisos del socio sobre ellos. La reprogramación sigue con aprobación del administrador (CP-25 y CP-26).
 - **Pendiente de la vista:** el campo `puedePedirCancelacion` de `MiReserva` conserva su nombre (solo cambió el texto visible). La pantalla no se probó en el navegador: no hay pruebas de interfaz (sección 7).
+
+### CC-03. Vigencia de las tarifas (rama `cambio/cc-03-vigencia-de-tarifas`, sale de la de CC-01)
+
+Lo que pide el plan (Tabla 12): cada pantalla de tarifas muestra, por instalación y tipo de socio, el precio vigente, desde cuándo rige y el próximo cambio programado; igual para la cuota de membresía. Se verifica con CP-36 (nivel S, revisión manual).
+
+- **Código:** `TarifasServicio.vigencia` ("Rige desde el 01/10/2026") y `TarifasServicio.proximo` ("Desde el 01/11/2026: $ 22.000" o "Sin cambios programados"). Los usan `InstalacionesServicio.precios` (tabla del administrador), `MembresiasServicio.tarifas` (cuota del administrador) y `PanelSocioServicio.instalaciones` y `cuota` (tarjeta de tarifas del socio). Los DAO ganan `buscarProxima` (alquiler y membresía) y `listarProgramadas` (alquiler). El esquema de la base no cambia.
+- **Datos que cambian de tipo:** `PrecioFila.getPrecios()` pasa de `List<String>` a `List<PrecioVigente>`; `TarifaFila` e `InstalacionReservable` ganan `vigencia` y `proximo`; `PanelSocioServicio.cuota` devuelve una `TarifaFila` en lugar de un `String`.
+- **Pruebas escritas primero (fallaban 9):** `cp36_laVigenciaDiceDesdeCuandoRigeElPrecio`, `cp36_elProximoCambioDiceElPrecioYLaFecha`, `cp36_sinCambioProgramadoLoDice`, `cp36_cadaPrecioMuestraDesdeCuandoRigeYElProximoCambio`, `cp36_unPrecioQueTodaviaNoRigeSeVeComoProximoCambio`, `cp36_laTarifaDelSocioMuestraDesdeCuandoRigeYElProximoCambio`, `cp36_laTarifaDelSocioSinCambioProgramadoLoDice`, `cp36_laCuotaDelSocioMuestraDesdeCuandoRigeYElProximoCambio` y `cp36_cadaCuotaMuestraDesdeCuandoRigeYElProximoCambio`.
+- **Pruebas que cambiaron:** las dos de la cuota y la de precios del administrador se ajustaron al tipo nuevo; a las de la cuota se les agregó la fecha `vigenteDesde`, que la columna exige (`NOT NULL`).
+- **Lo que no se pudo comprobar:** las consultas JPQL nuevas y las tres pantallas (inicio del socio, precios de instalaciones y cuota de membresías) no se ejercitaron contra la base ni en el navegador; solo se comprobó que las vistas son XML bien formado. Antes de dar CP-36 por aprobado hay que desplegar y mirarlas.

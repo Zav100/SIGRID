@@ -122,6 +122,8 @@ NOTAS = {
     "CP-33": "La prueba cubre el servicio que usa la tarea horaria (MembresiasServicio.vencerVencidas); la clase "
              "MembresiaJob (el temporizador) no se prueba en unitarias.",
 }
+# cambios de la cátedra ya implementados en el código (los casos S/A siguen necesitando la revisión manual)
+IMPLEMENTADOS = {"CC-01", "CC-03"}
 PENDIENTE_DE = {"CP-22": "CC-01", "CP-29": "CC-02", "CP-30": "CC-02", "CP-36": "CC-03", "CP-41": "CC-04",
                 "CP-43": "CC-06", "CP-44": "CC-06", "CP-45": "CC-06", "CP-46": "CC-06", "CP-47": "CC-05",
                 "CP-48": "CC-05", "CP-49": "CC-05"}
@@ -186,8 +188,10 @@ def main():
         if nivel != 'U':
             res = "No ejecutado"
             obs.append("Falta la " + FALTA_NIVEL[nivel] + ".")
-            if cp in PENDIENTE_DE:
-                obs.append("Depende del cambio " + PENDIENTE_DE[cp] + ".")
+            if cp in PENDIENTE_DE and PENDIENTE_DE[cp] in IMPLEMENTADOS:
+                obs.append("El cambio " + PENDIENTE_DE[cp] + " ya está implementado; falta la revisión manual.")
+            elif cp in PENDIENTE_DE:
+                obs.append("Depende del cambio " + PENDIENTE_DE[cp] + ", todavía sin implementar.")
             if ok:
                 obs.append("Evidencia unitaria: %d prueba(s) del servicio aprobadas (no reemplazan ese nivel)." % ok)
         elif fallan or cp in FALLA_POR:
@@ -276,8 +280,11 @@ def main():
     w("| Exportación a PDF con 500.000 reservas (CP-45) | 6 de 6 | No ejecutado | No |")
     cc_ok = [cc for cc in ("CC-01", "CC-02", "CC-03", "CC-04", "CC-05", "CC-06")
              if all(resultado["CP-" + c] == "Aprobado" for r, cps in MATRIZ if r.startswith(cc) for c in cps.split())]
-    w("| Cambios CC-01 a CC-06 verificados | 6 de 6 | %d de 6%s | %s |\n" %
-      (len(cc_ok), " (" + ", ".join(cc_ok) + ")" if cc_ok else "", si(len(cc_ok) == 6)))
+    falta_manual = sorted(IMPLEMENTADOS - set(cc_ok))
+    w("| Cambios CC-01 a CC-06 verificados | 6 de 6 | %d de 6%s%s | %s |\n" %
+      (len(cc_ok), " (" + ", ".join(cc_ok) + ")" if cc_ok else "",
+       "; implementados con revisión manual pendiente: " + ", ".join(falta_manual) if falta_manual else "",
+       si(len(cc_ok) == 6)))
     w("Pruebas automáticas ejecutadas: **%d** (%d pasan, %d fallan, %d deshabilitadas). %d de ellas no corresponden a "
       "ningún caso del plan: son pruebas de regresión adicionales sobre las demás reglas del sistema.\n" %
       (total, ok_tot, fal_tot, sal_tot, sin_cp))
