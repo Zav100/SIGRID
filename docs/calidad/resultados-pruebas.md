@@ -48,9 +48,9 @@ Dónde ver los resultados:
 | Medida | Valor |
 |---|---|
 | Clases de prueba | 25 |
-| Pruebas (métodos) | 591 |
-| Ejecuciones (casos, contando cada valor de las parametrizadas) | 650 |
-| Pasan | 644 |
+| Pruebas (métodos) | 597 |
+| Ejecuciones (casos, contando cada valor de las parametrizadas) | 656 |
+| Pasan | 650 |
 | Deshabilitadas (defectos D-1 a D-5) | 6 |
 | Fallan | 0 |
 | Tiempo total | unos segundos (la mayor parte es el hash PBKDF2 de 120 000 iteraciones) |
@@ -122,16 +122,21 @@ Cada nombre describe un único comportamiento. En las pruebas parametrizadas, "N
 | `unCreditoVencidoNoEstaVigenteNiPorVencerYDiceHaceCuanto` | Un crédito vencido no está vigente ni por vencer y dice hace cuanto | Pasa |
 | `laReprogramacionMuestraDeQueTurnoAQueTurnoYCuando` | La reprogramación muestra de que turno a que turno y cuando | Pasa |
 
-### `servicio.CambiosReservaServicioTest` (49 pruebas, 53 casos)
+### `servicio.CambiosReservaServicioTest` (55 pruebas, 59 casos)
 
 | Prueba | Qué verifica | Resultado |
 |---|---|---|
+| `cp22_cancelaAutomaticamenteConCredito` | Cp 22 cancela automaticamente con crédito | Pasa |
+| `cp22_noCreaPedidoNiInvolucraAlAdministrador` | Cp 22 no crea pedido ni involucra al administrador | Pasa |
+| `cp22_noCancelaDosVeces` | Cp 22 no cancela dos veces | Pasa |
+| `cp23_noCancelaA47Horas59Minutos` | Cp 23 no cancela a 47 horas 59 minutos | Pasa |
+| `cp24_cancelaExactamenteA48Horas` | Cp 24 cancela exactamente a 48 horas | Pasa |
+| `cp21_noCancelaLaReservaDeOtroSocio` | Cp 21 no cancela la reserva de otro socio | Pasa |
+| `cp25_conElCreditoDeLaCancelacionAutomaticaSeReprogramaConAprobacion` | Cp 25 con el crédito de la cancelación automatica se reprograma con aprobacion | Pasa |
 | `unTurnoQueEmpiezaEn47HorasEstaFueraDePlazo` | Un turno que empieza en 47 horas está fuera de plazo | Pasa |
 | `unTurnoQueEmpiezaEn48HorasExactasEstaEnPlazo` | Un turno que empieza en 48 horas exactas está en plazo | Pasa |
 | `unTurnoQueEmpiezaEn49HorasEstaEnPlazo` | Un turno que empieza en 49 horas está en plazo | Pasa |
 | `unTurnoQueEmpiezaEn47Horas59MinutosEstaFueraDePlazo` | Un turno que empieza en 47 horas 59 minutos está fuera de plazo | Pasa |
-| `aceptaPedirLaCancelacionConExactamente48Horas` | Acepta pedir la cancelación con exactamente 48 horas | Pasa |
-| `aceptaPedirLaCancelacionConMasDe48Horas` | Acepta pedir la cancelación con más de 48 horas | Pasa |
 | `rechazaPedirLaCancelacionConMenosDe48Horas` | Rechaza pedir la cancelación con menos de 48 horas | Pasa |
 | `rechazaPedirLaCancelacionConUnMinutoMenosDe48Horas` | Rechaza pedir la cancelación con un minuto menos de 48 horas | Pasa |
 | `rechazaElPedidoDeUnaReservaQueEsDeOtroSocio` | Rechaza el pedido de una reserva que es de otro socio | Pasa |
@@ -139,7 +144,8 @@ Cada nombre describe un único comportamiento. En las pruebas parametrizadas, "N
 | `rechazaElPedidoSinMotivo` | Rechaza el pedido sin motivo | Pasa (3 casos) |
 | `rechazaUnSegundoPedidoPendienteParaLaMismaReserva` | Rechaza un segundo pedido pendiente para la misma reserva | Pasa |
 | `rechazaPedirLaCancelacionDeUnaReservaQueNoEstaConfirmada` | Rechaza pedir la cancelación de una reserva que no está confirmada | Pasa |
-| `recortaElMotivoA255Caracteres` | Recorta el motivo a 255 caracteres | Pasa |
+| `elMotivoDeLaCancelacionSeRecortaA255CaracteresEnElHistorial` | El motivo de la cancelación se recorta a 255 caracteres en el historial | Pasa |
+| `elMotivoDeLaReprogramacionSeRecortaA255Caracteres` | El motivo de la reprogramación se recorta a 255 caracteres | Pasa |
 | `aceptaReprogramarConUnCreditoVigenteAUnTurnoLibreDeLaMismaInstalacion` | Acepta reprogramar con un crédito vigente a un turno libre de la misma instalación | Pasa |
 | `aceptaUsarElCreditoElUltimoDiaDeSuVigencia` | Acepta usar el crédito el último día de su vigencia | Pasa |
 | `rechazaReprogramarConElCreditoVencidoAyer` | Rechaza reprogramar con el crédito vencido ayer | Pasa |
@@ -786,16 +792,16 @@ La cobertura la mide JaCoCo sobre el código de producción mientras corren las 
 
 | Paquete | Líneas | Ramas | Métodos |
 |---|---|---|---|
-| **`servicio`** | 88.0 % (2156/2450) | 80.0 % (1612/2016) | 80.5 % |
+| **`servicio`** | 88.0 % (2159/2453) | 79.9 % (1613/2018) | 80.5 % |
 | **`util`** | 94.9 % (37/39) | 100.0 % (44/44) | 100.0 % |
-| `repositorio` | 69.8 % (419/600) | 9.4 % (19/202) | 74.2 % |
+| `repositorio` | 70.0 % (420/600) | 9.4 % (19/202) | 74.5 % |
 | `dto` | 63.8 % (630/987) | 59.5 % (25/42) | 53.7 % |
 | `dao` | 0.7 % (2/291) | 0.0 % (0/14) | 1.0 % |
 | `bean` | 0.0 % (0/1361) | 0.0 % (0/603) | 0.0 % |
 | `seguridad` | 0.0 % (0/40) | 0.0 % (0/18) | 0.0 % |
 | `resources` | 0.0 % (0/4) | n/a (0/0) | 0.0 % |
 | `(raíz)` | 0.0 % (0/1) | n/a (0/0) | 0.0 % |
-| **Total** | 56.2 % (3244/5773) | 57.8 % (1700/2939) | 43.7 % |
+| **Total** | 56.2 % (3248/5776) | 57.8 % (1701/2941) | 43.8 % |
 
 Cómo leer esta tabla: `servicio` y `util` son el alcance de este conjunto de pruebas. El total incluye paquetes que no se probaron a propósito (`bean`, con las pantallas JSF; `dao`, con las consultas a la base; y `seguridad`), que figuran en 0 %, por lo que el total solo no es un indicador de calidad. El porcentaje de `repositorio` y `dto` es incidental: son clases de datos que las pruebas construyen o recorren pero no verifican por sí mismas.
 
@@ -815,7 +821,7 @@ Cómo leer esta tabla: `servicio` y `util` son el alcance de este conjunto de pr
 | `servicio.HorarioServicio` | 99.2 % (128/129) | 98.1 % (104/106) |
 | `servicio.TarifasServicio` | 98.4 % (127/129) | 100.0 % (100/100) |
 | `servicio.PanelSocioServicio` | 98.2 % (379/386) | 90.2 % (313/347) |
-| `servicio.CambiosReservaServicio` | 97.7 % (168/172) | 91.9 % (114/124) |
+| `servicio.CambiosReservaServicio` | 97.7 % (171/175) | 91.3 % (115/126) |
 | `servicio.SociosServicio` | 91.9 % (171/186) | 75.3 % (137/182) |
 | `servicio.InstalacionesServicio` | 80.2 % (186/232) | 69.8 % (132/189) |
 | `servicio.DashboardServicio` | 12.4 % (17/137) | 5.4 % (6/111) |
@@ -829,7 +835,7 @@ El porcentaje de la capa `servicio` completa mezcla las reglas con métodos que 
 | Clase | Líneas | Ramas |
 |---|---|---|
 | `PanelSocioServicio` | 98.4 % (124/126) | 100.0 % (106/106) |
-| `CambiosReservaServicio` | 100.0 % (101/101) | 98.8 % (85/86) |
+| `CambiosReservaServicio` | 100.0 % (104/104) | 97.7 % (86/88) |
 | `MembresiasServicio` | 100.0 % (50/50) | 100.0 % (30/30) |
 | `TarifasServicio` | 100.0 % (85/85) | 100.0 % (90/90) |
 | `ReservaServicio` | 100.0 % (20/20) | 100.0 % (22/22) |
@@ -837,7 +843,7 @@ El porcentaje de la capa `servicio` completa mezcla las reglas con métodos que 
 | `UsuarioServicio` | 100.0 % (8/8) | 100.0 % (10/10) |
 | `PasswordUtil` | 89.5 % (17/19) | 100.0 % (6/6) |
 | `ComprobanteArchivos` | 100.0 % (20/20) | 100.0 % (38/38) |
-| **Núcleo de reglas** | **99.2 % (508/512)** | **99.8 % (457/458)** |
+| **Núcleo de reglas** | **99.2 % (511/515)** | **99.6 % (458/460)** |
 
 Métodos incluidos: `PanelSocioServicio`: reservar, subirComprobante, valorar, liberar, liberarVencidas, propiaPendiente, sinValorar, debeValorarse, primerDiaReservable, sha256; `CambiosReservaServicio`: fueraDePlazo, solicitar, aprobar, rechazar, cancelarPorElPredio, validarDestino, cancelar, mover, registrar, recortar; `MembresiasServicio`: aceptar, denegar, cancelar, vencerVencidas, congelarSiCorresponde, estaPorValidar, validarPago; `TarifasServicio`: ordenValido, cambiarAlquiler, cambiarMembresia, aplicar, enVigencia, parsear; `ReservaServicio`: confirmar, rechazar, resolver; `RegistroServicio`: validarPasoUno, registrar, resolverCategoria, bajaDe, liberar, archivado; `UsuarioServicio`: autenticar; `PasswordUtil`: generarHash, verificar, hashear; `ComprobanteArchivos`: guardar, borrar, ruta, extension, tipoMime, carpeta.
 
@@ -886,6 +892,8 @@ Una cobertura alta solo dice que el código se ejecutó, no que alguna verificac
 Resultado: **19 de 20 detectadas en la primera pasada**. La que sobrevivió (M11) mostró un hueco real: con solo alumno y externo y el mismo precio, la comparación directa no estaba aislada porque la regla de "los otros tipos" también lo rechazaba. Se agregaron dos pruebas y la mutación quedó detectada, o sea 20 de 20.
 
 Alcance de esta comprobación: son 20 roturas elegidas a mano sobre constantes y comparaciones de las reglas pedidas. No reemplaza una herramienta de mutación (por ejemplo PIT), que genera cientos de variantes automáticamente.
+
+La tabla se midió sobre la rama `calidad/pruebas-junit`, antes de CC-01 (sección 10). Las pruebas que cita siguen existiendo; no se volvió a medir.
 
 ## 5. Discrepancias y posibles defectos
 
@@ -1008,3 +1016,14 @@ Detalles que conviene saber:
 - **No se pudo comprobar en GitHub desde esta máquina.** Lo que sí se verificó es la receta: en una copia limpia del proyecto (sin `target/`), `mvn clean test` con JDK 21 corrió 650 casos, 0 fallas, 6 deshabilitadas y generó `target/site/jacoco/index.html`. La primera corrida real en GitHub puede necesitar algún ajuste de entorno. En principio no debería depender de la zona horaria ni del idioma del servidor: las pruebas usan fechas fijas (salvo los casos de O-4) y el código fija el idioma `es-AR` de forma explícita.
 - **No falla por cobertura baja:** no hay un umbral configurado, igual que en la corrida local.
 
+## 10. Cambios de la cátedra verificados con esta suite
+
+### CC-01. Cancelación automática (rama `cambio/cc-01-cancelacion-automatica`)
+
+Lo que pide el plan (Tabla 12): si se cumple la regla de anticipación, el sistema cancela en el acto, genera el crédito de 30 días y registra el historial, sin intervención del administrador. El administrador solo aprueba o rechaza reprogramaciones.
+
+- **Código:** `CambiosReservaServicio.solicitar` con tipo `CANCELACION` ya no crea un pedido: reutiliza `cancelar()` (reserva `CANCELADA`, crédito de 30 días, fila en `historial_reserva`) dentro de la misma transacción. El resto de las reglas no cambia (reserva propia, motivo obligatorio, solo `CONFIRMADA`, 48 horas). En la vista del socio el botón pasa a "Cancelar reserva" y el mensaje avisa del crédito.
+- **Pruebas escritas primero (fallaban):** `cp22_cancelaAutomaticamenteConCredito`, `cp22_noCreaPedidoNiInvolucraAlAdministrador`, `cp24_cancelaExactamenteA48Horas` y `cp25_conElCreditoDeLaCancelacionAutomaticaSeReprogramaConAprobacion`. Ya pasaban como regresión: `cp21_noCancelaLaReservaDeOtroSocio`, `cp22_noCancelaDosVeces` y `cp23_noCancelaA47Horas59Minutos`.
+- **Pruebas que cambiaron a propósito** (fijaban el comportamiento anterior, un pedido pendiente): `aceptaPedirLaCancelacionConExactamente48Horas` y `aceptaPedirLaCancelacionConMasDe48Horas` se eliminan (las reemplazan `cp24_` y `cp22_`), y `recortaElMotivoA255Caracteres` se reparte en `elMotivoDeLaCancelacionSeRecortaA255CaracteresEnElHistorial` y `elMotivoDeLaReprogramacionSeRecortaA255Caracteres`.
+- **Lo que no se tocó:** los pedidos de cancelación que ya estuvieran `PENDIENTE` en la base siguen pudiendo aprobarse o rechazarse (`aprobar`/`rechazar` conservan esa rama), igual que los avisos del socio sobre ellos. La reprogramación sigue con aprobación del administrador (CP-25 y CP-26).
+- **Pendiente de la vista:** el campo `puedePedirCancelacion` de `MiReserva` conserva su nombre (solo cambió el texto visible). La pantalla no se probó en el navegador: no hay pruebas de interfaz (sección 7).

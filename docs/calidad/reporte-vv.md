@@ -10,7 +10,7 @@ Generado automáticamente por `docs/calidad/generar_reporte_vv.py` con la planti
 |---|---|
 | Reporte N.º | V&V-01 |
 | Fecha y responsable de la ejecución | 13/10/2026 — [completar: ingeniero de pruebas] |
-| Versión del código | rama `calidad/pruebas-junit`, commit `c91e295` |
+| Versión del código | rama `cambio/cc-01-cancelacion-automatica`, commit `c052305` |
 | Entorno de pruebas | Windows 11, Java 21, Maven; JUnit 5 + Mockito; sin MySQL ni GlassFish |
 | Alcance de la ejecución | Parcial: casos de nivel U (unitarios). Los de nivel I, S y A no se ejecutaron |
 | Datos de prueba utilizados | Ficticios, armados en `DatosDePrueba` (reloj fijo: lunes 12/10/2026 10:00) |
@@ -22,20 +22,20 @@ Generado automáticamente por `docs/calidad/generar_reporte_vv.py` con la planti
 
 | Indicador | Meta | Resultado | ¿Cumple? |
 |---|---|---|---|
-| Casos ejecutados | 53 de 53 | 32 de 53 | No |
-| Casos aprobados, fallidos y no ejecutados | Solo se informa | 30 aprobados, 2 fallidos, 21 no ejecutados | — |
-| Casos críticos aprobados | 100 % | 22 de 29 (76 %) | No |
-| Cobertura de líneas de los servicios (JaCoCo) | 70 % o más | 88.0 % (2156 de 2450 líneas) | Sí |
-| Cobertura de ramas de los servicios (JaCoCo) | Solo se informa | 80.0 % (1612 de 2016 ramas) | — |
+| Casos ejecutados | 53 de 53 | 33 de 53 | No |
+| Casos aprobados, fallidos y no ejecutados | Solo se informa | 31 aprobados, 2 fallidos, 20 no ejecutados | — |
+| Casos críticos aprobados | 100 % | 23 de 29 (79 %) | No |
+| Cobertura de líneas de los servicios (JaCoCo) | 70 % o más | 88.0 % (2159 de 2453 líneas) | Sí |
+| Cobertura de ramas de los servicios (JaCoCo) | Solo se informa | 79.9 % (1613 de 2018 ramas) | — |
 | Defectos críticos y altos abiertos | 0 | 2 (D-3, D-4) | No |
 | Defectos abiertos y cerrados, por severidad | Solo se informa | Abiertos: 2 alta, 2 baja, 1 media. Cerrados: 0 | — |
 | Tiempo medio de corrección de un defecto (días) | Solo se informa | Sin datos: todavía no se corrigió ninguno | — |
 | Requerimientos sin caso de prueba | 0 | 0 | Sí |
 | Contraste en las pantallas clave (CP-47 y CP-48) | 4,5:1 texto normal; 3:1 texto grande y componentes | No medido | No |
 | Exportación a PDF con 500.000 reservas (CP-45) | 6 de 6 | No ejecutado | No |
-| Cambios CC-01 a CC-06 verificados | 6 de 6 | 0 de 6 | No |
+| Cambios CC-01 a CC-06 verificados | 6 de 6 | 1 de 6 (CC-01) | No |
 
-Pruebas automáticas ejecutadas: **650** (644 pasan, 0 fallan, 6 deshabilitadas). 561 de ellas no corresponden a ningún caso del plan: son pruebas de regresión adicionales sobre las demás reglas del sistema.
+Pruebas automáticas ejecutadas: **656** (650 pasan, 0 fallan, 6 deshabilitadas). 561 de ellas no corresponden a ningún caso del plan: son pruebas de regresión adicionales sobre las demás reglas del sistema.
 
 ### Defectos abiertos
 
@@ -76,7 +76,7 @@ La severidad es una propuesta; la asigna el líder de SQA (Tabla 31). Detalle y 
 | CP-19 | El administrador confirma una reserva con comprobante | U | No | Aprobado | — |
 | CP-20 | El administrador rechaza con motivo y luego sin motivo | U | No | Falló | Defecto D-5: prueba deshabilitada con @Disabled. Con motivo se rechaza y queda guardado (aprobado); sin motivo el código lo permite (ver D-5). |
 | CP-21 | Un socio envía el identificador de una reserva ajena | U | No | Aprobado | — |
-| CP-22 | Cancelar una reserva CONFIRMADA con más de 48 horas (automática, con crédito) | U | Sí | No ejecutado | No hay prueba automática (cambio CC-01 todavía no implementado). |
+| CP-22 | Cancelar una reserva CONFIRMADA con más de 48 horas (automática, con crédito) | U | Sí | Aprobado | — |
 | CP-23 | Cancelar a 47 horas y 59 minutos del turno | U | Sí | Aprobado | — |
 | CP-24 | Cancelar exactamente a las 48 horas del turno | U | Sí | Aprobado | — |
 | CP-25 | Pedir la reprogramación con crédito vigente y que el administrador la apruebe | U | Sí | Aprobado | — |
@@ -130,7 +130,7 @@ Un requerimiento figura como *Aprobado* si todos sus casos lo están.
 | RNF-06 Integridad y concurrencia | CP-12 | Parcial: 0 de 1 aprobados |
 | RNF-07 Rendimiento de listados y PDF | CP-45 | Parcial: 0 de 1 aprobados |
 | RNF-08 Accesibilidad visual | CP-47, CP-48, CP-49 | Parcial: 0 de 3 aprobados |
-| CC-01 Cancelación automática | CP-22, CP-23, CP-24, CP-25, CP-26 | Parcial: 4 de 5 aprobados |
+| CC-01 Cancelación automática | CP-22, CP-23, CP-24, CP-25, CP-26 | Aprobado |
 | CC-02 Crédito y mantenimiento | CP-29, CP-30 | Parcial: 0 de 2 aprobados |
 | CC-03 Vigencia de tarifas | CP-36 | Parcial: 0 de 1 aprobados |
 | CC-04 Grado de satisfacción (nombre) | CP-41 | Parcial: 0 de 1 aprobados |
@@ -182,14 +182,20 @@ Un requerimiento figura como *Aprobado* si todos sus casos lo están.
 | CP-20 | `ReservaServicioTest` | rechazar con motivo guarda el motivo | pasa |
 | CP-20 | `ReservaServicioTest` | rechazar deja la reserva RECHAZADA y el turno libre | pasa |
 | CP-20 | `ReservaServicioTest` | rechazar sin motivo no se permite | deshabilitada |
+| CP-21 | `CambiosReservaServicioTest` | la reserva de otro socio no se cancela | pasa |
 | CP-21 | `CambiosReservaServicioTest` | no pide cambios sobre la reserva de otro socio | pasa |
 | CP-21 | `PanelSocioServicioComprobanteTest` | no sube un comprobante a la reserva de otro socio | pasa |
 | CP-21 | `PanelSocioServicioReservaTest` | no libera la reserva de otro socio | pasa |
 | CP-21 | `PanelSocioServicioValoracionTest` | no valora la reserva de otro socio | pasa |
+| CP-22 | `CambiosReservaServicioTest` | cancelar con más de 48 h cancela en el acto y deja un crédito de 30 días | pasa |
+| CP-22 | `CambiosReservaServicioTest` | la cancelación automática no deja ningún pedido para el administrador | pasa |
+| CP-22 | `CambiosReservaServicioTest` | una reserva ya cancelada no se vuelve a cancelar ni suma otro crédito | pasa |
+| CP-23 | `CambiosReservaServicioTest` | a 47 h 59 min no se cancela: la reserva sigue CONFIRMADA y sin crédito | pasa |
 | CP-23 | `CambiosReservaServicioTest` | rechaza cancelar a 47 h 59 min del turno | pasa |
 | CP-23 | `CambiosReservaServicioTest` | rechaza cancelar con menos de 48 h | pasa |
-| CP-24 | `CambiosReservaServicioTest` | acepta cancelar a exactamente 48 h | pasa |
+| CP-24 | `CambiosReservaServicioTest` | a exactamente 48 h se cancela con crédito | pasa |
 | CP-25 | `CambiosReservaServicioTest` | al aprobar, la reserva vuelve a CONFIRMADA en el turno nuevo | pasa |
+| CP-25 | `CambiosReservaServicioTest` | cancelada automáticamente, el socio reprograma con el crédito y el administrador lo aprueba | pasa |
 | CP-25 | `CambiosReservaServicioTest` | pide reprogramar con crédito vigente: queda PENDIENTE | pasa |
 | CP-26 | `CambiosReservaServicioTest` | al rechazar una reprogramación el crédito sigue vigente y se puede volver a pedir | pasa |
 | CP-27 | `CambiosReservaServicioTest` | rechaza reprogramar a otra instalación | pasa |
