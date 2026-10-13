@@ -18,12 +18,12 @@
   --adm-accent: var(--maroon-700);
 
   /* estados: texto / fondo suave / punto */
-  --adm-ok: #2C7554;
+  --adm-ok: #267050;
   --adm-ok-bg: #E7F2EC;
   --adm-ok-dot: #3E9A72;
   --adm-warn: #7E5C00;
   --adm-warn-bg: #FBF0CC;
-  --adm-warn-dot: #D4A000;
+  --adm-warn-dot: #B38900;
   --adm-off: #A03B3D;
   --adm-off-bg: #F7E6E4;
   --adm-off-dot: #C4585A;
@@ -38,8 +38,9 @@
 }
 
 .adm-body :focus-visible {
-  outline: 3px solid rgba(244, 196, 0, .55);
+  outline: 3px solid var(--maroon-700);
   outline-offset: 2px;
+  box-shadow: 0 0 0 2px var(--white);
 }
 
 /* ============ ESTRUCTURA ============ */
@@ -226,8 +227,9 @@
 }
 
 .adm-search:focus-within {
-  border-color: var(--border);
-  box-shadow: 0 0 0 3px rgba(41, 39, 39, .06);
+  border-color: var(--adm-accent);
+  outline: 3px solid var(--maroon-700);
+  outline-offset: 2px;
 }
 
 .adm-search input {

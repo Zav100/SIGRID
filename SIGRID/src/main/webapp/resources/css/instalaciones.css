@@ -448,8 +448,9 @@ a.ins-space:hover {
 }
 
 .ins-dias input:focus-visible + label {
-  outline: 3px solid rgba(244, 196, 0, .55);
+  outline: 3px solid var(--maroon-700);
   outline-offset: 2px;
+  box-shadow: 0 0 0 2px var(--white);
 }
 
 /* ============ RANKING ============ */

@@ -179,8 +179,8 @@ class ContrasteCssTest {
     @DisplayName("CP-48: en las barras apiladas reservas y membresías se distinguen entre sí y del fondo (3:1)")
     @Test
     void cp48_lasSeriesDeLasBarrasSeDistinguen() {
-        int[] reservas = color(declaracion(".rep-seg-r", "background"), BLANCO);
-        int[] membresias = color(declaracion(".rep-seg-m", "background"), BLANCO);
+        int[] reservas = color(declaracion(".rep-seg-r", "background-color"), BLANCO);
+        int[] membresias = color(declaracion(".rep-seg-m", "background-color"), BLANCO);
         todos(List.of(
                 par("reservas sobre el fondo", reservas, BLANCO, NO_TEXTO),
                 par("membresías sobre el fondo", membresias, BLANCO, NO_TEXTO),
@@ -190,14 +190,14 @@ class ContrasteCssTest {
     @DisplayName("CP-48: la leyenda usa los mismos colores que las barras")
     @Test
     void cp48_laLeyendaCoincideConLasBarras() {
-        assertTrue(declaracion(".rep-sw-r", "background").equals(declaracion(".rep-seg-r", "background")));
-        assertTrue(declaracion(".rep-sw-m", "background").equals(declaracion(".rep-seg-m", "background")));
+        assertTrue(declaracion(".rep-sw-r", "background-color").equals(declaracion(".rep-seg-r", "background-color")));
+        assertTrue(declaracion(".rep-sw-m", "background-color").equals(declaracion(".rep-seg-m", "background-color")));
     }
 
     @DisplayName("CP-49: la serie de membresías lleva una división propia y no depende solo del color")
     @Test
     void cp49_laSerieDeMembresiasTieneDivision() {
-        String borde = declaracion(".rep-seg-m", "border-top");
+        String borde = declaracion(".rep-seg-m", "box-shadow");
         assertNotNull(borde, "falta separar con una línea las dos partes de la barra");
     }
 
