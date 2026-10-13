@@ -17,6 +17,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 /**
@@ -100,6 +101,7 @@ class PanelSocioServicioMisReservasTest extends PanelSocioServicioPruebaBase {
 
     // ---------- terminada: valoración ----------
 
+    @DisplayName("CP-51: el socio ve cada reserva con su estado (regla del servicio)")
     @Test
     void unaConfirmadaQueTerminoSeMuestraRealizadaYPideValoracion() {
         MiReserva m = unica(reserva(10, HOY.minusDays(2), Reserva.Estado.CONFIRMADA), AHORA);

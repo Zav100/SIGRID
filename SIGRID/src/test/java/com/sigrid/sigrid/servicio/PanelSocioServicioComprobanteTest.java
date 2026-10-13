@@ -23,6 +23,7 @@ import java.time.LocalDateTime;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import org.mockito.ArgumentCaptor;
@@ -71,6 +72,7 @@ class PanelSocioServicioComprobanteTest extends PanelSocioServicioPruebaBase {
 
     // ---------- camino feliz ----------
 
+    @DisplayName("CP-13: guarda un PDF válido y deja el pago PENDIENTE_VALIDACION")
     @Test
     void guardaElComprobanteYCreaElPagoPorElPrecioDeLaTarifa() {
         byte[] datos = DatosDePrueba.pdf(2_000);
@@ -95,6 +97,7 @@ class PanelSocioServicioComprobanteTest extends PanelSocioServicioPruebaBase {
         assertTrue(Files.isRegularFile(raiz.resolve("comprobantes").resolve(comprobante.getValue().getArchivoUrl())));
     }
 
+    @DisplayName("CP-13: guarda un PNG con extensión png")
     @Test
     void guardaUnPngConLaExtensionPng() {
         byte[] datos = DatosDePrueba.png(3_000);
@@ -108,6 +111,7 @@ class PanelSocioServicioComprobanteTest extends PanelSocioServicioPruebaBase {
 
     // ---------- tamaño máximo de 5 MB ----------
 
+    @DisplayName("CP-13: acepta un archivo de exactamente 5 MB")
     @Test
     void aceptaUnArchivoDeExactamente5MB() {
         servicio.subirComprobante(7, 10, DatosDePrueba.pdf(CINCO_MB), AHORA.minusHours(1), AHORA);
@@ -115,6 +119,7 @@ class PanelSocioServicioComprobanteTest extends PanelSocioServicioPruebaBase {
         verify(pagoDAO).crear(any(Pago.class));
     }
 
+    @DisplayName("CP-14: rechaza un archivo de 5 MB más un byte")
     @Test
     void rechazaUnArchivoDeUnByteMasQue5MB() {
         assertRechazado("El archivo pesa más de 5 MB.", DatosDePrueba.pdf(CINCO_MB + 1), AHORA.minusHours(1));
@@ -130,6 +135,7 @@ class PanelSocioServicioComprobanteTest extends PanelSocioServicioPruebaBase {
         assertRechazado("Elegí el archivo del comprobante.", new byte[0], AHORA.minusHours(1));
     }
 
+    @DisplayName("CP-14: rechaza un archivo cuyo contenido no es imagen ni PDF")
     @Test
     void rechazaUnArchivoQueNoEsImagenNiPdf() {
         byte[] texto = "transferencia realizada por $20.000".getBytes(StandardCharsets.UTF_8);
@@ -151,6 +157,7 @@ class PanelSocioServicioComprobanteTest extends PanelSocioServicioPruebaBase {
         verify(pagoDAO).crear(any(Pago.class));
     }
 
+    @DisplayName("CP-15: acepta una transferencia de exactamente 7 días")
     @Test
     void aceptaUnaTransferenciaDeExactamente7DiasAtras() {
         servicio.subirComprobante(7, 10, DatosDePrueba.pdf(500), AHORA.minusDays(7), AHORA);
@@ -158,18 +165,21 @@ class PanelSocioServicioComprobanteTest extends PanelSocioServicioPruebaBase {
         verify(pagoDAO).crear(any(Pago.class));
     }
 
+    @DisplayName("CP-15: rechaza una transferencia de más de 7 días")
     @Test
     void rechazaUnaTransferenciaDeUnMinutoMasDe7Dias() {
         assertRechazado("La transferencia tiene más de 7 días: revisá la fecha y la hora.", DatosDePrueba.pdf(500),
                 AHORA.minusDays(7).minusMinutes(1));
     }
 
+    @DisplayName("CP-15: rechaza una transferencia con fecha futura")
     @Test
     void rechazaUnaTransferenciaConFechaDeUnaHoraEnElFuturo() {
         assertRechazado("La fecha de la transferencia no puede ser futura.", DatosDePrueba.pdf(500),
                 AHORA.plusHours(1));
     }
 
+    @DisplayName("CP-15: rechaza una transferencia adelantada más de 25 minutos")
     @Test
     void rechazaUnaTransferenciaAdelantadaMasDe25Minutos() {
         assertRechazado("La fecha de la transferencia no puede ser futura.", DatosDePrueba.pdf(500),
@@ -184,6 +194,7 @@ class PanelSocioServicioComprobanteTest extends PanelSocioServicioPruebaBase {
      * cumple; al corregir esa línea hay que quitarle el {@code @Disabled}.
      */
     @Disabled("Defecto D-2 confirmado: el código tolera 5 minutos de adelanto y la regla es 25")
+    @DisplayName("CP-15: acepta una transferencia adelantada hasta 25 minutos (D-2)")
     @Test
     void aceptaUnaTransferenciaAdelantadaHasta25Minutos() {
         servicio.subirComprobante(7, 10, DatosDePrueba.pdf(500), AHORA.plusMinutes(25), AHORA);
@@ -193,6 +204,7 @@ class PanelSocioServicioComprobanteTest extends PanelSocioServicioPruebaBase {
 
     // ---------- hash repetido ----------
 
+    @DisplayName("CP-16: rechaza un archivo repetido (regla del servicio)")
     @Test
     void rechazaUnComprobanteCuyoHashYaSeUsoEnOtraOperacion() {
         byte[] datos = DatosDePrueba.pdf(2_000);
@@ -213,6 +225,7 @@ class PanelSocioServicioComprobanteTest extends PanelSocioServicioPruebaBase {
         assertRechazado("Esa reserva ya tiene un comprobante cargado.", DatosDePrueba.pdf(500), AHORA.minusHours(1));
     }
 
+    @DisplayName("CP-21: no sube un comprobante a la reserva de otro socio")
     @Test
     void rechazaUnaReservaDeOtroSocio() {
         ReglaReservaException e = assertThrows(ReglaReservaException.class,

@@ -25,6 +25,7 @@ import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
@@ -440,6 +441,7 @@ class ReportesServicioTest {
         }
     }
 
+    @DisplayName("CP-42: la ocupación es reservados sobre disponibles (regla del servicio)")
     @Test
     void laOcupacionEsTurnosReservadosSobreTurnosDisponibles() {
         nueveReservasConfirmadas(); // 9 sobre (3 turnos por día x 30 días) = 90

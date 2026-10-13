@@ -24,6 +24,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 
@@ -58,6 +59,7 @@ class PanelSocioServicioReservaTest extends PanelSocioServicioPruebaBase {
 
     // ---------- anticipación de 48 horas ----------
 
+    @DisplayName("CP-08: un socio ACTIVO reserva un turno libre: PENDIENTE_PAGO con la tarifa de su categoría")
     @Test
     void reservaConExactamente48HorasDeAnticipacion() {
         ArgumentCaptor<Reserva> guardada = ArgumentCaptor.forClass(Reserva.class);
@@ -105,6 +107,7 @@ class PanelSocioServicioReservaTest extends PanelSocioServicioPruebaBase {
 
     // ---------- hasta 30 días hacia adelante ----------
 
+    @DisplayName("CP-10: acepta reservar dentro de los 30 días (límite)")
     @Test
     void aceptaReservarUnTurnoDentroDeLosProximos30Dias() {
         LocalDate dia30 = HOY.plusDays(30);
@@ -114,6 +117,7 @@ class PanelSocioServicioReservaTest extends PanelSocioServicioPruebaBase {
         assertEquals(99, id);
     }
 
+    @DisplayName("CP-10: rechaza reservar a más de 30 días")
     @Test
     void rechazaReservarUnTurnoAMasDe30DiasDeHoy() {
         assertRechazada("Elegí un día entre hoy y los próximos 30 días.", HOY.plusDays(31), AHORA);
@@ -126,6 +130,7 @@ class PanelSocioServicioReservaTest extends PanelSocioServicioPruebaBase {
 
     // ---------- membresía vigente (socio ACTIVO) ----------
 
+    @DisplayName("CP-09: un socio NO_ACTIVO no puede reservar")
     @Test
     void rechazaReservarSiLaMembresiaNoEstaVigente() {
         socio.setEstado(Socio.Estado.NO_ACTIVO);
@@ -133,6 +138,7 @@ class PanelSocioServicioReservaTest extends PanelSocioServicioPruebaBase {
         assertRechazada("Tu membresía no está vigente: renovala para volver a reservar.", FECHA_TURNO, AHORA);
     }
 
+    @DisplayName("CP-09: un socio dado de baja no puede reservar")
     @Test
     void rechazaReservarSiElSocioFueDadoDeBaja() {
         socio.setBajaLogica(true);
@@ -149,6 +155,7 @@ class PanelSocioServicioReservaTest extends PanelSocioServicioPruebaBase {
 
     // ---------- máximo 3 reservas sin comprobante ----------
 
+    @DisplayName("CP-11: con dos reservas sin comprobante todavía puede reservar")
     @Test
     void aceptaReservarConDosReservasEsperandoElComprobante() {
         when(reservaDAO.contarSinComprobanteDe(7)).thenReturn(2L);
@@ -158,6 +165,7 @@ class PanelSocioServicioReservaTest extends PanelSocioServicioPruebaBase {
         assertEquals(99, id);
     }
 
+    @DisplayName("CP-11: la cuarta reserva sin comprobante se rechaza (máximo 3)")
     @Test
     void rechazaReservarConTresReservasEsperandoElComprobante() {
         when(reservaDAO.contarSinComprobanteDe(7)).thenReturn(3L);
@@ -189,6 +197,7 @@ class PanelSocioServicioReservaTest extends PanelSocioServicioPruebaBase {
         assertRechazada("Esa instalación todavía no tiene un precio cargado para tu tipo de socio.", FECHA_TURNO, AHORA);
     }
 
+    @DisplayName("CP-12: un turno ya tomado por otro socio se rechaza (regla del servicio)")
     @Test
     void rechazaUnTurnoQueYaTomoOtroSocio() {
         Reserva ocupante = DatosDePrueba.reserva(55, DatosDePrueba.socio(8, Socio.Estado.ACTIVO, alumno), turno,
@@ -198,6 +207,7 @@ class PanelSocioServicioReservaTest extends PanelSocioServicioPruebaBase {
         assertRechazada("Ese turno acaba de ser reservado por otra persona. Elegí otro.", FECHA_TURNO, AHORA);
     }
 
+    @DisplayName("CP-12: el choque con la restricción UNIQUE se informa al socio (regla del servicio)")
     @Test
     void traduceElChoqueConLaRestriccionUnicaDeLaBaseEnUnMensajeParaElSocio() {
         doThrow(new PersistenceException("duplicate key turno_activo_key")).when(reservaDAO).insertar(any(Reserva.class));
@@ -222,6 +232,7 @@ class PanelSocioServicioReservaTest extends PanelSocioServicioPruebaBase {
         return DatosDePrueba.reserva(id, socio, turno, fecha, Reserva.Estado.CONFIRMADA);
     }
 
+    @DisplayName("CP-40: con un turno sin valorar no puede reservar")
     @Test
     void rechazaReservarSiHayUnTurnoTerminadoSinValorar() {
         when(reservaDAO.listarPorSocio(7)).thenReturn(List.of(terminadaConfirmada(20, LocalDate.of(2026, 10, 10))));
@@ -230,6 +241,7 @@ class PanelSocioServicioReservaTest extends PanelSocioServicioPruebaBase {
                 FECHA_TURNO, AHORA);
     }
 
+    @DisplayName("CP-40: un turno ya valorado no bloquea")
     @Test
     void noExigeValorarUnTurnoQueYaFueValorado() {
         when(reservaDAO.listarPorSocio(7)).thenReturn(List.of(terminadaConfirmada(20, LocalDate.of(2026, 10, 10))));
@@ -240,6 +252,7 @@ class PanelSocioServicioReservaTest extends PanelSocioServicioPruebaBase {
         assertEquals(99, id);
     }
 
+    @DisplayName("CP-40: los turnos anteriores al 25/09/2026 no se exigen")
     @Test
     void noExigeValorarTurnosAnterioresALaFuncionDeValoraciones() {
         when(reservaDAO.listarPorSocio(7)).thenReturn(List.of(terminadaConfirmada(21, LocalDate.of(2026, 9, 24))));
@@ -257,6 +270,7 @@ class PanelSocioServicioReservaTest extends PanelSocioServicioPruebaBase {
         return r;
     }
 
+    @DisplayName("CP-18: el socio libera un turno todavía no pagado")
     @Test
     void liberaUnaReservaPropiaQueEsperaElComprobante() {
         Reserva r = esperandoElComprobante();
@@ -279,6 +293,7 @@ class PanelSocioServicioReservaTest extends PanelSocioServicioPruebaBase {
         assertEquals(Reserva.Estado.PENDIENTE_PAGO, r.getEstado());
     }
 
+    @DisplayName("CP-21: no libera la reserva de otro socio")
     @Test
     void noLiberaUnaReservaDeOtroSocio() {
         when(reservaDAO.buscarParaResolver(10)).thenReturn(esperandoElComprobante());
@@ -305,6 +320,7 @@ class PanelSocioServicioReservaTest extends PanelSocioServicioPruebaBase {
      * El servicio le pide al DAO las reservas creadas antes de "ahora - 60 minutos". Que el corte sea estricto
      * (exactamente 60 min no se libera) vive en la consulta JPQL del DAO y no se puede probar sin base de datos.
      */
+    @DisplayName("CP-17: a los 60 minutos sin comprobante la reserva queda CANCELADA")
     @Test
     void liberaLasReservasSinComprobanteCreadasAntesDeLos60Minutos() {
         Reserva a = esperandoElComprobante();
@@ -320,6 +336,7 @@ class PanelSocioServicioReservaTest extends PanelSocioServicioPruebaBase {
         assertEquals(Reserva.Estado.CANCELADA, b.getEstado());
     }
 
+    @DisplayName("CP-17: no libera la reserva que justo recibió su comprobante")
     @Test
     void noLiberaLaReservaCuyoComprobanteSeSubioJustoAntes() {
         Reserva enLista = esperandoElComprobante();

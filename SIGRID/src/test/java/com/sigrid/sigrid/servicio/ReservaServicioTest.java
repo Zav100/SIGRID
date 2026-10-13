@@ -23,6 +23,8 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -68,6 +70,7 @@ class ReservaServicioTest {
 
     // ---------- confirmar ----------
 
+    @DisplayName("CP-19: el administrador confirma: reserva y pago CONFIRMADOS con administrador y fecha")
     @Test
     void confirmarDejaLaReservaYElPagoConfirmadosConQuienLosValido() {
         when(usuarioDAO.buscarPorId(1)).thenReturn(admin);
@@ -87,6 +90,7 @@ class ReservaServicioTest {
 
     // ---------- rechazar ----------
 
+    @DisplayName("CP-20: rechazar deja la reserva RECHAZADA y el turno libre")
     @Test
     void rechazarLiberaElTurnoYDejaElPagoRechazado() {
         boolean rechazada = servicio.rechazar(10, 1);
@@ -97,6 +101,7 @@ class ReservaServicioTest {
         assertNull(reserva.getFechaConfirmacion());
     }
 
+    @DisplayName("CP-20: rechazar con motivo guarda el motivo")
     @Test
     void rechazarGuardaElMotivoSinEspaciosSobrantes() {
         servicio.rechazar(10, 1, "  El monto no coincide con la transferencia  ");
@@ -116,6 +121,22 @@ class ReservaServicioTest {
         servicio.rechazar(10, 1, "   ");
 
         assertNull(pago.getMotivoRechazo());
+    }
+
+    /**
+     * RF-05 y CP-20 del plan: el rechazo exige un motivo. Hoy el código lo deja opcional (la pantalla dice "Motivo
+     * (opcional)"). Está deshabilitada hasta decidir si se corrige el código o el plan; al corregirlo hay que quitarle
+     * el {@code @Disabled} y actualizar {@link #rechazarConMotivoEnBlancoNoGuardaMotivo()}.
+     */
+    @Disabled("Defecto D-5: el código permite rechazar sin motivo; el plan (RF-05, CP-20) lo exige")
+    @DisplayName("CP-20: rechazar sin motivo no se permite")
+    @Test
+    void rechazarSinMotivoNoSePermiteYLaSolicitudSigueEsperando() {
+        boolean rechazada = servicio.rechazar(10, 1, "   ");
+
+        assertFalse(rechazada);
+        assertEquals(Reserva.Estado.PENDIENTE_PAGO, reserva.getEstado());
+        assertEquals(Pago.Estado.PENDIENTE_VALIDACION, pago.getEstado());
     }
 
     // ---------- solicitudes que ya no se pueden resolver ----------

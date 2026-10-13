@@ -28,6 +28,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -115,6 +116,7 @@ class TarifasServicioTest {
         assertTrue(TarifasServicio.ordenValido(categoriasEnOrden(), importes("10000", "15000", "15000", "25000")));
     }
 
+    @DisplayName("CP-35: rechaza alumno igual a externo")
     @Test
     void ordenInvalidoCuandoElAlumnoPagaLoMismoQueElExterno() {
         assertFalse(TarifasServicio.ordenValido(categoriasEnOrden(), importes("20000", "20000", "20000", "20000")));
@@ -147,6 +149,7 @@ class TarifasServicioTest {
 
     // ---------- cambios de alquiler ----------
 
+    @DisplayName("CP-34: una tarifa nueva se agrega con su vigencia futura")
     @Test
     void agregaUnPrecioNuevoPorTipoDeSocioConLaFechaDesdeLaQueRige() {
         ArgumentCaptor<TarifaAlquiler> nueva = ArgumentCaptor.forClass(TarifaAlquiler.class);
@@ -166,6 +169,7 @@ class TarifasServicioTest {
         assertEquals(externo, nueva.getAllValues().get(3).getIdCategoriaSocio());
     }
 
+    @DisplayName("CP-34: la tarifa anterior rige hasta el día previo")
     @Test
     void cierraElPrecioAnteriorElDiaPrevioALaNuevaVigencia() {
         servicio.cambiarAlquiler(1, precios("12000", "18000", "18000", "30000"), PROXIMO_MES, HOY);
@@ -175,6 +179,7 @@ class TarifasServicioTest {
         }
     }
 
+    @DisplayName("CP-34: nunca se edita la tarifa anterior")
     @Test
     void nuncaEditaElPrecioDelRegistroAnterior() {
         servicio.cambiarAlquiler(1, precios("12000", "18000", "18000", "30000"), PROXIMO_MES, HOY);
@@ -260,6 +265,7 @@ class TarifasServicioTest {
         verify(alquilerDAO, never()).crear(any());
     }
 
+    @DisplayName("CP-35: rechaza tarifas fuera de orden (alumno más que externo)")
     @Test
     void rechazaUnOrdenEnElQueElAlumnoPagaMasQueElExterno() {
         String error = servicio.cambiarAlquiler(1, precios("30000", "18000", "18000", "25000"), PROXIMO_MES, HOY);
@@ -269,6 +275,7 @@ class TarifasServicioTest {
         assertNull(historial.get(0).getVigenteHasta(), "no se cierra nada si el cambio se rechaza");
     }
 
+    @DisplayName("CP-35: rechaza una tarifa repetida para la misma fecha")
     @Test
     void rechazaUnaFechaIgualALaDeUnPrecioYaProgramado() {
         historial.add(DatosDePrueba.tarifaAlquiler(5, cancha, alumno, "10500", PROXIMO_MES, null));
@@ -362,6 +369,7 @@ class TarifasServicioTest {
 
     // ---------- lectura ----------
 
+    @DisplayName("CP-34: hasta la fecha futura sigue rigiendo la tarifa anterior")
     @Test
     void muestraLoQueRigeHoyYNoElPrecioProgramado() {
         historial.get(0).setVigenteHasta(LocalDate.of(2026, 10, 31));
@@ -383,6 +391,7 @@ class TarifasServicioTest {
         assertEquals("", vigentes.get(4));
     }
 
+    @DisplayName("CP-36: el historial marca el cambio futuro como programado")
     @Test
     void elHistorialMarcaComoProgramadoElCambioFuturo() {
         historial.get(0).setVigenteHasta(LocalDate.of(2026, 10, 31));

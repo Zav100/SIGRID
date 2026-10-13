@@ -2,13 +2,16 @@ package com.sigrid.sigrid.servicio;
 
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
 import com.sigrid.sigrid.dao.UsuarioDAO;
 import com.sigrid.sigrid.repositorio.Usuario;
 import com.sigrid.sigrid.util.PasswordUtil;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -40,6 +43,7 @@ class UsuarioServicioTest {
         usuario.setCuentaHabilitada(true);
     }
 
+    @DisplayName("CP-05: autentica con correo y contraseña correctos (regla del servicio)")
     @Test
     void autenticaConElCorreoYLaContrasenaCorrectos() {
         when(usuarioDAO.buscarPorEmail(EMAIL)).thenReturn(usuario);
@@ -47,6 +51,18 @@ class UsuarioServicioTest {
         Usuario autenticado = servicio.autenticar(EMAIL, CLAVE);
 
         assertSame(usuario, autenticado);
+    }
+
+    @DisplayName("CP-06: una cuenta habilitada ingresa sin que el login mire la membresía")
+    @Test
+    void unaCuentaHabilitadaIngresaSinConsultarNingunaMembresia() {
+        when(usuarioDAO.buscarPorEmail(EMAIL)).thenReturn(usuario);
+
+        Usuario autenticado = servicio.autenticar(EMAIL, CLAVE);
+
+        assertSame(usuario, autenticado);
+        verify(usuarioDAO).buscarPorEmail(EMAIL);
+        verifyNoMoreInteractions(usuarioDAO);
     }
 
     @Test
@@ -65,6 +81,7 @@ class UsuarioServicioTest {
         assertNull(servicio.autenticar(EMAIL, "Cancha#2027"));
     }
 
+    @DisplayName("CP-06: la cuenta dada de baja no ingresa aunque la contraseña sea correcta")
     @Test
     void rechazaUnaCuentaDeshabilitadaAunConLaContrasenaCorrecta() {
         usuario.setCuentaHabilitada(false);

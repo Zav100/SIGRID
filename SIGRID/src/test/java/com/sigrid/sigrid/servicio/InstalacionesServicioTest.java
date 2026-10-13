@@ -42,6 +42,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -243,6 +244,7 @@ class InstalacionesServicioTest {
         assertEquals("Hay 2 reservas en ese período. Marcá la opción de cancelarlas para continuar.", error);
     }
 
+    @DisplayName("CP-31: al poner en mantenimiento, las confirmadas se cancelan por el predio")
     @Test
     void alCancelarLasConfirmadasVanPorElPredioYLasQueEsperanPagoSeLiberan() {
         Reserva confirmada = reserva(20, HOY.plusDays(3), Reserva.Estado.CONFIRMADA, pago(Pago.Estado.CONFIRMADO));

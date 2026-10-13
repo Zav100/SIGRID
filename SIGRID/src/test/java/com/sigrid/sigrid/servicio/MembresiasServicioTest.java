@@ -24,6 +24,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -91,6 +92,7 @@ class MembresiasServicioTest {
 
     // ---------- aceptar el comprobante: vigencia de un mes ----------
 
+    @DisplayName("CP-32: la suscripción dura un mes desde la validación")
     @Test
     void laMembresiaEmpiezaElDiaDeLaValidacionYVenceUnMesDespues() {
         LocalDate hoy = LocalDate.of(2026, 9, 23);
@@ -121,6 +123,7 @@ class MembresiasServicioTest {
         assertEquals(LocalDate.of(2026, 2, 28), vence);
     }
 
+    @DisplayName("CP-32: al validar, el socio queda ACTIVO y su carnet activo")
     @Test
     void alAceptarElSocioQuedaActivoYSuCarnetSeActiva() {
         servicio.aceptar(30, 1, LocalDate.of(2026, 9, 23));
@@ -173,6 +176,7 @@ class MembresiasServicioTest {
      * deshabilitada porque el código actual no la cumple; al corregirlo hay que quitarle el {@code @Disabled}.
      */
     @Disabled("Defecto D-3 confirmado: la renovación por adelantado empieza el día siguiente al vencimiento, no el mismo día")
+    @DisplayName("CP-32: la renovación por adelantado empieza el día del vencimiento (D-3)")
     @Test
     void laRenovacionPorAdelantadoMantieneElMismoDiaDelMes() {
         SuscripcionSocio vigente = vigenteHasta(29, LocalDate.of(2026, 10, 23));
@@ -187,6 +191,7 @@ class MembresiasServicioTest {
 
     /** Mismo defecto D-3, en el día límite: se paga el mismo día en que vence la vigente ("perfecto", dijo el cliente). */
     @Disabled("Defecto D-3 confirmado: pagando el mismo día del vencimiento la nueva empieza al día siguiente")
+    @DisplayName("CP-32: pagando el día del vencimiento la nueva empieza ese día (D-3)")
     @Test
     void siSePagaElMismoDiaDelVencimientoLaNuevaEmpiezaEseDia() {
         SuscripcionSocio vigente = vigenteHasta(29, LocalDate.of(2026, 10, 23));
@@ -294,6 +299,7 @@ class MembresiasServicioTest {
 
     // ---------- vencimiento (lo ejecuta el job cada hora) ----------
 
+    @DisplayName("CP-33: al vencer, suscripción VENCIDA, socio NO_ACTIVO y carnet inactivo")
     @Test
     void alVencerLaUnicaVigenteElSocioQuedaNoActivoYElCarnetInactivo() {
         LocalDate hoy = LocalDate.of(2026, 10, 24);

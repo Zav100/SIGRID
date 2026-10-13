@@ -8,6 +8,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.Base64;
 import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 /** Hash PBKDF2 de contraseñas: formato, sal por hash, verificación correcta e incorrecta y casos límite. */
@@ -15,6 +16,7 @@ class PasswordUtilTest {
 
     private static final String CLAVE = "Polideportivo#2026";
 
+    @DisplayName("CP-07: el valor guardado es PBKDF2 con tres partes, no texto plano")
     @Test
     void generaElHashConTresPartesIteracionesSalYHash() {
         String hash = PasswordUtil.generarHash(CLAVE);
@@ -26,6 +28,7 @@ class PasswordUtilTest {
         assertEquals(32, Base64.getDecoder().decode(partes[2]).length, "el hash es de 256 bits");
     }
 
+    @DisplayName("CP-07: la misma contraseña genera hashes distintos (sal propia)")
     @Test
     void dosHashesDeLaMismaContrasenaUsanSalDistinta() {
         String primero = PasswordUtil.generarHash(CLAVE);
@@ -119,6 +122,7 @@ class PasswordUtilTest {
      * actual no lo cumple (se ejecutó y falló con NumberFormatException).
      */
     @Disabled("Posible defecto D-1: verificar() lanza excepción con un hash de tres partes mal formado")
+    @DisplayName("CP-07: un hash mal formado no debería romper la verificación (D-1)")
     @Test
     void rechazaUnHashMalFormadoSinLanzarExcepcion() {
         assertFalse(PasswordUtil.verificar(CLAVE, "abc:xyz:123"));

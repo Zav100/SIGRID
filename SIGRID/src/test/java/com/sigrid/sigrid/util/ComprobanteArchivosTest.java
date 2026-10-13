@@ -15,6 +15,7 @@ import java.nio.file.Path;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -82,6 +83,7 @@ class ComprobanteArchivosTest {
         assertEquals("jpg", ComprobanteArchivos.extension(jpg));
     }
 
+    @DisplayName("CP-14: el tipo sale de los bytes y no de la extensión")
     @Test
     void elTipoSaleDeLosBytesYNoDelNombreDelArchivo() {
         // un PNG que el socio nombró "transferencia.pdf" sigue siendo PNG
@@ -93,6 +95,7 @@ class ComprobanteArchivosTest {
         assertEquals("image/png", ComprobanteArchivos.tipoMime("reserva-1-abc." + tipoReal));
     }
 
+    @DisplayName("CP-14: rechaza un ejecutable renombrado como PDF")
     @Test
     void rechazaUnEjecutableRenombradoComoPdf() {
         byte[] ejecutable = bytes('M', 'Z', 0x90, 0x00, 0x03, 0x00);

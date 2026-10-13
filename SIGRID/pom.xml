@@ -65,6 +65,10 @@
                 <configuration>
                     <!-- @{argLine} es el agente de JaCoCo; el otro flag evita la advertencia de Mockito en JDK 21 -->
                     <argLine>@{argLine} -XX:+EnableDynamicAgentLoading</argLine>
+                    <!-- en el XML de resultados cada caso sale con su @DisplayName ("CP-22: ..."), así se rastrea contra el plan -->
+                    <statelessTestsetReporter implementation="org.apache.maven.plugin.surefire.extensions.junit5.JUnit5Xml30StatelessReporter">
+                        <usePhrasedTestCaseMethodName>true</usePhrasedTestCaseMethodName>
+                    </statelessTestsetReporter>
                 </configuration>
             </plugin>
             <!-- Cobertura: solo mide e informa (target/site/jacoco/index.html); no hay goal "check", el build no falla por cobertura baja. -->

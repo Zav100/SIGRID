@@ -1,6 +1,7 @@
 package com.sigrid.sigrid.servicio;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -26,6 +27,8 @@ import com.sigrid.sigrid.repositorio.Usuario;
 import com.sigrid.sigrid.util.PasswordUtil;
 import java.time.LocalDate;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -110,12 +113,27 @@ class RegistroServicioTest {
         assertNull(servicio.validarPasoUno("martin.sosa@ejemplo.com", "123456", "123456"));
     }
 
+    /**
+     * RNF-03 y CP-02 del plan: la contraseña lleva letras, números y al menos un símbolo. Hoy el código solo pide
+     * 6 caracteres. Está deshabilitada hasta decidir si se corrige el código o el plan; al corregirlo hay que
+     * quitarle el {@code @Disabled} y actualizar {@link #aceptaUnaContrasenaDeSeisCaracteres()}.
+     */
+    @Disabled("Defecto D-4: el código solo exige 6 caracteres; el plan (RNF-03, CP-02) pide letras, números y un símbolo")
+    @DisplayName("CP-02: rechaza una contraseña sin letras, sin números o sin símbolo")
+    @ParameterizedTest
+    @ValueSource(strings = {"Clave2026", "Clave#abcd", "123#456"})
+    void rechazaUnaContrasenaSinLetrasNumerosOSimbolo(String contrasena) {
+        assertNotNull(servicio.validarPasoUno("martin.sosa@ejemplo.com", contrasena, contrasena),
+                "la contraseña \"" + contrasena + "\" debería rechazarse");
+    }
+
     @Test
     void rechazaCuandoLasContrasenasNoCoinciden() {
         assertEquals("Las contraseñas no coinciden.",
                 servicio.validarPasoUno("martin.sosa@ejemplo.com", "Clave#2026", "Clave#2027"));
     }
 
+    @DisplayName("CP-04: rechaza un correo que ya tiene cuenta (regla del servicio)")
     @Test
     void rechazaUnCorreoQueYaTieneUnaCuentaActiva() {
         Usuario existente = DatosDePrueba.usuario(5, "Lucía", "Gómez", "lucia.gomez@ejemplo.com");
@@ -190,6 +208,7 @@ class RegistroServicioTest {
         assertEquals("La fecha de nacimiento tiene que ser anterior a hoy.", servicio.registrar(r));
     }
 
+    @DisplayName("CP-03: rechaza un socio interno (alumno) sin legajo")
     @Test
     void rechazaUnAlumnoSinLegajo() {
         RegistroSocio r = altaDeAlumno();
@@ -206,6 +225,7 @@ class RegistroServicioTest {
         assertEquals("Elegí el tipo de socio.", servicio.registrar(r));
     }
 
+    @DisplayName("CP-04: rechaza un DNI repetido y no crea nada (regla del servicio)")
     @Test
     void rechazaUnDniQueYaPerteneceAOtroSocio() {
         when(socioDAO.buscarPorDni("32456789")).thenReturn(DatosDePrueba.socio(7, Socio.Estado.ACTIVO, alumno));
@@ -225,6 +245,7 @@ class RegistroServicioTest {
 
     // ---------- alta completa ----------
 
+    @DisplayName("CP-01: registra usuario, socio y carnet (inactivo) de un alumno con legajo")
     @Test
     void registraUsuarioSocioYCarnetEstudiantilParaUnAlumno() {
         ArgumentCaptor<Usuario> usuario = ArgumentCaptor.forClass(Usuario.class);
@@ -250,9 +271,11 @@ class RegistroServicioTest {
 
         verify(carnetDigitalDAO).crear(carnet.capture());
         assertEquals(CarnetDigital.TipoCarnet.ESTUDIANTIL, carnet.getValue().getTipoCarnet());
+        assertEquals(CarnetDigital.Estado.INACTIVO, carnet.getValue().getEstado());
         assertSame(socio.getValue(), carnet.getValue().getIdSocio());
     }
 
+    @DisplayName("CP-01: el socio nuevo queda NO_ACTIVO")
     @Test
     void elSocioNuevoNaceSinMembresiaHastaQueSeValideSuPago() {
         ArgumentCaptor<Socio> socio = ArgumentCaptor.forClass(Socio.class);

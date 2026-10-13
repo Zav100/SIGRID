@@ -28,6 +28,7 @@ import com.sigrid.sigrid.repositorio.Usuario;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -125,6 +126,7 @@ class CambiosReservaServicioTest {
 
     // ---------- pedido de cancelación del socio ----------
 
+    @DisplayName("CP-24: acepta cancelar a exactamente 48 h")
     @Test
     void aceptaPedirLaCancelacionConExactamente48Horas() {
         Reserva r = confirmadaQueEmpieza(AHORA.plusHours(48));
@@ -153,6 +155,7 @@ class CambiosReservaServicioTest {
         verify(solicitudDAO).crear(any());
     }
 
+    @DisplayName("CP-23: rechaza cancelar con menos de 48 h")
     @Test
     void rechazaPedirLaCancelacionConMenosDe48Horas() {
         when(reservaDAO.buscarPorId(10)).thenReturn(confirmadaQueEmpieza(AHORA.plusHours(47)));
@@ -163,6 +166,7 @@ class CambiosReservaServicioTest {
         verify(solicitudDAO, never()).crear(any());
     }
 
+    @DisplayName("CP-23: rechaza cancelar a 47 h 59 min del turno")
     @Test
     void rechazaPedirLaCancelacionConUnMinutoMenosDe48Horas() {
         when(reservaDAO.buscarPorId(10)).thenReturn(confirmadaQueEmpieza(AHORA.plusHours(48).minusMinutes(1)));
@@ -173,6 +177,7 @@ class CambiosReservaServicioTest {
         verify(solicitudDAO, never()).crear(any());
     }
 
+    @DisplayName("CP-21: no pide cambios sobre la reserva de otro socio")
     @Test
     void rechazaElPedidoDeUnaReservaQueEsDeOtroSocio() {
         when(reservaDAO.buscarPorId(10)).thenReturn(confirmadaQueEmpieza(AHORA.plusDays(5)));
@@ -204,6 +209,7 @@ class CambiosReservaServicioTest {
         verify(solicitudDAO, never()).crear(any());
     }
 
+    @DisplayName("CP-27: rechaza un segundo pedido para la misma reserva")
     @Test
     void rechazaUnSegundoPedidoPendienteParaLaMismaReserva() {
         when(reservaDAO.buscarPorId(10)).thenReturn(confirmadaQueEmpieza(AHORA.plusDays(5)));
@@ -239,6 +245,7 @@ class CambiosReservaServicioTest {
 
     // ---------- pedido de reprogramación (usa el crédito de una reserva cancelada) ----------
 
+    @DisplayName("CP-25: pide reprogramar con crédito vigente: queda PENDIENTE")
     @Test
     void aceptaReprogramarConUnCreditoVigenteAUnTurnoLibreDeLaMismaInstalacion() {
         Reserva r = canceladaConCreditoHasta(HOY.plusDays(10));
@@ -257,6 +264,7 @@ class CambiosReservaServicioTest {
         assertEquals(fechaNueva, pedido.getValue().getFechaNueva());
     }
 
+    @DisplayName("CP-28: el crédito todavía se usa el último día")
     @Test
     void aceptaUsarElCreditoElUltimoDiaDeSuVigencia() {
         Reserva r = canceladaConCreditoHasta(HOY);
@@ -269,6 +277,7 @@ class CambiosReservaServicioTest {
         assertNull(error);
     }
 
+    @DisplayName("CP-28: un crédito vencido ayer ya no se puede usar")
     @Test
     void rechazaReprogramarConElCreditoVencidoAyer() {
         when(reservaDAO.buscarPorId(10)).thenReturn(canceladaConCreditoHasta(HOY.minusDays(1)));
@@ -290,6 +299,7 @@ class CambiosReservaServicioTest {
         assertEquals(MENSAJE_SIN_CREDITO, error);
     }
 
+    @DisplayName("CP-27: rechaza reprogramar a otra instalación")
     @Test
     void rechazaReprogramarAUnTurnoDeOtraInstalacion() {
         when(reservaDAO.buscarPorId(10)).thenReturn(canceladaConCreditoHasta(HOY.plusDays(10)));
@@ -438,6 +448,7 @@ class CambiosReservaServicioTest {
         assertEquals(SolicitudCambioReserva.Estado.PENDIENTE, c.getEstado());
     }
 
+    @DisplayName("CP-25: al aprobar, la reserva vuelve a CONFIRMADA en el turno nuevo")
     @Test
     void alAprobarUnaReprogramacionLaReservaVuelveAConfirmadaYConsumeElCredito() {
         Reserva r = canceladaConCreditoHasta(HOY.plusDays(10));
@@ -512,6 +523,30 @@ class CambiosReservaServicioTest {
         assertEquals(Reserva.Estado.CONFIRMADA, r.getEstado());
     }
 
+    @DisplayName("CP-26: al rechazar una reprogramación el crédito sigue vigente y se puede volver a pedir")
+    @Test
+    void rechazarUnaReprogramacionDejaElCreditoVigenteHastaSuVencimiento() {
+        Reserva r = canceladaConCreditoHasta(HOY.plusDays(10));
+        SolicitudCambioReserva c = pedido(50, r, SolicitudCambioReserva.Tipo.REPROGRAMACION);
+        c.setIdTurnoNuevo(turnoNuevo(6, cancha, LocalTime.of(18, 0)));
+        c.setFechaNueva(HOY.plusDays(5));
+        when(solicitudDAO.buscarParaResolver(50)).thenReturn(c);
+
+        boolean rechazado = servicio.rechazar(50, 1, "Ese turno se reservó para un torneo", AHORA);
+
+        assertTrue(rechazado);
+        assertEquals(SolicitudCambioReserva.Estado.RECHAZADA, c.getEstado());
+        assertEquals(Reserva.Estado.CANCELADA, r.getEstado());
+        assertEquals(HOY.plusDays(10), r.getFechaLimiteReprogramacion());
+
+        // con el mismo crédito el socio puede pedir otro turno
+        when(reservaDAO.buscarPorId(10)).thenReturn(r);
+        when(turnoDAO.buscarPorId(7)).thenReturn(turnoNuevo(7, cancha, LocalTime.of(19, 0)));
+        String error = servicio.solicitar(7, 10, SolicitudCambioReserva.Tipo.REPROGRAMACION, 7, HOY.plusDays(6),
+                "Pido otro horario", AHORA);
+        assertNull(error);
+    }
+
     @Test
     void rechazarSinMotivoNoGuardaMotivo() {
         SolicitudCambioReserva c = pedido(50, confirmadaQueEmpieza(AHORA.plusDays(5)),
@@ -539,6 +574,7 @@ class CambiosReservaServicioTest {
 
     // ---------- cancelación por el predio (la única que hace el administrador por su cuenta) ----------
 
+    @DisplayName("CP-31: cancelación por el predio: CANCELADA con crédito de 30 días")
     @Test
     void laCancelacionPorElPredioNoExige48HorasYDejaCreditoDe30Dias() {
         Reserva r = confirmadaQueEmpieza(AHORA.plusHours(5));

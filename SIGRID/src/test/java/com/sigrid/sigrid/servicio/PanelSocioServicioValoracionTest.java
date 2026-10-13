@@ -16,6 +16,7 @@ import com.sigrid.sigrid.repositorio.Reserva;
 import com.sigrid.sigrid.repositorio.ValoracionReserva;
 import java.time.LocalDateTime;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
@@ -54,6 +55,7 @@ class PanelSocioServicioValoracionTest extends PanelSocioServicioPruebaBase {
 
     // ---------- puntaje de 1 a 5 ----------
 
+    @DisplayName("CP-37: guarda puntaje, comentario y fecha")
     @Test
     void guardaLaValoracionConSuPuntajeComentarioYFecha() {
         servicio.valorar(7, 10, 4, "Buena cancha, el césped estaba parejo", AHORA);
@@ -65,6 +67,7 @@ class PanelSocioServicioValoracionTest extends PanelSocioServicioPruebaBase {
         assertEquals(AHORA, v.getFechaValoracion());
     }
 
+    @DisplayName("CP-37: acepta los puntajes de 1 a 5")
     @ParameterizedTest
     @ValueSource(ints = {1, 2, 3, 4, 5})
     void aceptaLosPuntajesDe1A5(int puntaje) {
@@ -73,6 +76,7 @@ class PanelSocioServicioValoracionTest extends PanelSocioServicioPruebaBase {
         assertEquals(puntaje, valoracionGuardada().getPuntaje());
     }
 
+    @DisplayName("CP-38: rechaza puntajes 0 y 6")
     @ParameterizedTest
     @ValueSource(ints = {-1, 0, 6, 10})
     void rechazaLosPuntajesFueraDeRango(int puntaje) {
@@ -86,6 +90,7 @@ class PanelSocioServicioValoracionTest extends PanelSocioServicioPruebaBase {
 
     // ---------- comentario de hasta 500 caracteres ----------
 
+    @DisplayName("CP-37: guarda un comentario de exactamente 500 caracteres")
     @Test
     void guardaCompletoUnComentarioDeExactamente500Caracteres() {
         String comentario = "a".repeat(500);
@@ -95,6 +100,7 @@ class PanelSocioServicioValoracionTest extends PanelSocioServicioPruebaBase {
         assertEquals(comentario, valoracionGuardada().getComentario());
     }
 
+    @DisplayName("CP-38: un comentario de más de 500 se recorta a 500 (decisión D1)")
     @Test
     void recortaA500CaracteresUnComentarioMasLargo() {
         servicio.valorar(7, 10, 5, "a".repeat(501), AHORA);
@@ -125,6 +131,7 @@ class PanelSocioServicioValoracionTest extends PanelSocioServicioPruebaBase {
 
     // ---------- una sola valoración por reserva ----------
 
+    @DisplayName("CP-39: rechaza una segunda valoración de la misma reserva")
     @Test
     void rechazaValorarUnaReservaQueYaFueValorada() {
         when(valoracionDAO.buscarPorReserva(10)).thenReturn(new ValoracionReserva(1));
@@ -132,6 +139,7 @@ class PanelSocioServicioValoracionTest extends PanelSocioServicioPruebaBase {
         assertRechazada("Ya valoraste esta reserva.", 7, 10, 5);
     }
 
+    @DisplayName("CP-39: rechaza si la base detecta que ya existía")
     @Test
     void rechazaLaValoracionSiLaBaseDetectaQueYaExistia() {
         when(valoracionDAO.insertar(any(ValoracionReserva.class))).thenReturn(false);
@@ -172,6 +180,7 @@ class PanelSocioServicioValoracionTest extends PanelSocioServicioPruebaBase {
         assertRechazada("Solo se puede valorar una reserva confirmada cuyo turno ya terminó.", 7, 10, 5);
     }
 
+    @DisplayName("CP-21: no valora la reserva de otro socio")
     @Test
     void rechazaValorarUnaReservaDeOtroSocio() {
         assertRechazada("La reserva no existe.", 8, 10, 5);
