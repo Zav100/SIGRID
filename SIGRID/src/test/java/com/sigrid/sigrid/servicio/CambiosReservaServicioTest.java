@@ -10,6 +10,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 import com.sigrid.sigrid.dao.HistorialReservaDAO;
@@ -100,6 +101,124 @@ class CambiosReservaServicioTest {
         c.setMotivo("Viaje de trabajo");
         c.setFechaSolicitud(AHORA.minusDays(1));
         return c;
+    }
+
+    // ---------- cancelación automática del socio (CC-01) ----------
+    // El socio cancela solo: sin pedido ni administrador de por medio, la reserva queda CANCELADA con crédito de 30 días.
+
+    @DisplayName("CP-22: cancelar con más de 48 h cancela en el acto y deja un crédito de 30 días")
+    @Test
+    void cp22_cancelaAutomaticamenteConCredito() {
+        Reserva r = confirmadaQueEmpieza(AHORA.plusHours(49));
+        when(reservaDAO.buscarPorId(10)).thenReturn(r);
+        ArgumentCaptor<HistorialReserva> historial = ArgumentCaptor.forClass(HistorialReserva.class);
+
+        String error = servicio.solicitar(7, 10, SolicitudCambioReserva.Tipo.CANCELACION, null, null,
+                "Me lesioné la rodilla", AHORA);
+
+        assertNull(error);
+        assertEquals(Reserva.Estado.CANCELADA, r.getEstado());
+        assertEquals(HOY.plusDays(30), r.getFechaLimiteReprogramacion());
+        verify(historialDAO).crear(historial.capture());
+        assertSame(r, historial.getValue().getIdReserva());
+        assertEquals("Cancelación: Me lesioné la rodilla", historial.getValue().getMotivo());
+    }
+
+    @DisplayName("CP-22: la cancelación automática no deja ningún pedido para el administrador")
+    @Test
+    void cp22_noCreaPedidoNiInvolucraAlAdministrador() {
+        when(reservaDAO.buscarPorId(10)).thenReturn(confirmadaQueEmpieza(AHORA.plusDays(5)));
+
+        servicio.solicitar(7, 10, SolicitudCambioReserva.Tipo.CANCELACION, null, null, "Viaje", AHORA);
+
+        verify(solicitudDAO, never()).crear(any());
+        verifyNoInteractions(usuarioDAO);
+    }
+
+    @DisplayName("CP-22: una reserva ya cancelada no se vuelve a cancelar ni suma otro crédito")
+    @Test
+    void cp22_noCancelaDosVeces() {
+        Reserva r = canceladaConCreditoHasta(HOY.plusDays(10));
+        when(reservaDAO.buscarPorId(10)).thenReturn(r);
+
+        String error = servicio.solicitar(7, 10, SolicitudCambioReserva.Tipo.CANCELACION, null, null, "Viaje", AHORA);
+
+        assertEquals("Solo se puede pedir la cancelación de una reserva confirmada.", error);
+        assertEquals(HOY.plusDays(10), r.getFechaLimiteReprogramacion());
+        verify(historialDAO, never()).crear(any());
+    }
+
+    @DisplayName("CP-23: a 47 h 59 min no se cancela: la reserva sigue CONFIRMADA y sin crédito")
+    @Test
+    void cp23_noCancelaA47Horas59Minutos() {
+        Reserva r = confirmadaQueEmpieza(AHORA.plusHours(48).minusMinutes(1));
+        when(reservaDAO.buscarPorId(10)).thenReturn(r);
+
+        String error = servicio.solicitar(7, 10, SolicitudCambioReserva.Tipo.CANCELACION, null, null, "Viaje", AHORA);
+
+        assertEquals(MENSAJE_PLAZO, error);
+        assertEquals(Reserva.Estado.CONFIRMADA, r.getEstado());
+        assertNull(r.getFechaLimiteReprogramacion());
+        verify(historialDAO, never()).crear(any());
+    }
+
+    @DisplayName("CP-24: a exactamente 48 h se cancela con crédito")
+    @Test
+    void cp24_cancelaExactamenteA48Horas() {
+        Reserva r = confirmadaQueEmpieza(AHORA.plusHours(48));
+        when(reservaDAO.buscarPorId(10)).thenReturn(r);
+
+        String error = servicio.solicitar(7, 10, SolicitudCambioReserva.Tipo.CANCELACION, null, null, "Viaje", AHORA);
+
+        assertNull(error);
+        assertEquals(Reserva.Estado.CANCELADA, r.getEstado());
+        assertEquals(HOY.plusDays(30), r.getFechaLimiteReprogramacion());
+    }
+
+    @DisplayName("CP-21: la reserva de otro socio no se cancela")
+    @Test
+    void cp21_noCancelaLaReservaDeOtroSocio() {
+        Reserva r = confirmadaQueEmpieza(AHORA.plusDays(5));
+        when(reservaDAO.buscarPorId(10)).thenReturn(r);
+
+        String error = servicio.solicitar(8, 10, SolicitudCambioReserva.Tipo.CANCELACION, null, null, "Viaje", AHORA);
+
+        assertEquals("La reserva no existe.", error);
+        assertEquals(Reserva.Estado.CONFIRMADA, r.getEstado());
+        assertNull(r.getFechaLimiteReprogramacion());
+    }
+
+    @DisplayName("CP-25: cancelada automáticamente, el socio reprograma con el crédito y el administrador lo aprueba")
+    @Test
+    void cp25_conElCreditoDeLaCancelacionAutomaticaSeReprogramaConAprobacion() {
+        Reserva r = confirmadaQueEmpieza(AHORA.plusDays(5));
+        Turno nuevo = turnoNuevo(6, cancha, LocalTime.of(18, 0));
+        LocalDate fechaNueva = HOY.plusDays(6);
+        when(reservaDAO.buscarPorId(10)).thenReturn(r);
+        when(turnoDAO.buscarPorId(6)).thenReturn(nuevo);
+        ArgumentCaptor<SolicitudCambioReserva> pedido = ArgumentCaptor.forClass(SolicitudCambioReserva.class);
+
+        // 1) cancela solo
+        assertNull(servicio.solicitar(7, 10, SolicitudCambioReserva.Tipo.CANCELACION, null, null, "Viaje", AHORA));
+        assertEquals(Reserva.Estado.CANCELADA, r.getEstado());
+        // 2) pide usar el crédito: queda PENDIENTE, la reserva todavía no se mueve
+        assertNull(servicio.solicitar(7, 10, SolicitudCambioReserva.Tipo.REPROGRAMACION, 6, fechaNueva,
+                "Uso mi crédito", AHORA));
+        verify(solicitudDAO).crear(pedido.capture());
+        SolicitudCambioReserva c = pedido.getValue();
+        assertEquals(SolicitudCambioReserva.Estado.PENDIENTE, c.getEstado());
+        assertEquals(Reserva.Estado.CANCELADA, r.getEstado());
+        // 3) el administrador aprueba: vuelve a CONFIRMADA en el turno nuevo y el crédito se consume
+        when(solicitudDAO.buscarParaResolver(50)).thenReturn(c);
+        when(reservaDAO.buscarParaResolver(10)).thenReturn(r);
+
+        assertNull(servicio.aprobar(50, 1, AHORA));
+
+        assertEquals(Reserva.Estado.CONFIRMADA, r.getEstado());
+        assertSame(nuevo, r.getIdTurno());
+        assertEquals(fechaNueva, r.getFechaTurno());
+        assertNull(r.getFechaLimiteReprogramacion());
+        assertEquals(SolicitudCambioReserva.Estado.APROBADA, c.getEstado());
     }
 
     // ---------- regla de las 48 horas ----------
