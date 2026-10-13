@@ -25,6 +25,15 @@ public class TarifaMembresiaDAO extends BaseDAO<TarifaMembresia> {
                 .setParameter("fecha", fecha));
     }
 
+    /** El próximo cambio programado de la cuota de una categoría (el que empieza después de la fecha); null si no hay. */
+    public TarifaMembresia buscarProxima(Integer idCategoriaSocio, LocalDate fecha) {
+        return primero(em.createQuery(
+                "SELECT t FROM TarifaMembresia t WHERE t.idCategoriaSocio.idCategoriaSocio = :categoria "
+                + "AND t.vigenteDesde > :fecha ORDER BY t.vigenteDesde ASC", TarifaMembresia.class)
+                .setParameter("categoria", idCategoriaSocio)
+                .setParameter("fecha", fecha));
+    }
+
     /** Todo el historial de cuotas (todas las categorías), lo más reciente primero. */
     public List<TarifaMembresia> listarHistorial() {
         return em.createQuery("SELECT t FROM TarifaMembresia t ORDER BY t.vigenteDesde DESC", TarifaMembresia.class)

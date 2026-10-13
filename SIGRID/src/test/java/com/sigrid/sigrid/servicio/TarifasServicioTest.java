@@ -520,4 +520,34 @@ class TarifasServicioTest {
     void ordenValidoCuandoSoloHayAlumnoYExternoYElExternoPagaMas() {
         assertTrue(TarifasServicio.ordenValido(List.of(alumno, externo), importes("20000", "20001")));
     }
+
+    // ---------- vigencia visible en las pantallas (CC-03) ----------
+
+    @DisplayName("CP-36: el precio vigente dice desde cuándo rige")
+    @Test
+    void cp36_laVigenciaDiceDesdeCuandoRigeElPrecio() {
+        TarifaAlquiler vigente = DatosDePrueba.tarifaAlquiler(1, cancha, alumno, "20000", LocalDate.of(2026, 10, 1), null);
+
+        assertEquals("Rige desde el 01/10/2026", TarifasServicio.vigencia(vigente));
+    }
+
+    @DisplayName("CP-36: sin precio vigente no hay desde cuándo")
+    @Test
+    void cp36_sinPrecioVigenteNoHayVigencia() {
+        assertNull(TarifasServicio.vigencia(null));
+    }
+
+    @DisplayName("CP-36: el próximo cambio dice el precio y desde cuándo")
+    @Test
+    void cp36_elProximoCambioDiceElPrecioYLaFecha() {
+        TarifaAlquiler siguiente = DatosDePrueba.tarifaAlquiler(2, cancha, alumno, "22000", PROXIMO_MES, null);
+
+        assertEquals("Desde el 01/11/2026: $ 22.000", TarifasServicio.proximo(siguiente));
+    }
+
+    @DisplayName("CP-36: sin cambio programado lo dice")
+    @Test
+    void cp36_sinCambioProgramadoLoDice() {
+        assertEquals("Sin cambios programados", TarifasServicio.proximo(null));
+    }
 }

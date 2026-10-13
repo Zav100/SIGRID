@@ -19,6 +19,7 @@ import com.sigrid.sigrid.dto.InstalacionReservable;
 import com.sigrid.sigrid.dto.MiReserva;
 import com.sigrid.sigrid.dto.PasoSeguimiento;
 import com.sigrid.sigrid.dto.PerfilSocio;
+import com.sigrid.sigrid.dto.TarifaFila;
 import com.sigrid.sigrid.dto.TurnoDisponible;
 import com.sigrid.sigrid.repositorio.ComprobantePago;
 import com.sigrid.sigrid.repositorio.Instalacion;
@@ -476,7 +477,8 @@ public class PanelSocioServicio implements Serializable {
             }
             lista.add(new InstalacionReservable(i.getIdInstalacion(), i.getNombre(), DashboardServicio.icono(i.getTipoDisciplina()),
                     i.getTipoDisciplina(), i.getDescripcion(), i.getCapacidad() == null ? null : "Hasta " + i.getCapacidad() + " personas",
-                    tarifa == null ? null : DashboardServicio.monto(tarifa.getPrecio()), habilitada && tarifa != null, aviso));
+                    tarifa == null ? null : DashboardServicio.monto(tarifa.getPrecio()), null, null,
+                    habilitada && tarifa != null, aviso));
         }
         return lista;
     }
@@ -509,10 +511,11 @@ public class PanelSocioServicio implements Serializable {
         return turnos(idSocio, r.getIdTurno().getIdInstalacion().getIdInstalacion(), fecha, ahora);
     }
 
-    /** La cuota mensual vigente de su tipo de socio; null si no hay. */
-    public String cuota(Socio socio, LocalDate hoy) {
+    /** La cuota mensual vigente de su tipo de socio, con desde cuándo rige y el próximo cambio; null si no hay. */
+    public TarifaFila cuota(Socio socio, LocalDate hoy) {
         TarifaMembresia t = tarifaMembresiaDAO.buscarVigente(socio.getIdCategoriaSocio().getIdCategoriaSocio(), hoy);
-        return t == null ? null : DashboardServicio.monto(t.getPrecio());
+        return t == null ? null : new TarifaFila(socio.getIdCategoriaSocio().getNombreCategoria(),
+                DashboardServicio.monto(t.getPrecio()), null, null);
     }
 
     /** El precio del turno para el socio, con texto; null si no hay tarifa vigente. */

@@ -10,6 +10,7 @@ import com.sigrid.sigrid.dto.Demanda;
 import com.sigrid.sigrid.dto.EspacioPlano;
 import com.sigrid.sigrid.dto.FichaInstalacion;
 import com.sigrid.sigrid.dto.PrecioFila;
+import com.sigrid.sigrid.dto.PrecioVigente;
 import com.sigrid.sigrid.dto.RankingItem;
 import com.sigrid.sigrid.dto.ReservaFila;
 import com.sigrid.sigrid.repositorio.CategoriaSocio;
@@ -182,11 +183,11 @@ public class InstalacionesServicio implements Serializable {
                 continue;
             }
             List<BigDecimal> importes = new ArrayList<>();
-            List<String> textos = new ArrayList<>();
+            List<PrecioVigente> textos = new ArrayList<>();
             for (CategoriaSocio c : categorias) {
                 BigDecimal precio = vigentes.get(i.getIdInstalacion() + "-" + c.getIdCategoriaSocio());
                 importes.add(precio);
-                textos.add(precio == null ? null : DashboardServicio.monto(precio));
+                textos.add(new PrecioVigente(precio == null ? null : DashboardServicio.monto(precio), null, null));
             }
             filas.add(new PrecioFila(i.getIdInstalacion(), i.getNombre(), icono, false, textos,
                     TarifasServicio.ordenValido(categorias, importes)));

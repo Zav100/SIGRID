@@ -5,6 +5,7 @@ import com.sigrid.sigrid.dto.DiaSocio;
 import com.sigrid.sigrid.dto.InstalacionReservable;
 import com.sigrid.sigrid.dto.MiReserva;
 import com.sigrid.sigrid.dto.PerfilSocio;
+import com.sigrid.sigrid.dto.TarifaFila;
 import com.sigrid.sigrid.repositorio.Socio;
 import com.sigrid.sigrid.servicio.PanelSocioServicio;
 import jakarta.enterprise.context.RequestScoped;
@@ -85,7 +86,7 @@ public class SocioBean {
     }
 
     /** Cuota mensual de su tipo de socio (solo la suya: no ve las tarifas de otros tipos). */
-    public String getCuota() {
+    public TarifaFila getCuota() {
         return servicio.cuota(getSocio(), ahora.toLocalDate());
     }
 

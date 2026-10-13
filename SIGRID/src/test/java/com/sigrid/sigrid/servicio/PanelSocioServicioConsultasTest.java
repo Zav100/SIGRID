@@ -14,6 +14,7 @@ import static org.mockito.Mockito.when;
 import com.sigrid.sigrid.dto.DiaSocio;
 import com.sigrid.sigrid.dto.InstalacionReservable;
 import com.sigrid.sigrid.dto.MiReserva;
+import com.sigrid.sigrid.dto.TarifaFila;
 import com.sigrid.sigrid.dto.TurnoDisponible;
 import com.sigrid.sigrid.repositorio.Instalacion;
 import com.sigrid.sigrid.repositorio.Reserva;
@@ -25,6 +26,7 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 /**
@@ -271,7 +273,7 @@ class PanelSocioServicioConsultasTest extends PanelSocioServicioPruebaBase {
         cuota.setPrecio(new BigDecimal("5000"));
         when(tarifaMembresiaDAO.buscarVigente(1, HOY)).thenReturn(cuota);
 
-        assertEquals("$ 5.000", servicio.cuota(socio, HOY));
+        assertEquals("$ 5.000", servicio.cuota(socio, HOY).getPrecio());
     }
 
     @Test
@@ -288,5 +290,54 @@ class PanelSocioServicioConsultasTest extends PanelSocioServicioPruebaBase {
         when(tarifaDAO.buscarVigente(1, 1, FECHA_TURNO)).thenReturn(tarifa);
 
         assertEquals("$ 20.000", servicio.precio(socio, 1, FECHA_TURNO));
+    }
+
+    // ---------- vigencia de las tarifas (CC-03) ----------
+
+    @DisplayName("CP-36: la tarifa del socio muestra desde cuándo rige y el próximo cambio")
+    @Test
+    void cp36_laTarifaDelSocioMuestraDesdeCuandoRigeYElProximoCambio() {
+        Instalacion c = instalacion(1, "Cancha de Fútbol 11", Instalacion.Estado.HABILITADA);
+        when(instalacionDAO.listarReservables()).thenReturn(List.of(c));
+        when(tarifaDAO.buscarVigente(1, 1, HOY)).thenReturn(
+                DatosDePrueba.tarifaAlquiler(1, c, alumno, "20000", LocalDate.of(2026, 9, 1), null));
+        when(tarifaDAO.buscarProxima(1, 1, HOY)).thenReturn(
+                DatosDePrueba.tarifaAlquiler(2, c, alumno, "22000", LocalDate.of(2026, 11, 1), null));
+
+        InstalacionReservable r = servicio.instalaciones(socio, HOY).get(0);
+
+        assertEquals("$ 20.000", r.getPrecio());
+        assertEquals("Rige desde el 01/09/2026", r.getVigencia());
+        assertEquals("Desde el 01/11/2026: $ 22.000", r.getProximo());
+    }
+
+    @DisplayName("CP-36: sin cambio programado la tarifa del socio lo dice")
+    @Test
+    void cp36_laTarifaDelSocioSinCambioProgramadoLoDice() {
+        Instalacion c = instalacion(1, "Cancha de Fútbol 11", Instalacion.Estado.HABILITADA);
+        when(instalacionDAO.listarReservables()).thenReturn(List.of(c));
+        when(tarifaDAO.buscarVigente(1, 1, HOY)).thenReturn(tarifa);
+        when(tarifaDAO.buscarProxima(1, 1, HOY)).thenReturn(null);
+
+        assertEquals("Sin cambios programados", servicio.instalaciones(socio, HOY).get(0).getProximo());
+    }
+
+    @DisplayName("CP-36: la cuota del socio muestra desde cuándo rige y el próximo cambio")
+    @Test
+    void cp36_laCuotaDelSocioMuestraDesdeCuandoRigeYElProximoCambio() {
+        TarifaMembresia cuota = new TarifaMembresia(1);
+        cuota.setPrecio(new BigDecimal("5000"));
+        cuota.setVigenteDesde(LocalDate.of(2026, 8, 1));
+        TarifaMembresia siguiente = new TarifaMembresia(2);
+        siguiente.setPrecio(new BigDecimal("6000"));
+        siguiente.setVigenteDesde(LocalDate.of(2026, 12, 1));
+        when(tarifaMembresiaDAO.buscarVigente(1, HOY)).thenReturn(cuota);
+        when(tarifaMembresiaDAO.buscarProxima(1, HOY)).thenReturn(siguiente);
+
+        TarifaFila fila = servicio.cuota(socio, HOY);
+
+        assertEquals("$ 5.000", fila.getPrecio());
+        assertEquals("Rige desde el 01/08/2026", fila.getVigencia());
+        assertEquals("Desde el 01/12/2026: $ 6.000", fila.getProximo());
     }
 }

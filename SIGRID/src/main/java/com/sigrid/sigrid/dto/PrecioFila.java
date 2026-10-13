@@ -13,10 +13,10 @@ public class PrecioFila implements Serializable {
     private final String nombre;
     private final String icono;
     private final boolean sinReserva;
-    private final List<String> precios;
+    private final List<PrecioVigente> precios;
     private final boolean ordenOk;      // el alumno paga menos que todos y el externo más que todos
 
-    public PrecioFila(Integer idInstalacion, String nombre, String icono, boolean sinReserva, List<String> precios,
+    public PrecioFila(Integer idInstalacion, String nombre, String icono, boolean sinReserva, List<PrecioVigente> precios,
             boolean ordenOk) {
         this.idInstalacion = idInstalacion;
         this.nombre = nombre;
@@ -42,7 +42,7 @@ public class PrecioFila implements Serializable {
         return sinReserva;
     }
 
-    public List<String> getPrecios() {
+    public List<PrecioVigente> getPrecios() {
         return precios;
     }
 

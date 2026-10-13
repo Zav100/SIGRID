@@ -28,6 +28,7 @@ import java.time.YearMonth;
 import java.util.ArrayList;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -283,5 +284,29 @@ class MembresiasServicioListadosTest {
         tiposDeSocio();
 
         assertEquals(List.of("Alumno UNSE", "Externo"), servicio.tiposDeSocio());
+    }
+
+    // ---------- vigencia de las cuotas (CC-03) ----------
+
+    @DisplayName("CP-36: cada cuota muestra desde cuándo rige y el próximo cambio programado")
+    @Test
+    void cp36_cadaCuotaMuestraDesdeCuandoRigeYElProximoCambio() {
+        tiposDeSocio();
+        TarifaMembresia cuota = new TarifaMembresia(1);
+        cuota.setPrecio(new BigDecimal("5000"));
+        cuota.setVigenteDesde(LocalDate.of(2026, 8, 1));
+        TarifaMembresia siguiente = new TarifaMembresia(2);
+        siguiente.setPrecio(new BigDecimal("6000"));
+        siguiente.setVigenteDesde(LocalDate.of(2026, 12, 1));
+        when(tarifaDAO.buscarVigente(1, HOY)).thenReturn(cuota);
+        when(tarifaDAO.buscarProxima(1, HOY)).thenReturn(siguiente);
+        when(tarifaDAO.buscarVigente(4, HOY)).thenReturn(null);
+
+        List<TarifaFila> tarifas = servicio.tarifas(HOY);
+
+        assertEquals("Rige desde el 01/08/2026", tarifas.get(0).getVigencia());
+        assertEquals("Desde el 01/12/2026: $ 6.000", tarifas.get(0).getProximo());
+        assertNull(tarifas.get(1).getVigencia());
+        assertEquals("Sin cambios programados", tarifas.get(1).getProximo());
     }
 }

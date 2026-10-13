@@ -24,6 +24,7 @@ import com.sigrid.sigrid.dto.Conflictos;
 import com.sigrid.sigrid.dto.Demanda;
 import com.sigrid.sigrid.dto.FichaInstalacion;
 import com.sigrid.sigrid.dto.PrecioFila;
+import com.sigrid.sigrid.dto.PrecioVigente;
 import com.sigrid.sigrid.dto.RankingItem;
 import com.sigrid.sigrid.dto.ReservaFila;
 import com.sigrid.sigrid.repositorio.CategoriaSocio;
@@ -41,6 +42,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -478,7 +480,8 @@ class InstalacionesServicioTest {
         List<PrecioFila> filas = servicio.precios(List.of(cancha, pileta), List.of(alumno, docente, noDocente, externo),
                 HOY);
 
-        assertEquals(List.of("$ 10.000", "$ 15.000", "$ 15.000", "$ 25.000"), filas.get(0).getPrecios());
+        assertEquals(List.of("$ 10.000", "$ 15.000", "$ 15.000", "$ 25.000"),
+                filas.get(0).getPrecios().stream().map(PrecioVigente::getPrecio).collect(Collectors.toList()));
         assertTrue(filas.get(0).isOrdenOk());
         assertFalse(filas.get(0).isSinReserva());
         assertTrue(filas.get(1).isSinReserva());
@@ -582,5 +585,43 @@ class InstalacionesServicioTest {
 
         verify(dashboardServicio).aFilas(mostradas.capture(), eq(HOY));
         assertEquals(List.of(r1, r2, r3), mostradas.getValue());
+    }
+
+    // ---------- vigencia de los precios (CC-03) ----------
+
+    @DisplayName("CP-36: cada precio muestra desde cuándo rige y el próximo cambio programado")
+    @Test
+    void cp36_cadaPrecioMuestraDesdeCuandoRigeYElProximoCambio() {
+        CategoriaSocio externo = DatosDePrueba.categoria(4, "Externo", false);
+        when(tarifaDAO.listarVigentes(HOY)).thenReturn(List.of(
+                DatosDePrueba.tarifaAlquiler(1, cancha, alumno, "10000", LocalDate.of(2026, 1, 1), null),
+                DatosDePrueba.tarifaAlquiler(4, cancha, externo, "25000", LocalDate.of(2026, 3, 1), null)));
+        // el más próximo primero: gana el de noviembre y el de diciembre no se muestra
+        when(tarifaDAO.listarProgramadas(HOY)).thenReturn(List.of(
+                DatosDePrueba.tarifaAlquiler(5, cancha, alumno, "12000", LocalDate.of(2026, 11, 1), null),
+                DatosDePrueba.tarifaAlquiler(6, cancha, alumno, "14000", LocalDate.of(2026, 12, 1), null)));
+
+        List<PrecioVigente> precios = servicio.precios(List.of(cancha), List.of(alumno, externo), HOY).get(0).getPrecios();
+
+        assertEquals("$ 10.000", precios.get(0).getPrecio());
+        assertEquals("Rige desde el 01/01/2026", precios.get(0).getVigencia());
+        assertEquals("Desde el 01/11/2026: $ 12.000", precios.get(0).getProximo());
+        assertEquals("$ 25.000", precios.get(1).getPrecio());
+        assertEquals("Rige desde el 01/03/2026", precios.get(1).getVigencia());
+        assertEquals("Sin cambios programados", precios.get(1).getProximo());
+    }
+
+    @DisplayName("CP-36: un precio que todavía no rige se ve como próximo cambio")
+    @Test
+    void cp36_unPrecioQueTodaviaNoRigeSeVeComoProximoCambio() {
+        when(tarifaDAO.listarVigentes(HOY)).thenReturn(List.of());
+        when(tarifaDAO.listarProgramadas(HOY)).thenReturn(List.of(
+                DatosDePrueba.tarifaAlquiler(5, cancha, alumno, "12000", LocalDate.of(2026, 11, 1), null)));
+
+        PrecioVigente precio = servicio.precios(List.of(cancha), List.of(alumno), HOY).get(0).getPrecios().get(0);
+
+        assertNull(precio.getPrecio());
+        assertNull(precio.getVigencia());
+        assertEquals("Desde el 01/11/2026: $ 12.000", precio.getProximo());
     }
 }
