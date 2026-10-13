@@ -125,10 +125,11 @@ class ReservaServicioTest {
 
     /**
      * RF-05 y CP-20 del plan: el rechazo exige un motivo. Hoy el código lo deja opcional (la pantalla dice "Motivo
-     * (opcional)"). Está deshabilitada hasta decidir si se corrige el código o el plan; al corregirlo hay que quitarle
-     * el {@code @Disabled} y actualizar {@link #rechazarConMotivoEnBlancoNoGuardaMotivo()}.
+     * (opcional)"). El equipo decidió (13/10/2026) dejarlo así por ahora y exigirlo más adelante: la prueba queda
+     * deshabilitada; al implementarlo hay que quitarle el {@code @Disabled} y actualizar
+     * {@link #rechazarConMotivoEnBlancoNoGuardaMotivo()}.
      */
-    @Disabled("Defecto D-5: el código permite rechazar sin motivo; el plan (RF-05, CP-20) lo exige")
+    @Disabled("D-5 diferido por decisión del equipo (13/10/2026): el motivo sigue siendo opcional; el plan (RF-05, CP-20) lo exige")
     @DisplayName("CP-20: rechazar sin motivo no se permite")
     @Test
     void rechazarSinMotivoNoSePermiteYLaSolicitudSigueEsperando() {

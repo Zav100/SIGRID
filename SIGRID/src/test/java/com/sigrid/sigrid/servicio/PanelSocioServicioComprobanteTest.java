@@ -22,7 +22,6 @@ import java.nio.file.Path;
 import java.time.LocalDateTime;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -187,13 +186,9 @@ class PanelSocioServicioComprobanteTest extends PanelSocioServicioPruebaBase {
     }
 
     /**
-     * DEFECTO CONFIRMADO D-2 (confirmado por el responsable del proyecto el 12/10/2026): la regla es que una
-     * transferencia se tolera hasta 25 minutos en el futuro (diferencia de reloj entre el banco y el servidor). El
-     * código usa {@code ahora.plusMinutes(5)} (PanelSocioServicio.subirComprobante), así que una operación 25 minutos
-     * adelantada se rechaza. La prueba expresa la regla correcta y está deshabilitada porque el código actual no la
-     * cumple; al corregir esa línea hay que quitarle el {@code @Disabled}.
+     * D-2 (corregido; regla confirmada por el responsable del proyecto el 12/10/2026): una transferencia se tolera
+     * hasta 25 minutos en el futuro (diferencia de reloj entre el banco y el servidor). Antes el código toleraba 5.
      */
-    @Disabled("Defecto D-2 confirmado: el código tolera 5 minutos de adelanto y la regla es 25")
     @DisplayName("CP-15: acepta una transferencia adelantada hasta 25 minutos (D-2)")
     @Test
     void aceptaUnaTransferenciaAdelantadaHasta25Minutos() {

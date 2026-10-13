@@ -7,7 +7,6 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.Base64;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -115,13 +114,11 @@ class PasswordUtilTest {
     }
 
     /**
-     * POSIBLE DEFECTO D-1: verificar() devuelve false para hash nulo, vacío o con partes de menos, pero con un hash
-     * de tres partes mal formado lanza NumberFormatException (primera parte no numérica) o IllegalArgumentException
-     * (Base64 inválido). Un dato corrupto en la columna password_hash rompería el login con un error en vez de
-     * rechazar la contraseña. La prueba describe el comportamiento esperado y está deshabilitada porque el código
-     * actual no lo cumple (se ejecutó y falló con NumberFormatException).
+     * D-1 (corregido): verificar() devuelve false para hash nulo, vacío o con partes de menos y también con un hash de
+     * tres partes mal formado (primera parte no numérica, Base64 inválido o iteraciones inválidas). Antes lanzaba
+     * NumberFormatException o IllegalArgumentException: un dato corrupto en password_hash rompía el login con un error
+     * en vez de rechazar la contraseña.
      */
-    @Disabled("Posible defecto D-1: verificar() lanza excepción con un hash de tres partes mal formado")
     @DisplayName("CP-07: un hash mal formado no debería romper la verificación (D-1)")
     @Test
     void rechazaUnHashMalFormadoSinLanzarExcepcion() {

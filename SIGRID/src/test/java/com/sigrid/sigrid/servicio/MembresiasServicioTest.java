@@ -23,7 +23,6 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -168,14 +167,11 @@ class MembresiasServicioTest {
     }
 
     /**
-     * DEFECTO CONFIRMADO D-3 (confirmado por el responsable del proyecto el 12/10/2026): la membresía vence el mismo
-     * día del mes siguiente (empezó el 23/09, vence el 23/10) y quien renueva antes de vencer continúa el ciclo: la
-     * nueva empieza el mismo día en que vence la vigente (23/10) y vence un mes después (23/11). El código arranca la
-     * nueva el día SIGUIENTE ({@code getFechaVencimiento().plusDays(1)}, MembresiasServicio.aceptar), de modo que cada
-     * renovación corre el ciclo un día (23/10 -> 24/10 -> 24/11). La prueba expresa la regla correcta y está
-     * deshabilitada porque el código actual no la cumple; al corregirlo hay que quitarle el {@code @Disabled}.
+     * D-3 (corregido; regla confirmada por el responsable del proyecto el 12/10/2026): la membresía vence el mismo día
+     * del mes siguiente (empezó el 23/09, vence el 23/10) y quien renueva antes de vencer continúa el ciclo: la nueva
+     * empieza el mismo día en que vence la vigente (23/10) y vence un mes después (23/11). Antes arrancaba el día
+     * siguiente y cada renovación corría el ciclo un día (23/10 -> 24/10 -> 24/11).
      */
-    @Disabled("Defecto D-3 confirmado: la renovación por adelantado empieza el día siguiente al vencimiento, no el mismo día")
     @DisplayName("CP-32: la renovación por adelantado empieza el día del vencimiento (D-3)")
     @Test
     void laRenovacionPorAdelantadoMantieneElMismoDiaDelMes() {
@@ -189,8 +185,7 @@ class MembresiasServicioTest {
         assertEquals(LocalDate.of(2026, 11, 23), vence);
     }
 
-    /** Mismo defecto D-3, en el día límite: se paga el mismo día en que vence la vigente ("perfecto", dijo el cliente). */
-    @Disabled("Defecto D-3 confirmado: pagando el mismo día del vencimiento la nueva empieza al día siguiente")
+    /** Mismo D-3, en el día límite: se paga el mismo día en que vence la vigente ("perfecto", dijo el cliente). */
     @DisplayName("CP-32: pagando el día del vencimiento la nueva empieza ese día (D-3)")
     @Test
     void siSePagaElMismoDiaDelVencimientoLaNuevaEmpiezaEseDia() {
