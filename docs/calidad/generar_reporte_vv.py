@@ -123,7 +123,7 @@ NOTAS = {
              "MembresiaJob (el temporizador) no se prueba en unitarias.",
 }
 # cambios de la cátedra ya implementados en el código (los casos S/A siguen necesitando la revisión manual)
-IMPLEMENTADOS = {"CC-01", "CC-03", "CC-04"}
+IMPLEMENTADOS = {"CC-01", "CC-03", "CC-04", "CC-05"}
 PENDIENTE_DE = {"CP-22": "CC-01", "CP-29": "CC-02", "CP-30": "CC-02", "CP-36": "CC-03", "CP-41": "CC-04",
                 "CP-43": "CC-06", "CP-44": "CC-06", "CP-45": "CC-06", "CP-46": "CC-06", "CP-47": "CC-05",
                 "CP-48": "CC-05", "CP-49": "CC-05"}

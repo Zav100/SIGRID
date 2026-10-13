@@ -10,7 +10,7 @@ Generado automáticamente por `docs/calidad/generar_reporte_vv.py` con la planti
 |---|---|
 | Reporte N.º | V&V-01 |
 | Fecha y responsable de la ejecución | 13/10/2026 — [completar: ingeniero de pruebas] |
-| Versión del código | rama `cambio/cc-04-grado-de-satisfaccion`, commit `283d4f5` |
+| Versión del código | rama `cambio/cc-05-colores-y-contrastes`, commit `e5d3c36` |
 | Entorno de pruebas | Windows 11, Java 21, Maven; JUnit 5 + Mockito; sin MySQL ni GlassFish |
 | Alcance de la ejecución | Parcial: casos de nivel U (unitarios). Los de nivel I, S y A no se ejecutaron |
 | Datos de prueba utilizados | Ficticios, armados en `DatosDePrueba` (reloj fijo: lunes 12/10/2026 10:00) |
@@ -33,9 +33,9 @@ Generado automáticamente por `docs/calidad/generar_reporte_vv.py` con la planti
 | Requerimientos sin caso de prueba | 0 | 0 | Sí |
 | Contraste en las pantallas clave (CP-47 y CP-48) | 4,5:1 texto normal; 3:1 texto grande y componentes | No medido | No |
 | Exportación a PDF con 500.000 reservas (CP-45) | 6 de 6 | No ejecutado | No |
-| Cambios CC-01 a CC-06 verificados | 6 de 6 | 1 de 6 (CC-01); implementados con revisión manual pendiente: CC-03, CC-04 | No |
+| Cambios CC-01 a CC-06 verificados | 6 de 6 | 1 de 6 (CC-01); implementados con revisión manual pendiente: CC-03, CC-04, CC-05 | No |
 
-Pruebas automáticas ejecutadas: **668** (662 pasan, 0 fallan, 6 deshabilitadas). 561 de ellas no corresponden a ningún caso del plan: son pruebas de regresión adicionales sobre las demás reglas del sistema.
+Pruebas automáticas ejecutadas: **678** (672 pasan, 0 fallan, 6 deshabilitadas). 561 de ellas no corresponden a ningún caso del plan: son pruebas de regresión adicionales sobre las demás reglas del sistema.
 
 ### Defectos abiertos
 
@@ -101,9 +101,9 @@ La severidad es una propuesta; la asigna el líder de SQA (Tabla 31). Detalle y 
 | CP-44 | Exportar el PDF de un período sin reservas | S | No | No ejecutado | Falta la prueba de sistema manual (RTF). Depende del cambio CC-06, todavía sin implementar. |
 | CP-45 | Con 500.000 reservas, listar y exportar un período acotado | A | No | No ejecutado | Falta la medición de accesibilidad o rendimiento. Depende del cambio CC-06, todavía sin implementar. |
 | CP-46 | Exportar un PDF de varias páginas | S | No | No ejecutado | Falta la prueba de sistema manual (RTF). Depende del cambio CC-06, todavía sin implementar. |
-| CP-47 | Medir el contraste de las pantallas del socio | A | No | No ejecutado | Falta la medición de accesibilidad o rendimiento. Depende del cambio CC-05, todavía sin implementar. |
-| CP-48 | Medir el contraste de las pantallas del administrador | A | No | No ejecutado | Falta la medición de accesibilidad o rendimiento. Depende del cambio CC-05, todavía sin implementar. |
-| CP-49 | Revisar los estados de reserva sin depender solo del color | S | No | No ejecutado | Falta la prueba de sistema manual (RTF). Depende del cambio CC-05, todavía sin implementar. |
+| CP-47 | Medir el contraste de las pantallas del socio | A | No | No ejecutado | Falta la medición de accesibilidad o rendimiento. El cambio CC-05 ya está implementado; falta la revisión manual. Evidencia unitaria: 2 prueba(s) del servicio aprobadas (no reemplazan ese nivel). |
+| CP-48 | Medir el contraste de las pantallas del administrador | A | No | No ejecutado | Falta la medición de accesibilidad o rendimiento. El cambio CC-05 ya está implementado; falta la revisión manual. Evidencia unitaria: 6 prueba(s) del servicio aprobadas (no reemplazan ese nivel). |
+| CP-49 | Revisar los estados de reserva sin depender solo del color | S | No | No ejecutado | Falta la prueba de sistema manual (RTF). El cambio CC-05 ya está implementado; falta la revisión manual. Evidencia unitaria: 2 prueba(s) del servicio aprobadas (no reemplazan ese nivel). |
 | CP-50 | Abrir las pantallas principales en 360, 768 y 1280 px | A | No | No ejecutado | Falta la medición de accesibilidad o rendimiento. |
 | CP-51 | El socio abre su historial de reservas | S | No | No ejecutado | Falta la prueba de sistema manual (RTF). Evidencia unitaria: 1 prueba(s) del servicio aprobadas (no reemplazan ese nivel). |
 | CP-52 | El administrador filtra el listado de reservas | I | No | No ejecutado | Falta la prueba de integración con una base MySQL de pruebas (no existe en este conjunto). |
@@ -247,4 +247,14 @@ Un requerimiento figura como *Aprobado* si todos sus casos lo están.
 | CP-41 | `AdminNavBeanTest` | el menú dice "Grado de satisfacción" y no "Valoraciones" | pasa |
 | CP-41 | `ReportesServicioTest` | el resumen de reportes dice "Grado de satisfacción" | pasa |
 | CP-42 | `ReportesServicioTest` | la ocupación es reservados sobre disponibles (regla del servicio) | pasa |
+| CP-47 | `ContrasteCssTest` | el foco del teclado se ve sobre el fondo claro (3:1) en el panel del socio y del administrador | pasa |
+| CP-47 | `ContrasteCssTest` | el texto de las pantallas del socio llega a 4,5:1 sobre las superficies claras | pasa |
+| CP-48 | `ContrasteCssTest` | el texto de las pantallas del administrador llega a 4,5:1 sobre las superficies claras | pasa |
+| CP-48 | `ContrasteCssTest` | en las barras apiladas reservas y membresías se distinguen entre sí y del fondo (3:1) | pasa |
+| CP-48 | `ContrasteCssTest` | la leyenda usa los mismos colores que las barras | pasa |
+| CP-48 | `ContrasteCssTest` | los cinco tramos de la dona se ven sobre el fondo (3:1) | pasa |
+| CP-48 | `ContrasteCssTest` | los indicadores de bueno, atención y malo se ven sobre el fondo (3:1) | pasa |
+| CP-48 | `ContrasteCssTest` | los números del mapa de calor se leen sobre su celda (4,5:1) | pasa |
+| CP-49 | `ContrasteCssTest` | la estrella llena y la vacía se distinguen por la forma y el color llega a 3:1 | pasa |
+| CP-49 | `ContrasteCssTest` | la serie de membresías lleva una división propia y no depende solo del color | pasa |
 | CP-51 | `PanelSocioServicioMisReservasTest` | el socio ve cada reserva con su estado (regla del servicio) | pasa |

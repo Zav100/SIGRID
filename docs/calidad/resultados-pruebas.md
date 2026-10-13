@@ -47,10 +47,10 @@ Dónde ver los resultados:
 
 | Medida | Valor |
 |---|---|
-| Clases de prueba | 26 |
-| Pruebas (métodos) | 609 |
-| Ejecuciones (casos, contando cada valor de las parametrizadas) | 668 |
-| Pasan | 662 |
+| Clases de prueba | 27 |
+| Pruebas (métodos) | 619 |
+| Ejecuciones (casos, contando cada valor de las parametrizadas) | 678 |
+| Pasan | 672 |
 | Deshabilitadas (defectos D-1 a D-5) | 6 |
 | Fallan | 0 |
 | Tiempo total | unos segundos (la mayor parte es el hash PBKDF2 de 120 000 iteraciones) |
@@ -188,6 +188,21 @@ Cada nombre describe un único comportamiento. En las pruebas parametrizadas, "N
 | `noRechazaUnPedidoInexistente` | No rechaza un pedido inexistente | Pasa |
 | `rechazarConMotivoNuloNoGuardaMotivo` | Rechazar con motivo nulo no guarda motivo | Pasa |
 | `laCancelacionPorElPredioRechazaUnaReservaInexistente` | La cancelación por el predio rechaza una reserva inexistente | Pasa |
+
+### `estilos.ContrasteCssTest` (10 pruebas, 10 casos)
+
+| Prueba | Qué verifica | Resultado |
+|---|---|---|
+| `cp47_elTextoDelSocioLlegaA4_5` | Cp 47 el texto del socio llega a 4 5 | Pasa |
+| `cp48_elTextoDelAdministradorLlegaA4_5` | Cp 48 el texto del administrador llega a 4 5 | Pasa |
+| `cp48_lasSeriesDeLasBarrasSeDistinguen` | Cp 48 las series de las barras se distinguen | Pasa |
+| `cp48_laLeyendaCoincideConLasBarras` | Cp 48 la leyenda coincide con las barras | Pasa |
+| `cp49_laSerieDeMembresiasTieneDivision` | Cp 49 la serie de membresías tiene division | Pasa |
+| `cp48_losIndicadoresSeVenSobreElFondo` | Cp 48 los indicadores se ven sobre el fondo | Pasa |
+| `cp48_losTramosDeLaDonaSeVenSobreElFondo` | Cp 48 los tramos de la dona se ven sobre el fondo | Pasa |
+| `cp49_lasEstrellasSeDistinguenPorLaForma` | Cp 49 las estrellas se distinguen por la forma | Pasa |
+| `cp48_losNumerosDelMapaDeCalorSeLeen` | Cp 48 los numeros del mapa de calor se leen | Pasa |
+| `cp47_elFocoSeVe` | Cp 47 el foco se ve | Pasa |
 
 ### `servicio.HorarioServicioTest` (37 pruebas, 44 casos)
 
@@ -910,7 +925,7 @@ Resultado: **19 de 20 detectadas en la primera pasada**. La que sobrevivió (M11
 
 Alcance de esta comprobación: son 20 roturas elegidas a mano sobre constantes y comparaciones de las reglas pedidas. No reemplaza una herramienta de mutación (por ejemplo PIT), que genera cientos de variantes automáticamente.
 
-La tabla se midió sobre la rama `calidad/pruebas-junit`, antes de CC-01, CC-03 y CC-04 (sección 10). Las pruebas que cita siguen existiendo; no se volvió a medir.
+La tabla se midió sobre la rama `calidad/pruebas-junit`, antes de CC-01, CC-03, CC-04 y CC-05 (sección 10). Las pruebas que cita siguen existiendo; no se volvió a medir.
 
 ## 5. Discrepancias y posibles defectos
 
@@ -1064,3 +1079,28 @@ Lo que pide el plan (Tabla 12): el nombre nuevo aparece en el menú, los título
 - **Vocabulario:** el nombre de la sección es "Grado de satisfacción"; cada respuesta individual pasa a llamarse "calificación" (como en CP-37 a CP-40 del plan), para que la palabra "Valoraciones" no quede en ninguna pantalla del administrador.
 - **Pruebas escritas primero (fallaban 6):** `AdminNavBeanTest.cp41_elMenuDiceGradoDeSatisfaccionYNoValoraciones` y `laSeccionRenombradaSigueEnLaMismaDireccion` (nuevas) y cuatro de `ReportesServicioTest` que fijaban los textos viejos.
 - **Lo que no se pudo comprobar:** la página renombrada no se abrió en el navegador (solo se comprobó que es XML bien formado).
+
+### CC-05. Colores y contrastes (rama `cambio/cc-05-colores-y-contrastes`, sale de la de CC-04)
+
+Lo que pide el plan (Tabla 12): cumplir WCAG 2.1 AA (RNF-08) en las vistas del socio y del administrador, con foco visible y estados que no dependan solo del color. La cátedra señaló el gráfico de barras de ingresos, donde las reservas (gris oscuro) y las membresías (bordó oscuro) casi no se distinguían, y en general los elementos chicos sin contraste.
+
+- **Qué se midió:** los pares de color declarados en las hojas de estilo (resolviendo las variables). Dio que el color de texto secundario (`--text-3`), usado en cientos de etiquetas, subtítulos y encabezados de tabla, estaba en 2,9:1 a 3,6:1 y debe llegar a 4,5:1; que las dos series del gráfico daban 1,95:1 entre sí; que el dorado de las estrellas y de los indicadores de atención daba 2,3:1; que el foco del teclado (amarillo al 55 %) daba 1,3:1; y que los números del mapa de calor en celdas medias daban entre 2,0:1 y 3,9:1.
+- **Qué cambió** (solo hojas de estilo, ningún texto ni lógica):
+
+| Elemento | Antes | Ahora |
+|---|---|---|
+| Texto secundario `--text-3` (panel del socio y del administrador) | `#8B8582` (2,9:1 a 3,6:1) | `#6B6561` (4,6:1 o más) |
+| Texto de la landing `--ink-500` | `#7D6B64` (4,0:1 a 4,4:1) | `#6E5C55` (5,5:1 o más) |
+| Dorado de texto `--gold-700` | `#B8811F` (2,7:1 a 3,3:1) | `#7E5C00` (5,4:1 o más) |
+| Verde de estado `--adm-ok` y `--so-ok` | `#2C7554` (4,4:1 sobre gris) | `#267050` (4,7:1 o más) |
+| Indicador de atención `--adm-warn-dot` | `#D4A000` (2,3:1) | `#B38900` (3,2:1) |
+| Barras de reservas | gris oscuro `#686363` | gris medio `#8F857E` (3,5:1 sobre blanco y 4,2:1 contra el bordó) |
+| Barras de membresías | bordó `#6D1732` | bordó oscuro `#4A0F1F` con **rayas claras** y una línea que la separa de reservas |
+| Estrellas de las valoraciones | llena y vacía solo se distinguían por el tono | llena = relleno dorado oscuro, vacía = contorno gris (cambia la forma) |
+| Dona de la distribución | verde claro, amarillo y naranja de 1,6:1 a 2,4:1 | tramos de 3,2:1 o más |
+| Números del mapa de calor | blanco o verde sobre celdas medias (2,0:1 a 3,9:1) | texto oscuro en las celdas medias (4,8:1 o más) |
+| Foco del teclado | línea amarilla translúcida (1,3:1) | línea bordó oscura de 3 px con un aro blanco por dentro (se ve sobre fondos claros y sobre bordó) |
+
+- **Pruebas escritas primero (fallaban 9):** `ContrasteCssTest` (`SIGRID/src/test/java/com/sigrid/sigrid/estilos/`) lee los CSS reales, resuelve las variables y exige 4,5:1 al texto y 3:1 a series, indicadores, estrellas y foco; cada mensaje de error dice qué par falló y cuánto da. Así queda como regresión si alguien vuelve a tocar un color.
+- **Antes y después del gráfico** (maqueta estática con datos de ejemplo y las hojas de estilo reales, generada con Edge sin ventana; no es una captura del sistema desplegado): [antes](capturas/cc05-barras-antes.png) y [después](capturas/cc05-barras-despues.png).
+- **Lo que no cubre:** (1) es una medición estática de los pares declarados: no ve el color final que resulta de la cascada en cada pantalla ni las imágenes; (2) los bordes de campos y botones (`--border`, `#DDD9D5`, 1,4:1) siguen igual porque cambiarlos modifica toda la estética: el texto de cada campo sí cumple, pero el contorno del campo no llega a 3:1; (3) el tema oscuro (`--d-*`) no se midió; (4) los CP-47 y CP-48 piden medir con un verificador (WCAG 2.1 AA, por ejemplo axe o Lighthouse) sobre las pantallas desplegadas, que sigue pendiente.
