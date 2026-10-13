@@ -31,7 +31,7 @@ Notas:
 - La variable `JAVA_HOME` del sistema apunta a `C:\Program Files\Java\jdk-21`, una carpeta que no existe. Por eso se indica el JDK 21 real en cada comando. El `java` del PATH es el 25 y **no** debe usarse para las pruebas (las versiones de JaCoCo y Mockito usadas no lo soportan oficialmente).
 - No usar `mvn clean`: la carpeta `SIGRID/target/` está versionada en git (388 archivos) y `clean` la borraría.
 - Una sola clase de prueba: `mvn test -Dtest=TarifasServicioTest`.
-- Ver las pruebas deshabilitadas fallar (los posibles defectos de la sección 5):
+- Ver las pruebas deshabilitadas fallar (hoy solo queda D-5, sección 5):
   `mvn test -Djunit.jupiter.conditions.deactivate="org.junit.*DisabledCondition"`.
 
 Dónde ver los resultados:
@@ -48,14 +48,14 @@ Dónde ver los resultados:
 | Medida | Valor |
 |---|---|
 | Clases de prueba | 28 |
-| Pruebas (métodos) | 652 |
-| Ejecuciones (casos, contando cada valor de las parametrizadas) | 711 |
-| Pasan | 705 |
-| Deshabilitadas (defectos D-1 a D-5) | 6 |
+| Pruebas (métodos) | 657 |
+| Ejecuciones (casos, contando cada valor de las parametrizadas) | 716 |
+| Pasan | 715 |
+| Deshabilitadas (defectos D-1 a D-5) | 1 |
 | Fallan | 0 |
 | Tiempo total | unos segundos (la mayor parte es el hash PBKDF2 de 120 000 iteraciones) |
 
-Las pruebas deshabilitadas (seis, que corresponden a cinco defectos) **no son pruebas rotas**: describen la regla esperada y el código actual no la cumple (sección 5.1). D-2 y D-3 están confirmadas por el responsable del proyecto; D-1 es un posible defecto, y D-4 y D-5 son discrepancias entre el plan de la cátedra y el código que el equipo todavía no resolvió. Se dejaron con `@Disabled` y una explicación, tal como pide la regla de calidad de no modificar una prueba para que "pase" cuando el código está mal. Cada una se ejecutó activada para comprobar que falla por el motivo que se declara.
+Queda **una prueba deshabilitada** (D-5, sección 5): describe la regla del plan (el rechazo exige un motivo) y el equipo decidió el 13/10/2026 dejar el motivo opcional por ahora. No es una prueba rota. Las otras cinco que estaban deshabilitadas (D-1 a D-4) se habilitaron cuando el responsable autorizó corregir el código, y pasan.
 
 ## 3. Pruebas por clase
 
@@ -87,7 +87,7 @@ Cada nombre describe un único comportamiento. En las pruebas parametrizadas, "N
 | `sinPropiedadGuardaEnSigridComprobantesDentroDeLaCarpetaDelUsuario` | Sin propiedad guarda en sigrid comprobantes dentro de la carpeta del usuario | Pasa |
 | `borrarNoLanzaExcepcionSiNoSePuedeEliminarElElemento` | Borrar no lanza excepción si no se puede eliminar el elemento | Pasa |
 
-### `util.PasswordUtilTest` (14 pruebas, 14 casos, 1 deshabilitada)
+### `util.PasswordUtilTest` (14 pruebas, 14 casos)
 
 | Prueba | Qué verifica | Resultado |
 |---|---|---|
@@ -104,7 +104,7 @@ Cada nombre describe un único comportamiento. En las pruebas parametrizadas, "N
 | `rechazaUnHashVacio` | Rechaza un hash vacío | Pasa |
 | `laContrasenaVaciaSeHasheaYSoloVerificaConVacia` | La contraseña vacía se hashea y solo verifica con vacía | Pasa |
 | `generarHashConContrasenaNulaLanzaNullPointerException` | Generar hash con contraseña nula lanza null pointer exception | Pasa |
-| `rechazaUnHashMalFormadoSinLanzarExcepcion` | Rechaza un hash mal formado sin lanzar excepción | Deshabilitada (posible defecto D-1) |
+| `rechazaUnHashMalFormadoSinLanzarExcepcion` | Rechaza un hash mal formado sin lanzar excepción | Pasa |
 
 ### `bean.AdminNavBeanTest` (2 pruebas, 2 casos)
 
@@ -329,7 +329,7 @@ Cada nombre describe un único comportamiento. En las pruebas parametrizadas, "N
 | `losTiposDeSocioSonLosNombresDeLasCategorias` | Los tipos de socio son los nombres de las categorias | Pasa |
 | `cp36_cadaCuotaMuestraDesdeCuandoRigeYElProximoCambio` | Cp 36 cada cuota muestra desde cuando rige y el proximo cambio | Pasa |
 
-### `servicio.MembresiasServicioTest` (24 pruebas, 24 casos, 2 deshabilitadas)
+### `servicio.MembresiasServicioTest` (24 pruebas, 24 casos)
 
 | Prueba | Qué verifica | Resultado |
 |---|---|---|
@@ -340,8 +340,8 @@ Cada nombre describe un único comportamiento. En las pruebas parametrizadas, "N
 | `alAceptarElPagoQuedaConfirmadoConQuienLoValido` | Al aceptar el pago queda confirmado con quién lo validó | Pasa |
 | `alAceptarSinCarnetNoFallaYElSocioQuedaActivo` | Al aceptar sin carnet no falla y el socio queda activo | Pasa |
 | `laRenovacionPorAdelantadoNuncaEmpiezaAntesDeQueTermineLaVigente` | La renovación por adelantado nunca empieza antes de que termine la vigente | Pasa |
-| `laRenovacionPorAdelantadoMantieneElMismoDiaDelMes` | La renovación por adelantado mantiene el mismo día del mes | Deshabilitada (posible defecto D-3) |
-| `siSePagaElMismoDiaDelVencimientoLaNuevaEmpiezaEseDia` | Si se paga el mismo día del vencimiento la nueva empieza ese día | Deshabilitada (posible defecto D-3) |
+| `laRenovacionPorAdelantadoMantieneElMismoDiaDelMes` | La renovación por adelantado mantiene el mismo día del mes | Pasa |
+| `siSePagaElMismoDiaDelVencimientoLaNuevaEmpiezaEseDia` | Si se paga el mismo día del vencimiento la nueva empieza ese día | Pasa |
 | `noAceptaUnaSolicitudQueYaEstabaResuelta` | No acepta una solicitud que ya estaba resuelta | Pasa |
 | `noAceptaSiElPagoYaFueValidado` | No acepta si el pago ya fue validado | Pasa |
 | `noAceptaUnaSolicitudSinComprobante` | No acepta una solicitud sin comprobante | Pasa |
@@ -388,7 +388,7 @@ Cada nombre describe un único comportamiento. En las pruebas parametrizadas, "N
 | `sinNombreElNombreDePilaEsLaParteLocalDelCorreo` | Sin nombre el nombre de pila es la parte local del correo | Pasa |
 | `unVigenteSinSuscripcionVigenteNoTieneFechaDeVencimiento` | Un vigente sin suscripcion vigente no tiene fecha de vencimiento | Pasa |
 
-### `servicio.PanelSocioServicioComprobanteTest` (19 pruebas, 19 casos, 1 deshabilitada)
+### `servicio.PanelSocioServicioComprobanteTest` (19 pruebas, 19 casos)
 
 | Prueba | Qué verifica | Resultado |
 |---|---|---|
@@ -405,7 +405,7 @@ Cada nombre describe un único comportamiento. En las pruebas parametrizadas, "N
 | `rechazaUnaTransferenciaDeUnMinutoMasDe7Dias` | Rechaza una transferencia de un minuto más de 7 días | Pasa |
 | `rechazaUnaTransferenciaConFechaDeUnaHoraEnElFuturo` | Rechaza una transferencia con fecha de una hora en el futuro | Pasa |
 | `rechazaUnaTransferenciaAdelantadaMasDe25Minutos` | Rechaza una transferencia adelantada más de 25 minutos | Pasa |
-| `aceptaUnaTransferenciaAdelantadaHasta25Minutos` | Acepta una transferencia adelantada hasta 25 minutos | Deshabilitada (posible defecto D-2) |
+| `aceptaUnaTransferenciaAdelantadaHasta25Minutos` | Acepta una transferencia adelantada hasta 25 minutos | Pasa |
 | `rechazaUnComprobanteCuyoHashYaSeUsoEnOtraOperacion` | Rechaza un comprobante cuyo hash ya se uso en otra operación | Pasa |
 | `rechazaUnaReservaQueYaTieneComprobante` | Rechaza una reserva que ya tiene comprobante | Pasa |
 | `rechazaUnaReservaDeOtroSocio` | Rechaza una reserva de otro socio | Pasa |
@@ -553,15 +553,20 @@ Cada nombre describe un único comportamiento. En las pruebas parametrizadas, "N
 |---|---|---|
 | `cargaUnaClaseDeProduccionYGuardaElMensajeTalCual` | Carga una clase de producción y guarda el mensaje tal cual | Pasa |
 
-### `servicio.RegistroServicioTest` (33 pruebas, 41 casos, 1 deshabilitada)
+### `servicio.RegistroServicioTest` (38 pruebas, 46 casos)
 
 | Prueba | Qué verifica | Resultado |
 |---|---|---|
+| `CP-02: rechaza una contraseña sin letras, sin números o sin símbolo[1] Clave2026` | Cp 02 rechaza una contraseña sin letras sin números o sin símbolo 1 clave 2026 | Pasa |
+| `CP-02: rechaza una contraseña sin letras, sin números o sin símbolo[2] Clave#abcd` | Cp 02 rechaza una contraseña sin letras sin números o sin símbolo 2 clave abcd | Pasa |
+| `CP-02: rechaza una contraseña sin letras, sin números o sin símbolo[3] 123#456` | Cp 02 rechaza una contraseña sin letras sin números o sin símbolo 3 123 456 | Pasa |
+| `CP-02: rechaza una contraseña sin letras, sin números o sin símbolo[4] Clave 2026` | Cp 02 rechaza una contraseña sin letras sin números o sin símbolo 4 clave 2026 | Pasa |
+| `CP-02: rechaza una contraseña sin letras, sin números o sin símbolo[5] 123456` | Cp 02 rechaza una contraseña sin letras sin números o sin símbolo 5 123456 | Pasa |
 | `rechazaUnCorreoConFormatoInvalido` | Rechaza un correo con formato inválido | Pasa (5 casos) |
 | `rechazaUnCorreoNulo` | Rechaza un correo nulo | Pasa |
 | `rechazaUnaContrasenaDeCincoCaracteres` | Rechaza una contraseña de cinco caracteres | Pasa |
-| `aceptaUnaContrasenaDeSeisCaracteres` | Acepta una contraseña de seis caracteres | Pasa |
-| `rechazaUnaContrasenaSinLetrasNumerosOSimbolo` | Rechaza una contraseña sin letras numeros o simbolo | Deshabilitada (posible defecto D-4) |
+| `aceptaUnaContrasenaDeSeisCaracteresConLetrasNumerosYSimbolo` | Acepta una contraseña de seis caracteres con letras numeros y simbolo | Pasa |
+| `aceptaUnaContrasenaConLetrasConTilde` | Acepta una contraseña con letras con tilde | Pasa |
 | `rechazaCuandoLasContrasenasNoCoinciden` | Rechaza cuando las contraseñas no coinciden | Pasa |
 | `rechazaUnCorreoQueYaTieneUnaCuentaActiva` | Rechaza un correo que ya tiene una cuenta activa | Pasa |
 | `permiteRegistrarseConElCorreoDeUnSocioDadoDeBaja` | Permite registrarse con el correo de un socio dado de baja | Pasa |
@@ -862,8 +867,8 @@ La cobertura la mide JaCoCo sobre el código de producción mientras corren las 
 
 | Paquete | Líneas | Ramas | Métodos |
 |---|---|---|---|
-| **`servicio`** | 88.8 % (2361/2660) | 80.7 % (1751/2170) | 81.1 % |
-| **`util`** | 94.9 % (37/39) | 100.0 % (44/44) | 100.0 % |
+| **`servicio`** | 88.8 % (2363/2662) | 80.7 % (1757/2176) | 81.1 % |
+| **`util`** | 95.1 % (39/41) | 100.0 % (44/44) | 100.0 % |
 | `repositorio` | 70.0 % (420/600) | 9.4 % (19/202) | 74.5 % |
 | `dto` | 68.8 % (734/1067) | 50.0 % (34/68) | 59.2 % |
 | `dao` | 1.0 % (4/409) | 0.0 % (0/54) | 0.9 % |
@@ -871,7 +876,7 @@ La cobertura la mide JaCoCo sobre el código de producción mientras corren las 
 | `seguridad` | 0.0 % (0/40) | 0.0 % (0/18) | 0.0 % |
 | `resources` | 0.0 % (0/4) | n/a (0/0) | 0.0 % |
 | `(raíz)` | 0.0 % (0/1) | n/a (0/0) | 0.0 % |
-| **Total** | 58.2 % (3578/6153) | 60.0 % (1849/3083) | 45.9 % |
+| **Total** | 58.2 % (3582/6157) | 60.1 % (1855/3089) | 45.9 % |
 
 Cómo leer esta tabla: `servicio` y `util` son el alcance de este conjunto de pruebas. El total incluye paquetes que no se probaron a propósito (`bean`, con las pantallas JSF; `dao`, con las consultas a la base; y `seguridad`), que figuran en 0 %, por lo que el total solo no es un indicador de calidad. El porcentaje de `repositorio` y `dto` es incidental: son clases de datos que las pruebas construyen o recorren pero no verifican por sí mismas.
 
@@ -880,10 +885,10 @@ Cómo leer esta tabla: `servicio` y `util` son el alcance de este conjunto de pr
 | Clase | Líneas | Ramas |
 |---|---|---|
 | `util.ComprobanteArchivos` | 100.0 % (20/20) | 100.0 % (38/38) |
-| `util.PasswordUtil` | 89.5 % (17/19) | 100.0 % (6/6) |
+| `util.PasswordUtil` | 90.5 % (19/21) | 100.0 % (6/6) |
 | `servicio.MembresiasServicio` | 100.0 % (151/151) | 93.3 % (97/104) |
 | `servicio.ReglaReservaException` | 100.0 % (2/2) | n/a (0/0) |
-| `servicio.RegistroServicio` | 100.0 % (84/84) | 100.0 % (70/70) |
+| `servicio.RegistroServicio` | 100.0 % (86/86) | 100.0 % (76/76) |
 | `servicio.UsuarioServicio` | 100.0 % (9/9) | 100.0 % (10/10) |
 | `servicio.ValoracionesServicio` | 100.0 % (58/58) | 100.0 % (32/32) |
 | `servicio.ReportesServicio` | 99.8 % (541/542) | 84.2 % (406/482) |
@@ -909,11 +914,11 @@ El porcentaje de la capa `servicio` completa mezcla las reglas con métodos que 
 | `MembresiasServicio` | 100.0 % (50/50) | 100.0 % (30/30) |
 | `TarifasServicio` | 100.0 % (85/85) | 100.0 % (90/90) |
 | `ReservaServicio` | 100.0 % (20/20) | 100.0 % (22/22) |
-| `RegistroServicio` | 100.0 % (83/83) | 100.0 % (70/70) |
+| `RegistroServicio` | 100.0 % (85/85) | 100.0 % (76/76) |
 | `UsuarioServicio` | 100.0 % (8/8) | 100.0 % (10/10) |
-| `PasswordUtil` | 89.5 % (17/19) | 100.0 % (6/6) |
+| `PasswordUtil` | 90.5 % (19/21) | 100.0 % (6/6) |
 | `ComprobanteArchivos` | 100.0 % (20/20) | 100.0 % (38/38) |
-| **Núcleo de reglas** | **99.2 % (514/518)** | **99.6 % (460/462)** |
+| **Núcleo de reglas** | **99.2 % (518/522)** | **99.6 % (466/468)** |
 
 Métodos incluidos: `PanelSocioServicio`: reservar, subirComprobante, valorar, liberar, liberarVencidas, propiaPendiente, sinValorar, debeValorarse, primerDiaReservable, sha256; `CambiosReservaServicio`: fueraDePlazo, solicitar, aprobar, rechazar, cancelarPorElPredio, validarDestino, cancelar, mover, registrar, recortar; `MembresiasServicio`: aceptar, denegar, cancelar, vencerVencidas, congelarSiCorresponde, estaPorValidar, validarPago; `TarifasServicio`: ordenValido, cambiarAlquiler, cambiarMembresia, aplicar, enVigencia, parsear; `ReservaServicio`: confirmar, rechazar, resolver; `RegistroServicio`: validarPasoUno, registrar, resolverCategoria, bajaDe, liberar, archivado; `UsuarioServicio`: autenticar; `PasswordUtil`: generarHash, verificar, hashear; `ComprobanteArchivos`: guardar, borrar, ruta, extension, tipoMime, carpeta.
 
@@ -965,54 +970,54 @@ Alcance de esta comprobación: son 20 roturas elegidas a mano sobre constantes y
 
 La tabla se midió sobre la rama `calidad/pruebas-junit`, antes de CC-01, CC-02, CC-03, CC-04, CC-05 y CC-06 (sección 10). Las pruebas que cita siguen existiendo; no se volvió a medir.
 
-## 5. Discrepancias y posibles defectos
+## 5. Discrepancias y defectos
 
-Los identificadores `D-n` son defectos con una prueba deshabilitada: **D-2 y D-3 están confirmados** por el responsable del proyecto, **D-1 es un posible defecto** a confirmar y **D-4 y D-5 son discrepancias entre el plan de garantía y el código** que el equipo tiene que resolver (corregir el código o corregir el plan). Los `O-n` son observaciones que no tienen prueba deshabilitada. En ningún caso se modificó el código de producción: corregir un defecto cambia comportamiento y requiere una decisión del equipo.
+Los identificadores `D-n` fueron defectos o discrepancias con una prueba deshabilitada. Cada una se ejecutó activada para comprobar que fallaba por el motivo declarado, y el 13/10/2026 el responsable del proyecto decidió: **corregir el código en D-1, D-2, D-3 y D-4, y dejar D-5 como está por ahora**. Las correcciones están en la rama `correccion/defectos-d1-a-d4` (sale de la de CC-02). Los `O-n` son observaciones que no tienen prueba deshabilitada.
 
-### 5.1 Defectos (prueba deshabilitada)
+### 5.1 Estado de los defectos
 
-**D-1. `PasswordUtil.verificar` lanza excepción con un hash mal formado** (posible defecto, pendiente de confirmar)
+| Código | Caso | Estado | Qué se hizo |
+|---|---|---|---|
+| D-1 | CP-07 | Corregido | `PasswordUtil.verificar` devuelve `false` con un hash de tres partes mal formado (antes lanzaba `NumberFormatException` o `IllegalArgumentException` y rompía el login de esa cuenta) |
+| D-2 | CP-15 | Corregido | `PanelSocioServicio.subirComprobante` tolera 25 minutos de adelanto (antes 5) |
+| D-3 | CP-32 | Corregido | `MembresiasServicio.aceptar`: la renovación por adelantado empieza el mismo día en que vence la vigente (antes, un día después) |
+| D-4 | CP-02 | Corregido | `RegistroServicio.validarPasoUno`: la contraseña exige letras, números y al menos un símbolo (un espacio no cuenta), además de los 6 caracteres |
+| D-5 | CP-20 | Diferido | El motivo del rechazo sigue siendo opcional; la prueba queda deshabilitada |
 
-- Dónde: `util/PasswordUtil.verificar` (`SIGRID/src/main/java/com/sigrid/sigrid/util/PasswordUtil.java`).
-- Comportamiento observado: con `null`, con `""` o con un hash de menos de tres partes devuelve `false`. Con un hash de **tres partes mal formado** lanza excepción: `verificar("abc", "abc:xyz:123")` produce `NumberFormatException: For input string: "abc"` y `verificar("abc", "120000:!!!:!!!")` produce `IllegalArgumentException: Illegal base64 character`.
-- Por qué importa: `UsuarioServicio.autenticar` llama a este método. Un dato corrupto en la columna `usuario.password_hash` convertiría el intento de login de esa cuenta en un error del servidor en lugar de un rechazo.
-- Regla esperada: un hash que no se puede interpretar es una contraseña incorrecta (`false`).
-- Prueba: `PasswordUtilTest.rechazaUnHashMalFormadoSinLanzarExcepcion`. Ejecutada activada: falla con `NumberFormatException`.
-- Severidad estimada: baja (requiere un dato ya corrupto), de corrección sencilla.
+**D-1. `PasswordUtil.verificar` lanzaba excepción con un hash mal formado** (corregido)
 
-**D-2. Tolerancia de la fecha futura del comprobante: el código usa 5 minutos y la regla es 25** (defecto confirmado)
+- Dónde: `util/PasswordUtil.verificar`.
+- Antes: con `null`, con `""` o con un hash de menos de tres partes devolvía `false`, pero con un hash de **tres partes mal formado** lanzaba excepción (`verificar("abc", "abc:xyz:123")`: `NumberFormatException`; `verificar("abc", "120000:!!!:!!!")`: `IllegalArgumentException`). `UsuarioServicio.autenticar` llama a este método, así que un dato corrupto en `usuario.password_hash` convertía el intento de login en un error del servidor.
+- Ahora: un hash que no se puede interpretar es una contraseña incorrecta (`false`).
+- Prueba: `PasswordUtilTest.rechazaUnHashMalFormadoSinLanzarExcepcion` (habilitada).
 
-- Dónde: `servicio/PanelSocioServicio.subirComprobante` (línea `if (operacion.isAfter(ahora.plusMinutes(5)))`).
-- Comportamiento observado: una transferencia con fecha 25 minutos adelantada se rechaza con "La fecha de la transferencia no puede ser futura." Solo se acepta hasta 5 minutos de adelanto.
-- Regla confirmada por el responsable del proyecto: se tolera hasta 25 minutos (diferencia de reloj entre el banco y el servidor).
-- Prueba: `PanelSocioServicioComprobanteTest.aceptaUnaTransferenciaAdelantadaHasta25Minutos`. Ejecutada activada: falla con `ReglaReservaException: La fecha de la transferencia no puede ser futura.`
-- Pruebas complementarias que pasan: `rechazaUnaTransferenciaAdelantadaMasDe25Minutos` (26 minutos se rechaza) y `aceptaUnaTransferenciaHechaJustoAhora`.
-- Corrección sugerida (no aplicada): cambiar `plusMinutes(5)` por `plusMinutes(25)` y quitar el `@Disabled` de la prueba.
+**D-2. Tolerancia de la fecha futura del comprobante** (corregido)
 
-**D-3. La renovación por adelantado empieza el día siguiente al vencimiento, no el mismo día** (defecto confirmado)
+- Dónde: `servicio/PanelSocioServicio.subirComprobante`.
+- Regla confirmada por el responsable: se tolera hasta 25 minutos (diferencia de reloj entre el banco y el servidor). El código toleraba 5.
+- Pruebas: `aceptaUnaTransferenciaAdelantadaHasta25Minutos` (habilitada) y las que ya pasaban: `rechazaUnaTransferenciaAdelantadaMasDe25Minutos` (26 minutos se rechaza) y `aceptaUnaTransferenciaHechaJustoAhora`.
 
-- Dónde: `servicio/MembresiasServicio.aceptar` (línea `vigentes.get(0).getFechaVencimiento().plusDays(1)`).
-- Comportamiento observado: si el socio ya tiene una membresía vigente que vence el 23/10 y se acepta una renovación, la nueva empieza el **24/10** y vence el **24/11**. Cada renovación corre el ciclo un día más (23/10, 24/11, 25/12...).
-- Regla confirmada por el responsable del proyecto: la membresía vence el mismo día del mes siguiente (empezó el 23/09, vence el 23/10); si se renueva antes de vencer, la nueva empieza el mismo día en que vence la vigente (23/10) y vence el 23/11; si se paga después del vencimiento, la fecha de inicio pasa a ser el día del pago.
-- Pruebas (deshabilitadas): `MembresiasServicioTest.laRenovacionPorAdelantadoMantieneElMismoDiaDelMes` y `siSePagaElMismoDiaDelVencimientoLaNuevaEmpiezaEseDia`. Ejecutadas activadas: fallan con `expected: <2026-10-23> but was: <2026-10-24>`.
-- Parte que sí cumple la regla y está probada: sin vigente, la membresía empieza el día de la validación (incluso si se paga después del vencimiento) y vence un mes después (`laMembresiaEmpiezaElDiaDeLaValidacionYVenceUnMesDespues`, `siSePagaDespuesDelVencimientoLaMembresiaEmpiezaElDiaDelPago`), y una renovación nunca empieza antes de que termine la vigente.
-- Corrección sugerida (no aplicada): quitar el `.plusDays(1)` y los `@Disabled` de las dos pruebas.
+**D-3. La renovación por adelantado empezaba el día siguiente al vencimiento** (corregido)
 
-**D-4. La contraseña no exige letras, números y un símbolo** (discrepancia entre el plan y el código, sin decidir)
+- Dónde: `servicio/MembresiasServicio.aceptar`.
+- Regla confirmada por el responsable: la membresía vence el mismo día del mes siguiente (empezó el 23/09, vence el 23/10); si se renueva antes de vencer, la nueva empieza el mismo día en que vence la vigente (23/10) y vence el 23/11; si se paga después del vencimiento, la fecha de inicio pasa a ser el día del pago.
+- Antes la nueva empezaba el 24/10 y cada renovación corría el ciclo un día más.
+- Pruebas: `laRenovacionPorAdelantadoMantieneElMismoDiaDelMes` y `siSePagaElMismoDiaDelVencimientoLaNuevaEmpiezaEseDia` (habilitadas), más las que ya pasaban: sin vigente la membresía empieza el día de la validación (incluso si se paga después del vencimiento) y una renovación nunca empieza antes de que termine la vigente.
+- Efecto en los datos: las renovaciones ya aceptadas no se tocan; la corrección rige para las próximas.
 
-- Dónde: `servicio/RegistroServicio.validarPasoUno` (solo comprueba `password.length() < 6`). No se encontró ninguna validación equivalente en `resources/scripts/register.js`.
-- Qué dice el plan: RNF-03 y CP-02 piden que el registro rechace contraseñas sin letras, números o símbolo especial.
-- Comportamiento observado: `Clave2026` (sin símbolo), `Clave#abcd` (sin número) y `123#456` (sin letras) se aceptan.
-- Prueba (deshabilitada): `RegistroServicioTest.rechazaUnaContrasenaSinLetrasNumerosOSimbolo` (3 valores). Ejecutada activada: falla en los tres con `la contraseña "..." debería rechazarse ==> expected: not <null>`.
-- Qué hay que decidir: si se agrega la regla al código (y se actualiza `aceptaUnaContrasenaDeSeisCaracteres`, que hoy acepta `123456`) o si se corrige el plan para que diga "al menos 6 caracteres".
+**D-4. La contraseña no exigía letras, números y un símbolo** (corregido)
 
-**D-5. El rechazo de una solicitud no exige motivo** (discrepancia entre el plan y el código, sin decidir)
+- Dónde: `servicio/RegistroServicio.validarPasoUno`.
+- Regla del plan (RNF-03 y CP-02): contraseñas con letras, números y al menos un símbolo especial. Ahora el registro exige al menos una letra, un número y un símbolo (algo que no sea letra, número ni espacio), además de los 6 caracteres. El mensaje dice "La contraseña tiene que tener letras, números y al menos un símbolo (por ejemplo ! # $ %)."
+- Pruebas: `rechazaUnaContrasenaSinLetrasNumerosOSimbolo` (5 valores: `Clave2026`, `Clave#abcd`, `123#456`, `Clave 2026` y `123456`), `aceptaUnaContrasenaDeSeisCaracteresConLetrasNumerosYSimbolo` y `aceptaUnaContrasenaConLetrasConTilde`. Cambió a propósito `aceptaUnaContrasenaDeSeisCaracteres`, que fijaba el comportamiento anterior (aceptaba `123456`).
+- Efecto: solo valida registros nuevos; las cuentas existentes siguen entrando con su contraseña.
+
+**D-5. El rechazo de una solicitud no exige motivo** (diferido por decisión del equipo)
 
 - Dónde: `servicio/ReservaServicio.rechazar` (el motivo es opcional) y la pantalla del administrador ("Motivo (opcional)").
 - Qué dice el plan: RF-05 y CP-20 piden que rechazar sin motivo no se permita.
-- Comportamiento observado: `rechazar(idReserva, idAdmin, "   ")` devuelve `true` y deja la reserva `RECHAZADA`.
-- Prueba (deshabilitada): `ReservaServicioTest.rechazarSinMotivoNoSePermiteYLaSolicitudSigueEsperando`. Ejecutada activada: falla con `expected: <false> but was: <true>`.
-- Qué hay que decidir: si se vuelve obligatorio el motivo (y se actualizan `rechazarLiberaElTurnoYDejaElPagoRechazado` y `rechazarConMotivoEnBlancoNoGuardaMotivo`, que hoy fijan lo contrario) o si se corrige el plan.
+- Decisión (13/10/2026): por ahora el motivo sigue siendo opcional; se exigirá más adelante. CP-20 figura como "Falló" en el reporte de V&V hasta que se implemente o se corrija el plan.
+- Prueba (deshabilitada): `ReservaServicioTest.rechazarSinMotivoNoSePermiteYLaSolicitudSigueEsperando`. Al implementarlo hay que quitarle el `@Disabled` y actualizar `rechazarLiberaElTurnoYDejaElPagoRechazado` y `rechazarConMotivoEnBlancoNoGuardaMotivo`, que hoy fijan lo contrario.
 
 ### 5.2 Reglas confirmadas que el código ya cumple
 
@@ -1051,7 +1056,7 @@ Los identificadores `D-n` son defectos con una prueba deshabilitada: **D-2 y D-3
 2. **No hay pruebas de interfaz ni de integración.** Nada verifica las páginas JSF, los filtros de seguridad, el despliegue ni la tarea programada.
 3. **La cobertura global (56 %) queda por debajo de la de las reglas por alcance, no por descuido.** El núcleo de reglas está en el 99 % de líneas y de ramas; la capa de servicio completa, en el 88 %. Una cobertura alta no garantiza que cada verificación sea fuerte: por eso se hizo la mutación manual de 4.5, que cubre 20 reglas y no reemplaza a una herramienta automática.
 4. **Las pruebas fijan los mensajes de error actuales.** Cambiar el texto de un mensaje rompe la prueba correspondiente, aunque la regla siga igual.
-5. **Seis pruebas están deshabilitadas** y expresan la regla esperada, no el comportamiento actual (D-1, D-2, dos de D-3, D-4 y D-5). D-2 y D-3 están confirmadas por el responsable; D-1, D-4 y D-5 quedan por decidir. Si se corrige el código, hay que quitarles el `@Disabled`.
+5. **Una prueba está deshabilitada** (D-5): expresa la regla del plan, no el comportamiento actual, y el equipo decidió diferirla. Cuando se implemente hay que quitarle el `@Disabled`.
 6. **Datos de prueba ficticios y fechas fijas** (12/10/2026 10:00 como "ahora"), salvo los casos del punto O-4.
 7. **Solo se ejecutó en JDK 21.0.10 y Windows.** No se probó en el JDK 11 de destino de compilación ni en otros sistemas.
 8. **Dependen del contenido de `src/main`:** si se renombra un método o se cambia una firma, las pruebas dejan de compilar (a propósito: avisan del cambio).

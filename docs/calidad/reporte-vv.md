@@ -10,7 +10,7 @@ Generado automáticamente por `docs/calidad/generar_reporte_vv.py` con la planti
 |---|---|
 | Reporte N.º | V&V-01 |
 | Fecha y responsable de la ejecución | 13/10/2026 — [completar: ingeniero de pruebas] |
-| Versión del código | rama `cambio/cc-02-credito-y-mantenimiento`, commit `171d96a` |
+| Versión del código | rama `correccion/defectos-d1-a-d4`, commit `dfc6502` |
 | Entorno de pruebas | Windows 11, Java 21, Maven; JUnit 5 + Mockito; sin MySQL ni GlassFish |
 | Alcance de la ejecución | Parcial: casos de nivel U (unitarios). Los de nivel I, S y A no se ejecutaron |
 | Datos de prueba utilizados | Ficticios, armados en `DatosDePrueba` (reloj fijo: lunes 12/10/2026 10:00) |
@@ -23,31 +23,31 @@ Generado automáticamente por `docs/calidad/generar_reporte_vv.py` con la planti
 | Indicador | Meta | Resultado | ¿Cumple? |
 |---|---|---|---|
 | Casos ejecutados | 53 de 53 | 35 de 53 | No |
-| Casos aprobados, fallidos y no ejecutados | Solo se informa | 33 aprobados, 2 fallidos, 18 no ejecutados | — |
+| Casos aprobados, fallidos y no ejecutados | Solo se informa | 34 aprobados, 1 fallidos, 18 no ejecutados | — |
 | Casos críticos aprobados | 100 % | 25 de 29 (86 %) | No |
-| Cobertura de líneas de los servicios (JaCoCo) | 70 % o más | 88.8 % (2361 de 2660 líneas) | Sí |
-| Cobertura de ramas de los servicios (JaCoCo) | Solo se informa | 80.7 % (1751 de 2170 ramas) | — |
-| Defectos críticos y altos abiertos | 0 | 2 (D-3, D-4) | No |
-| Defectos abiertos y cerrados, por severidad | Solo se informa | Abiertos: 2 alta, 2 baja, 1 media. Cerrados: 0 | — |
-| Tiempo medio de corrección de un defecto (días) | Solo se informa | Sin datos: todavía no se corrigió ninguno | — |
+| Cobertura de líneas de los servicios (JaCoCo) | 70 % o más | 88.8 % (2363 de 2662 líneas) | Sí |
+| Cobertura de ramas de los servicios (JaCoCo) | Solo se informa | 80.7 % (1757 de 2176 ramas) | — |
+| Defectos críticos y altos abiertos | 0 | 0 (ninguno) | Sí |
+| Defectos abiertos y cerrados, por severidad | Solo se informa | Abiertos: 1 media. Cerrados: 2 alta, 2 baja | — |
+| Tiempo medio de corrección de un defecto (días) | Solo se informa | 1 día (D-1 a D-4: informados el 12/10/2026 y corregidos el 13/10/2026) | — |
 | Requerimientos sin caso de prueba | 0 | 0 | Sí |
 | Contraste en las pantallas clave (CP-47 y CP-48) | 4,5:1 texto normal; 3:1 texto grande y componentes | No medido | No |
 | Exportación a PDF con 500.000 reservas (CP-45) | 6 de 6 | No ejecutado | No |
 | Cambios CC-01 a CC-06 verificados | 6 de 6 | 2 de 6 (CC-01, CC-02); implementados con revisión manual pendiente: CC-03, CC-04, CC-05, CC-06 | No |
 
-Pruebas automáticas ejecutadas: **711** (705 pasan, 0 fallan, 6 deshabilitadas). 573 de ellas no corresponden a ningún caso del plan: son pruebas de regresión adicionales sobre las demás reglas del sistema.
+Pruebas automáticas ejecutadas: **716** (715 pasan, 0 fallan, 1 deshabilitadas). 574 de ellas no corresponden a ningún caso del plan: son pruebas de regresión adicionales sobre las demás reglas del sistema.
 
-### Defectos abiertos
+### Defectos
 
 La severidad es una propuesta; la asigna el líder de SQA (Tabla 31). Detalle y evidencia en [resultados-pruebas.md](resultados-pruebas.md).
 
 | Código | Caso | Severidad propuesta | Qué pasa | Estado |
 |---|---|---|---|---|
-| D-1 | CP-07 | Baja | PasswordUtil.verificar lanza excepción con un hash mal formado en lugar de devolver false | posible defecto, sin confirmar |
-| D-2 | CP-15 | Baja | El comprobante tolera 5 minutos de adelanto; la regla confirmada es 25 | confirmado |
-| D-3 | CP-32 | Alta | La renovación por adelantado empieza el día siguiente al vencimiento, no el mismo día | confirmado |
-| D-4 | CP-02 | Alta | La contraseña solo exige 6 caracteres; el plan pide letras, números y un símbolo | discrepancia plan/código, sin decidir |
-| D-5 | CP-20 | Media | El rechazo de una solicitud admite no dar motivo; el plan lo exige | discrepancia plan/código, sin decidir |
+| D-1 | CP-07 | Baja | PasswordUtil.verificar lanzaba excepción con un hash mal formado en lugar de devolver false | corregido el 13/10/2026 |
+| D-2 | CP-15 | Baja | El comprobante toleraba 5 minutos de adelanto; la regla confirmada es 25 | corregido el 13/10/2026 |
+| D-3 | CP-32 | Alta | La renovación por adelantado empezaba el día siguiente al vencimiento, no el mismo día | corregido el 13/10/2026 |
+| D-4 | CP-02 | Alta | La contraseña solo exigía 6 caracteres; el plan pide letras, números y un símbolo | corregido el 13/10/2026 |
+| D-5 | CP-20 | Media | El rechazo de una solicitud admite no dar motivo; el plan lo exige | diferido por decisión del equipo (13/10/2026): el motivo sigue opcional por ahora |
 
 ## F.3 Resultado por caso de prueba
 
@@ -56,12 +56,12 @@ La severidad es una propuesta; la asigna el líder de SQA (Tabla 31). Detalle y 
 | Caso | Descripción | Nivel | Crítico | Resultado | Incidencia y observaciones |
 |---|---|---|---|---|---|
 | CP-01 | Registrar un socio interno con datos válidos y legajo | U | No | Aprobado | — |
-| CP-02 | Registrar con contraseña sin símbolo especial | U | No | Falló | Defecto D-4: prueba deshabilitada con @Disabled. |
+| CP-02 | Registrar con contraseña sin símbolo especial | U | No | Aprobado | D-4 corregido (13/10/2026): la contraseña exige letras, números y un símbolo; un espacio no cuenta. |
 | CP-03 | Registrar un socio interno sin legajo | U | No | Aprobado | — |
 | CP-04 | Registrar con un correo o un DNI ya existente | I | No | No ejecutado | Falta la prueba de integración con una base MySQL de pruebas (no existe en este conjunto). Evidencia unitaria: 2 prueba(s) del servicio aprobadas (no reemplazan ese nivel). |
 | CP-05 | Iniciar sesión como socio y como administrador; ruta /admin | S | No | No ejecutado | Falta la prueba de sistema manual (RTF). Evidencia unitaria: 1 prueba(s) del servicio aprobadas (no reemplazan ese nivel). |
 | CP-06 | Iniciar sesión con cuenta dada de baja y con membresía vencida | U | No | Aprobado | — |
-| CP-07 | Guardar la misma contraseña para dos usuarios (hashes distintos) | U | No | Aprobado | Defecto D-1 abierto sobre un detalle de este caso (prueba deshabilitada). |
+| CP-07 | Guardar la misma contraseña para dos usuarios (hashes distintos) | U | No | Aprobado | D-1 corregido (13/10/2026): un hash mal formado ya no rompe el login, cuenta como contraseña incorrecta. |
 | CP-08 | Un socio ACTIVO reserva un turno libre dentro de los 30 días | U | No | Aprobado | — |
 | CP-09 | Un socio NO_ACTIVO intenta reservar | U | No | Aprobado | — |
 | CP-10 | Reservar un turno a más de 30 días | U | Sí | Aprobado | — |
@@ -69,12 +69,12 @@ La severidad es una propuesta; la asigna el líder de SQA (Tabla 31). Detalle y 
 | CP-12 | Dos socios reservan a la vez el mismo turno y día | I | Sí | No ejecutado | Falta la prueba de integración con una base MySQL de pruebas (no existe en este conjunto). Evidencia unitaria: 2 prueba(s) del servicio aprobadas (no reemplazan ese nivel). |
 | CP-13 | Subir un comprobante PDF, JPG o PNG de hasta 5 MB con fecha válida | U | Sí | Aprobado | — |
 | CP-14 | Subir un archivo de más de 5 MB o con extensión falsa | U | Sí | Aprobado | — |
-| CP-15 | Subir un comprobante con fecha futura o de más de 7 días | U | Sí | Aprobado | Defecto D-2 abierto sobre un detalle de este caso (prueba deshabilitada). |
+| CP-15 | Subir un comprobante con fecha futura o de más de 7 días | U | Sí | Aprobado | D-2 corregido (13/10/2026): la transferencia se tolera hasta 25 minutos en el futuro. |
 | CP-16 | Subir dos veces el mismo archivo | I | Sí | No ejecutado | Falta la prueba de integración con una base MySQL de pruebas (no existe en este conjunto). Evidencia unitaria: 1 prueba(s) del servicio aprobadas (no reemplazan ese nivel). |
 | CP-17 | Pasan 60 minutos sin comprobante y corre la tarea programada | U | Sí | Aprobado | — |
 | CP-18 | El socio libera un turno todavía no pagado | U | Sí | Aprobado | — |
 | CP-19 | El administrador confirma una reserva con comprobante | U | No | Aprobado | — |
-| CP-20 | El administrador rechaza con motivo y luego sin motivo | U | No | Falló | Defecto D-5: prueba deshabilitada con @Disabled. Con motivo se rechaza y queda guardado (aprobado); sin motivo el código lo permite (ver D-5). |
+| CP-20 | El administrador rechaza con motivo y luego sin motivo | U | No | Falló | Defecto D-5: prueba deshabilitada con @Disabled. Con motivo se rechaza y queda guardado (aprobado); sin motivo el código lo permite: D-5, diferido por decisión del equipo (13/10/2026), se exigirá más adelante o se corregirá el plan. |
 | CP-21 | Un socio envía el identificador de una reserva ajena | U | No | Aprobado | — |
 | CP-22 | Cancelar una reserva CONFIRMADA con más de 48 horas (automática, con crédito) | U | Sí | Aprobado | — |
 | CP-23 | Cancelar a 47 horas y 59 minutos del turno | U | Sí | Aprobado | — |
@@ -86,7 +86,7 @@ La severidad es una propuesta; la asigna el líder de SQA (Tabla 31). Detalle y 
 | CP-29 | Mantenimiento de más de 30 días con un crédito vigente | U | Sí | Aprobado | — |
 | CP-30 | Se reactiva la instalación que estuvo en mantenimiento | U | Sí | Aprobado | Decisión del equipo (13/10/2026): el crédito conserva los días que le quedaban al empezar el mantenimiento y los retoma desde la reactivación real; no vuelve a tener 30 completos. Hay que actualizar el texto del caso en el plan ([A CONFIRMAR] resuelto). |
 | CP-31 | El predio cancela una reserva por mantenimiento o clima | U | Sí | Aprobado | — |
-| CP-32 | El administrador valida el comprobante de la cuota | U | Sí | Aprobado | Defecto D-3 abierto sobre un detalle de este caso (prueba deshabilitada). |
+| CP-32 | El administrador valida el comprobante de la cuota | U | Sí | Aprobado | D-3 corregido (13/10/2026): la renovación por adelantado empieza el día en que vence la vigente. |
 | CP-33 | Corre la tarea horaria con una membresía vencida | U | Sí | Aprobado | La prueba cubre el servicio que usa la tarea horaria (MembresiasServicio.vencerVencidas); la clase MembresiaJob (el temporizador) no se prueba en unitarias. |
 | CP-34 | Cargar una tarifa nueva con vigencia futura | U | Sí | Aprobado | — |
 | CP-35 | Cargar tarifas fuera de orden o repetidas | U | Sí | Aprobado | — |
@@ -124,8 +124,8 @@ Un requerimiento figura como *Aprobado* si todos sus casos lo están.
 | RF-07 Grado de satisfacción | CP-37, CP-38, CP-39, CP-40 | Aprobado |
 | RNF-01 Diseño adaptable | CP-50 | Parcial: 0 de 1 aprobados |
 | RNF-02 Estilo gráfico actual | CP-53 | Parcial: 0 de 1 aprobados |
-| RNF-03 Contraseñas | CP-02, CP-07 | Falló (CP-02) |
-| RNF-04 Mensajes de error | CP-02 | Falló (CP-02) |
+| RNF-03 Contraseñas | CP-02, CP-07 | Aprobado |
+| RNF-04 Mensajes de error | CP-02 | Aprobado |
 | RNF-05 Seguridad y acceso | CP-05, CP-14, CP-21 | Parcial: 2 de 3 aprobados |
 | RNF-06 Integridad y concurrencia | CP-12 | Parcial: 0 de 1 aprobados |
 | RNF-07 Rendimiento de listados y PDF | CP-45 | Parcial: 0 de 1 aprobados |
@@ -143,7 +143,11 @@ Un requerimiento figura como *Aprobado* si todos sus casos lo están.
 |---|---|---|---|
 | CP-01 | `RegistroServicioTest` | el socio nuevo queda NO_ACTIVO | pasa |
 | CP-01 | `RegistroServicioTest` | registra usuario, socio y carnet (inactivo) de un alumno con legajo | pasa |
-| CP-02 | `RegistroServicioTest` | rechaza una contraseña sin letras, sin números o sin símbolo | deshabilitada |
+| CP-02 | `RegistroServicioTest` | rechaza una contraseña sin letras, sin números o sin símbolo[1] Clave2026 | pasa |
+| CP-02 | `RegistroServicioTest` | rechaza una contraseña sin letras, sin números o sin símbolo[2] Clave#abcd | pasa |
+| CP-02 | `RegistroServicioTest` | rechaza una contraseña sin letras, sin números o sin símbolo[3] 123#456 | pasa |
+| CP-02 | `RegistroServicioTest` | rechaza una contraseña sin letras, sin números o sin símbolo[4] Clave 2026 | pasa |
+| CP-02 | `RegistroServicioTest` | rechaza una contraseña sin letras, sin números o sin símbolo[5] 123456 | pasa |
 | CP-03 | `RegistroServicioTest` | rechaza un socio interno (alumno) sin legajo | pasa |
 | CP-04 | `RegistroServicioTest` | rechaza un DNI repetido y no crea nada (regla del servicio) | pasa |
 | CP-04 | `RegistroServicioTest` | rechaza un correo que ya tiene cuenta (regla del servicio) | pasa |
@@ -152,7 +156,7 @@ Un requerimiento figura como *Aprobado* si todos sus casos lo están.
 | CP-06 | `UsuarioServicioTest` | una cuenta habilitada ingresa sin que el login mire la membresía | pasa |
 | CP-07 | `PasswordUtilTest` | el valor guardado es PBKDF2 con tres partes, no texto plano | pasa |
 | CP-07 | `PasswordUtilTest` | la misma contraseña genera hashes distintos (sal propia) | pasa |
-| CP-07 | `PasswordUtilTest` | un hash mal formado no debería romper la verificación (D-1) | deshabilitada |
+| CP-07 | `PasswordUtilTest` | un hash mal formado no debería romper la verificación (D-1) | pasa |
 | CP-08 | `PanelSocioServicioReservaTest` | un socio ACTIVO reserva un turno libre: PENDIENTE_PAGO con la tarifa de su categoría | pasa |
 | CP-09 | `PanelSocioServicioReservaTest` | un socio NO_ACTIVO no puede reservar | pasa |
 | CP-09 | `PanelSocioServicioReservaTest` | un socio dado de baja no puede reservar | pasa |
@@ -169,7 +173,7 @@ Un requerimiento figura como *Aprobado* si todos sus casos lo están.
 | CP-14 | `ComprobanteArchivosTest` | rechaza un ejecutable renombrado como PDF | pasa |
 | CP-14 | `PanelSocioServicioComprobanteTest` | rechaza un archivo cuyo contenido no es imagen ni PDF | pasa |
 | CP-14 | `PanelSocioServicioComprobanteTest` | rechaza un archivo de 5 MB más un byte | pasa |
-| CP-15 | `PanelSocioServicioComprobanteTest` | acepta una transferencia adelantada hasta 25 minutos (D-2) | deshabilitada |
+| CP-15 | `PanelSocioServicioComprobanteTest` | acepta una transferencia adelantada hasta 25 minutos (D-2) | pasa |
 | CP-15 | `PanelSocioServicioComprobanteTest` | acepta una transferencia de exactamente 7 días | pasa |
 | CP-15 | `PanelSocioServicioComprobanteTest` | rechaza una transferencia adelantada más de 25 minutos | pasa |
 | CP-15 | `PanelSocioServicioComprobanteTest` | rechaza una transferencia con fecha futura | pasa |
@@ -217,9 +221,9 @@ Un requerimiento figura como *Aprobado* si todos sus casos lo están.
 | CP-31 | `CambiosReservaServicioTest` | cancelación por el predio: CANCELADA con crédito de 30 días | pasa |
 | CP-31 | `InstalacionesServicioTest` | al poner en mantenimiento, las confirmadas se cancelan por el predio | pasa |
 | CP-32 | `MembresiasServicioTest` | al validar, el socio queda ACTIVO y su carnet activo | pasa |
-| CP-32 | `MembresiasServicioTest` | la renovación por adelantado empieza el día del vencimiento (D-3) | deshabilitada |
+| CP-32 | `MembresiasServicioTest` | la renovación por adelantado empieza el día del vencimiento (D-3) | pasa |
 | CP-32 | `MembresiasServicioTest` | la suscripción dura un mes desde la validación | pasa |
-| CP-32 | `MembresiasServicioTest` | pagando el día del vencimiento la nueva empieza ese día (D-3) | deshabilitada |
+| CP-32 | `MembresiasServicioTest` | pagando el día del vencimiento la nueva empieza ese día (D-3) | pasa |
 | CP-33 | `MembresiasServicioTest` | al vencer, suscripción VENCIDA, socio NO_ACTIVO y carnet inactivo | pasa |
 | CP-34 | `TarifasServicioTest` | hasta la fecha futura sigue rigiendo la tarifa anterior | pasa |
 | CP-34 | `TarifasServicioTest` | la tarifa anterior rige hasta el día previo | pasa |

@@ -101,24 +101,31 @@ MATRIZ = [
 # Defectos con prueba deshabilitada (@Disabled). La severidad es una propuesta: la asigna el líder de SQA (Tabla 31).
 # caso, severidad propuesta, qué pasa, estado
 DEFECTOS = [
-    ("D-1", "CP-07", "Baja", "PasswordUtil.verificar lanza excepción con un hash mal formado en lugar de devolver false",
-     "posible defecto, sin confirmar"),
-    ("D-2", "CP-15", "Baja", "El comprobante tolera 5 minutos de adelanto; la regla confirmada es 25", "confirmado"),
-    ("D-3", "CP-32", "Alta", "La renovación por adelantado empieza el día siguiente al vencimiento, no el mismo día",
-     "confirmado"),
-    ("D-4", "CP-02", "Alta", "La contraseña solo exige 6 caracteres; el plan pide letras, números y un símbolo",
-     "discrepancia plan/código, sin decidir"),
+    ("D-1", "CP-07", "Baja", "PasswordUtil.verificar lanzaba excepción con un hash mal formado en lugar de devolver false",
+     "corregido el 13/10/2026"),
+    ("D-2", "CP-15", "Baja", "El comprobante toleraba 5 minutos de adelanto; la regla confirmada es 25",
+     "corregido el 13/10/2026"),
+    ("D-3", "CP-32", "Alta", "La renovación por adelantado empezaba el día siguiente al vencimiento, no el mismo día",
+     "corregido el 13/10/2026"),
+    ("D-4", "CP-02", "Alta", "La contraseña solo exigía 6 caracteres; el plan pide letras, números y un símbolo",
+     "corregido el 13/10/2026"),
     ("D-5", "CP-20", "Media", "El rechazo de una solicitud admite no dar motivo; el plan lo exige",
-     "discrepancia plan/código, sin decidir"),
+     "diferido por decisión del equipo (13/10/2026): el motivo sigue opcional por ahora"),
 ]
+ABIERTOS = [d for d in DEFECTOS if not d[4].startswith("corregido")]
 # casos que FALLAN por un defecto (su prueba deshabilitada es justamente el criterio de aceptación del caso)
-FALLA_POR = {"CP-02": "D-4", "CP-20": "D-5"}
+FALLA_POR = {"CP-20": "D-5"}
 # casos que PASAN pero tienen una prueba deshabilitada sobre un detalle vecino
-OBSERVA = {"CP-07": "D-1", "CP-15": "D-2", "CP-32": "D-3"}
+OBSERVA = {}
 NOTAS = {
     "CP-38": "El plan dice que un comentario de 501 caracteres se rechaza; el equipo decidió (D1) que se recorta a 500. "
              "Hay que actualizar el texto del caso.",
-    "CP-20": "Con motivo se rechaza y queda guardado (aprobado); sin motivo el código lo permite (ver D-5).",
+    "CP-20": "Con motivo se rechaza y queda guardado (aprobado); sin motivo el código lo permite: D-5, diferido por "
+             "decisión del equipo (13/10/2026), se exigirá más adelante o se corregirá el plan.",
+    "CP-02": "D-4 corregido (13/10/2026): la contraseña exige letras, números y un símbolo; un espacio no cuenta.",
+    "CP-07": "D-1 corregido (13/10/2026): un hash mal formado ya no rompe el login, cuenta como contraseña incorrecta.",
+    "CP-15": "D-2 corregido (13/10/2026): la transferencia se tolera hasta 25 minutos en el futuro.",
+    "CP-32": "D-3 corregido (13/10/2026): la renovación por adelantado empieza el día en que vence la vigente.",
     "CP-45": "Medido aparte con 500.403 reservas (docs/calidad/cp45/README.md): el listado, el buscador y el PDF de un "
              "período acotado responden en menos de 3 s y con unos 10 MB de memoria; el código anterior no termina "
              "(OutOfMemoryError con 1 GB). Los reportes de 12 meses tardan 6,7 s y usan más de 500 MB.",
@@ -236,7 +243,7 @@ def main():
     sal_tot = sum(1 for p in pruebas if p[2] == 'SALTADA')
     fal_tot = sum(1 for p in pruebas if p[2] == 'FALLA')
     sin_cp = sum(1 for p in pruebas if not p[1].startswith('CP-'))
-    graves = [d for d in DEFECTOS if d[2] in ("Crítica", "Alta")]
+    graves = [d for d in ABIERTOS if d[2] in ("Crítica", "Alta")]
 
     def si(c):
         return "Sí" if c else "No"
@@ -275,12 +282,17 @@ def main():
       (ramas, bc, bc + bm))
     w("| Defectos críticos y altos abiertos | 0 | %d (%s) | %s |" %
       (len(graves), ", ".join(d[0] for d in graves) or "ninguno", si(not graves)))
-    por_sev = {}
-    for d in DEFECTOS:
-        por_sev[d[2]] = por_sev.get(d[2], 0) + 1
-    w("| Defectos abiertos y cerrados, por severidad | Solo se informa | Abiertos: %s. Cerrados: 0 | — |" %
-      (", ".join("%d %s" % (v, k.lower()) for k, v in sorted(por_sev.items())) or "ninguno"))
-    w("| Tiempo medio de corrección de un defecto (días) | Solo se informa | Sin datos: todavía no se corrigió ninguno | — |")
+    def por_severidad(lista):
+        cuenta = {}
+        for d in lista:
+            cuenta[d[2]] = cuenta.get(d[2], 0) + 1
+        return ", ".join("%d %s" % (v, k.lower()) for k, v in sorted(cuenta.items())) or "ninguno"
+    cerrados = [d for d in DEFECTOS if d not in ABIERTOS]
+    w("| Defectos abiertos y cerrados, por severidad | Solo se informa | Abiertos: %s. Cerrados: %s | — |" %
+      (por_severidad(ABIERTOS), por_severidad(cerrados)))
+    w("| Tiempo medio de corrección de un defecto (días) | Solo se informa | %s | — |" %
+      ("1 día (D-1 a D-4: informados el 12/10/2026 y corregidos el 13/10/2026)" if cerrados
+       else "Sin datos: todavía no se corrigió ninguno"))
     sin_caso = [r for r, cps in MATRIZ if not cps.strip()]
     w("| Requerimientos sin caso de prueba | 0 | %d | %s |" % (len(sin_caso), si(not sin_caso)))
     w("| Contraste en las pantallas clave (CP-47 y CP-48) | 4,5:1 texto normal; 3:1 texto grande y componentes | "
@@ -297,7 +309,7 @@ def main():
       "ningún caso del plan: son pruebas de regresión adicionales sobre las demás reglas del sistema.\n" %
       (total, ok_tot, fal_tot, sal_tot, sin_cp))
 
-    w("### Defectos abiertos\n")
+    w("### Defectos\n")
     w("La severidad es una propuesta; la asigna el líder de SQA (Tabla 31). Detalle y evidencia en "
       "[resultados-pruebas.md](resultados-pruebas.md).\n")
     w("| Código | Caso | Severidad propuesta | Qué pasa | Estado |\n|---|---|---|---|---|")
