@@ -11,7 +11,7 @@ En los demás documentos se las nombra por su código de defecto: INC-nn corresp
 | [INC-03](#inc-03) | D-3 | CP-32 | La renovación por adelantado empezaba un día después del vencimiento | Alta | En verificación |
 | [INC-04](#inc-04) | D-4 | CP-02 | La contraseña no exigía letras, números y un símbolo | Alta | En verificación |
 | [INC-05](#inc-05) | D-5 | CP-20 | Se puede rechazar una solicitud sin dar motivo | Media | En análisis (diferida) |
-| [INC-06](#inc-06) | D-6 | CP-16 | Dos cargas simultáneas del mismo comprobante: la segunda recibe un error técnico | Baja | Nueva |
+| [INC-06](#inc-06) | D-6 | CP-16 | Dos cargas simultáneas del mismo comprobante: la segunda recibe un error técnico | Baja | En verificación |
 | [INC-07](#inc-07) | D-7 | CP-49 | En la grilla del calendario el estado de la reserva se distingue solo por el color | Media | Nueva |
 | [INC-08](#inc-08) | D-8 | CP-50 | A 360 px el panel del administrador y "Mis reservas" del socio se desbordan | Media | Nueva |
 | [INC-09](#inc-09) | D-9 | CP-50 | A 1280 px tres tablas del administrador no entran en su tarjeta | Baja | Nueva |
@@ -136,10 +136,10 @@ En los demás documentos se las nombra por su código de defecto: INC-nn corresp
 | Resultado esperado | El segundo recibe "Ese comprobante ya fue usado en otra operación." |
 | Evidencia | `docs/calidad/integracion/resultados.txt` (línea OBS-16) |
 | Severidad (Tabla 31) | Baja: los datos quedan bien |
-| Estado (sección 7.3) | Nueva |
+| Estado (sección 7.3) | En verificación: corregido el 14/10/2026 (rama `correccion/d6-y-casos-cp42-cp52`): `subirComprobante` manda el INSERT del comprobante en el momento, como `reservar`, y si la base lo rechaza responde "Ese comprobante ya fue usado en otra operación." sin guardar el archivo |
 | Responsable de la corrección | [completar] |
-| Solicitud de cambio | Propuesta: hacer en `subirComprobante` lo mismo que hace `reservar` (mandar el INSERT en el momento y traducir el error) |
-| Caso de regresión agregado | `PruebasIntegracion` (CP-16) ya lo detecta; habría que exigir el mensaje |
+| Solicitud de cambio | [completar: PR de la rama `correccion/d6-y-casos-cp42-cp52`] |
+| Caso de regresión agregado | `PanelSocioServicioComprobanteTest.siLaBaseRechazaElArchivoRepetidoAvisaQueYaFueUsado` y `PruebasIntegracion` CP-16 (dos cargas a la vez contra MySQL: el segundo recibe el aviso) |
 | Verificó y fecha de cierre | [completar] |
 
 ## INC-07

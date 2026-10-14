@@ -496,14 +496,14 @@ public class PruebasIntegracion {
             deA.confirmar();
             deA.close();
             String respuestaB = deB.get(90, TimeUnit.SECONDS);
-            verificar(esperando && respuestaB != null, "la segunda carga simultánea no fue frenada: respondió <" + respuestaB + ">");
+            verificar(esperando, "la segunda carga simultánea no quedó esperando a la primera: respondió <" + respuestaB + ">");
+            igual(REPETIDO, respuestaB, "respuesta a la segunda de dos cargas simultáneas del mismo archivo (D-6)");
             igual(1L, s.contar(porHash, sha256(otro)), "comprobantes con el archivo subido a la vez");
             igual(1L, s.contar(sinPago, rb), "la reserva del que perdió sigue sin pago");
-            resultados.add("OBS-16|" + (REPETIDO.equals(respuestaB) ? "sin observación" : "observación")
-                    + "|Dos cargas del mismo archivo a la vez: la segunda se rechaza con <" + respuestaB + ">");
             return "Primera carga: pago y comprobante creados y archivo guardado. El mismo archivo en otra reserva (del "
                     + "mismo socio y de otro socio): \"" + REPETIDO + "\", sin pago ni comprobante nuevos. Dos cargas a la "
-                    + "vez del mismo archivo: queda una sola (uq_comprobante_hash); la otra responde <" + respuestaB + ">.";
+                    + "vez del mismo archivo: queda una sola (uq_comprobante_hash) y la otra también recibe \"" + REPETIDO
+                    + "\" (D-6 corregido).";
         } finally {
             try (Sesion s = new Sesion()) {
                 String ids = creadas.stream().map(String::valueOf).collect(Collectors.joining(","));
@@ -529,11 +529,14 @@ public class PruebasIntegracion {
 
     // ---------- CP-42 ----------
 
-    static ReportesServicio.Rango unDia(LocalDate dia) throws Exception {
-        Constructor<ReportesServicio.Rango> k = ReportesServicio.Rango.class.getDeclaredConstructor(String.class,
-                LocalDate.class, LocalDate.class, LocalDate.class, LocalDate.class);
-        k.setAccessible(true);
-        return k.newInstance("Un día", dia, dia, dia.minusDays(1), dia.minusDays(1));
+    /** Turnos de una instalación en un día, de la base: {horario, socio que lo ocupa o null}. */
+    @SuppressWarnings("unchecked")
+    static List<Object[]> turnosDelDia(Sesion s, Integer idInstalacion, LocalDate dia) {
+        return con(s.em.createNativeQuery("SELECT CONCAT(TIME_FORMAT(t.hora_inicio, '%H:%i'), ' – ', TIME_FORMAT(t.hora_fin, '%H:%i')), "
+                + "(SELECT CONCAT(u.nombre, ' ', u.apellido) FROM reserva r JOIN socio s ON s.id_socio = r.id_socio "
+                + "JOIN usuario u ON u.id_usuario = s.id_usuario WHERE r.id_turno = t.id_turno AND r.fecha_turno = ?2 "
+                + "AND r.estado IN ('PENDIENTE_PAGO','CONFIRMADA')) FROM turno t WHERE t.id_instalacion = ?1 "
+                + "ORDER BY t.hora_inicio"), idInstalacion, dia).getResultList();
     }
 
     static String cp42() throws Exception {
@@ -549,13 +552,15 @@ public class PruebasIntegracion {
             List<Object> dias = s.em.createNativeQuery("SELECT fecha_turno FROM reserva WHERE estado IN "
                     + "('PENDIENTE_PAGO','CONFIRMADA') GROUP BY fecha_turno ORDER BY COUNT(*) DESC, fecha_turno LIMIT 5")
                     .getResultList();
+            // "Un día" de la pantalla: hoy y los cinco días con más turnos ocupados
             int sueltos = 1;
-            rangos.add(unDia(HOY));
+            rangos.add(s.reportes.rango("DIA", HOY, HOY));
             for (Object dia : dias) {
-                rangos.add(unDia(LocalDate.parse(dia.toString())));
+                rangos.add(s.reportes.rango("DIA", HOY, LocalDate.parse(dia.toString())));
                 sueltos++;
             }
             int comparaciones = 0;
+            int turnosComparados = 0;
             long turnosVistos = 0;
             for (ReportesServicio.Rango r : rangos) {
                 ReportesServicio.Datos d = s.reportes.cargar(HOY, r);
@@ -579,6 +584,26 @@ public class PruebasIntegracion {
                         igual(enBase + " de " + turnos * r.getDias() + " turnos", item.getDetalle(), donde);
                     }
                     comparaciones++;
+                    // un día de una instalación (lo que se elige en la pantalla): turno por turno, contra la base
+                    if (r.getDias() == 1) {
+                        List<ReporteItem> porTurno = s.reportes.ocupacionPorTurno(d, r, i.getIdInstalacion());
+                        List<Object[]> enLaBase = turnosDelDia(s, i.getIdInstalacion(), r.getDesde());
+                        igual(enLaBase.size(), porTurno.size(), donde + ": turnos de la instalación");
+                        for (int k = 0; k < enLaBase.size(); k++) {
+                            ReporteItem t = porTurno.get(k);
+                            String socio = (String) enLaBase.get(k)[1];
+                            igual(enLaBase.get(k)[0], t.getEtiqueta(), donde + ": horario del turno " + (k + 1));
+                            if ("En mantenimiento".equals(t.getValor())) {
+                                verificar(i.getEstado() == Instalacion.Estado.DESHABILITADA_MANTENIMIENTO,
+                                        donde + ": dice \"En mantenimiento\" y la instalación no lo está");
+                            } else {
+                                igual(socio == null ? "Libre" : "Reservado", t.getValor(), donde + ", " + t.getEtiqueta());
+                                verificar(socio == null || t.getDetalle().startsWith(socio + " · "),
+                                        donde + ", " + t.getEtiqueta() + ": la base dice " + socio + " y el reporte <" + t.getDetalle() + ">");
+                            }
+                            turnosComparados++;
+                        }
+                    }
                 }
                 ReporteKpi reservados = s.reportes.ocupacionKpis(d, r).stream()
                         .filter(k -> k.getEtiqueta().equals("Turnos reservados")).findFirst().orElseThrow();
@@ -589,8 +614,8 @@ public class PruebasIntegracion {
             return comparaciones + " comparaciones (" + instalaciones.size() + " instalaciones por los 6 períodos de la "
                     + "pantalla y " + sueltos + " días sueltos): los turnos reservados y disponibles de cada instalación y el "
                     + "total coinciden con lo contado por SQL (" + turnosVistos + " turnos ocupados sumando todos los "
-                    + "períodos). La pantalla no ofrece un período de un día (el menor es 7 días): el día suelto se "
-                    + "comprobó llamando al servicio.";
+                    + "períodos). Con el período \"Un día\" y una instalación elegida, como en la pantalla: " + turnosComparados
+                    + " turnos comparados uno por uno (libre o reservado, y por quién) con la base.";
         }
     }
 
@@ -599,7 +624,7 @@ public class PruebasIntegracion {
     static final DateTimeFormatter DIA = DateTimeFormatter.ISO_LOCAL_DATE;
 
     /** La misma condición del filtro escrita en SQL sobre las tablas, sin pasar por JPA. */
-    static String sql(String estado, String disciplina, LocalDate desde, LocalDate hasta, String texto, List<Object> p) {
+    static String sql(String estado, String disciplina, LocalDate desde, LocalDate hasta, String instalacion, List<Object> p) {
         StringBuilder w = new StringBuilder("SELECT r.id_reserva FROM reserva r JOIN turno t ON t.id_turno = r.id_turno "
                 + "JOIN instalacion i ON i.id_instalacion = t.id_instalacion JOIN socio s ON s.id_socio = r.id_socio "
                 + "JOIN usuario u ON u.id_usuario = s.id_usuario LEFT JOIN pago p ON p.id_pago = r.id_pago WHERE 1 = 1");
@@ -627,11 +652,9 @@ public class PruebasIntegracion {
             default:
                 w.append(" AND r.estado = '").append(estado).append("'");
         }
-        if (!texto.isEmpty()) {
-            p.add("%" + texto + "%");
-            int n = p.size();
-            w.append(" AND (CONCAT(u.nombre, ' ', u.apellido) LIKE ?" + n + " OR u.email LIKE ?" + n + " OR s.dni LIKE ?" + n
-                    + " OR i.nombre LIKE ?" + n + " OR i.tipo_disciplina LIKE ?" + n + ")");
+        if (!instalacion.isEmpty()) {
+            p.add(instalacion);
+            w.append(" AND i.nombre = ?").append(p.size());
         }
         return w.toString();
     }
@@ -654,19 +677,19 @@ public class PruebasIntegracion {
             for (String estado : estados) {
                 for (LocalDate[] periodo : periodos) {
                     for (int k = 0; k < disciplinas.size() + nombres.size() - 1; k++) {
-                        // por instalación: primero cada disciplina del desplegable, después cada nombre en el buscador
+                        // primero cada disciplina, después cada instalación (los dos desplegables de la pantalla)
                         String disciplina = k < disciplinas.size() ? disciplinas.get(k) : "";
-                        String texto = k < disciplinas.size() ? "" : nombres.get(k - disciplinas.size() + 1);
+                        String instalacion = k < disciplinas.size() ? "" : nombres.get(k - disciplinas.size() + 1);
                         FiltroReservas f = new FiltroReservas();
                         f.setEstado(estado);
                         f.setDisciplina(disciplina);
+                        f.setInstalacion(instalacion);
                         f.setDesde(periodo[0]);
                         f.setHasta(periodo[1]);
-                        f.setTexto(texto);
-                        String cual = "estado <" + estado + ">, disciplina <" + disciplina + ">, buscador <" + texto + ">, de "
-                                + periodo[0] + " a " + periodo[1];
+                        String cual = "estado <" + estado + ">, disciplina <" + disciplina + ">, instalación <" + instalacion
+                                + ">, de " + periodo[0] + " a " + periodo[1];
                         List<Object> p = new ArrayList<>();
-                        Set<Integer> enBase = s.ids(sql(estado, disciplina, periodo[0], periodo[1], texto, p), p.toArray());
+                        Set<Integer> enBase = s.ids(sql(estado, disciplina, periodo[0], periodo[1], instalacion, p), p.toArray());
 
                         PaginaReservas completa = s.reservas.listarPagina(f, (int) todas + 1, HOY, AHORA.toLocalTime());
                         Set<Integer> listadas = completa.getFilas().stream().map(ReservaListado::getIdReserva)
@@ -679,6 +702,8 @@ public class PruebasIntegracion {
                                     cual + ": la reserva " + fila.getIdReserva() + " es del " + DIA.format(fila.getFecha()));
                             verificar(disciplina.isEmpty() || disciplina.equals(fila.getDisciplina()),
                                     cual + ": la reserva " + fila.getIdReserva() + " es de " + fila.getDisciplina());
+                            verificar(instalacion.isEmpty() || instalacion.equals(fila.getInstalacion()),
+                                    cual + ": la reserva " + fila.getIdReserva() + " es de " + fila.getInstalacion());
                             verificar(estado.isEmpty() || estado.equals(fila.getEstado()),
                                     cual + ": la reserva " + fila.getIdReserva() + " está " + fila.getEstado());
                         }
@@ -693,11 +718,10 @@ public class PruebasIntegracion {
                     }
                 }
             }
-            return combinaciones + " combinaciones de estado (6), período (6) e instalación (" + (disciplinas.size() - 1)
-                    + " disciplinas del desplegable y " + (nombres.size() - 1) + " nombres en el buscador) sobre " + todas
+            return combinaciones + " combinaciones de estado (6), período (6) e instalación (las " + (nombres.size() - 1)
+                    + " instalaciones del filtro, y también las " + (disciplinas.size() - 1) + " disciplinas) sobre " + todas
                     + " reservas: el listado trae exactamente las mismas reservas que la consulta SQL directa, sin repetidas, "
-                    + "y el total informado coincide (" + conFilas + " combinaciones con resultados). La pantalla filtra la "
-                    + "instalación por disciplina o escribiendo el nombre en el buscador: no hay un desplegable de instalaciones.";
+                    + "y el total informado coincide (" + conFilas + " combinaciones con resultados).";
         }
     }
 

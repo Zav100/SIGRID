@@ -191,7 +191,7 @@
  },
  {
   "vista": "/admin/reservas-dashboard-admin.xhtml",
-  "medidos": 404,
+  "medidos": 406,
   "iconosConTexto": 22,
   "sobreImagen": [],
   "minimo": 5.06,
@@ -227,7 +227,7 @@
     "degradado": false,
     "elemento": "select.soc-select",
     "ejemplo": "Filtrar por fecha del turno",
-    "veces": 3
+    "veces": 4
    },
    {
     "tipo": "contorno de campo",
@@ -430,8 +430,8 @@
  },
  {
   "vista": "/admin/reportes (stadiumOcupación y uso)",
-  "medidos": 198,
-  "iconosConTexto": 18,
+  "medidos": 202,
+  "iconosConTexto": 19,
   "sobreImagen": [],
   "minimo": 5.06,
   "fallas": [
@@ -455,7 +455,7 @@
     "degradado": false,
     "elemento": "select.soc-select",
     "ejemplo": "Período del reporte",
-    "veces": 1
+    "veces": 2
    }
   ]
  },

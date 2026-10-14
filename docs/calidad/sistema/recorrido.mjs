@@ -659,6 +659,105 @@ async function cp50() {
   return { detalle: detalle + 'Ninguna página se desborda y no hay textos cortados, controles fuera de la pantalla ni tapados.', evidencia: [rel('cp50/')] };
 }
 
+// ---------- CP-42 y CP-52 en la pantalla (el caso es de integración: acá se comprueba que la pantalla lo ofrece) ----------
+
+/** Ejecuta una acción que dispara un pedido AJAX de JSF y espera a que termine. */
+async function conAjax(accion) {
+  await p.js("window.__ajax = 0; if (!window.__oyente) { window.__oyente = true; (window.faces || window.jsf).ajax.addOnEvent((d) => { if (d.status === 'success') window.__ajax++; }); }");
+  await accion();
+  await p.hasta('window.__ajax > 0', 60000);
+  await p.dormir(300);
+}
+const elegir = (selector, valor) => conAjax(() => enPagina((sel, v) => {
+  const s = document.querySelector(sel);
+  if (!s) throw new Error('No está ' + sel);
+  s.value = String(v);
+  s.dispatchEvent(new Event('change', { bubbles: true }));
+}, selector, valor));
+
+async function cp42pantalla() {
+  await p.tamano(1280, 900);
+  await ingresar(p, BASE, ADMIN, CLAVE);
+  const [dia, idInstalacion, nombre] = sql(`SELECT r.fecha_turno, i.id_instalacion, i.nombre FROM reserva r
+      JOIN turno t ON t.id_turno = r.id_turno JOIN instalacion i ON i.id_instalacion = t.id_instalacion
+      WHERE r.estado IN ('PENDIENTE_PAGO','CONFIRMADA') GROUP BY r.fecha_turno, i.id_instalacion, i.nombre
+      ORDER BY COUNT(*) DESC, r.fecha_turno DESC LIMIT 1`)[0];
+  await p.ir(BASE + '/admin/reportes-dashboard-admin.xhtml');
+  await elegir('select[aria-label="Período del reporte"]', 'DIA');
+  await conAjax(() => p.escribir('input[aria-label="Día del reporte"]', dia));
+  const periodo = limpio(await p.js("document.getElementById('periodoTexto').innerText"));
+  verificar(periodo.includes(dmy(dia)), `el período no dice el día elegido: <${periodo}>`);
+  await conAjax(() => enPagina(() => [...document.querySelectorAll('.rep-tabs a')].find((a) => a.textContent.includes('Ocupación')).click()));
+  await elegir('select[aria-label="Instalación del reporte de ocupación"]', idInstalacion);
+  const enPantalla = await enPagina(() => [...document.querySelectorAll('section[aria-labelledby=tTurnos] li')].map((li) => ({
+    horario: li.querySelector('.rep-rank-name').textContent.trim(),
+    valor: li.querySelector('.rep-rank-num').textContent.trim(),
+    detalle: (li.querySelector('.rep-rank-detail') || { textContent: '' }).textContent.trim(),
+  })));
+  const resumen = limpio(await p.js("(document.getElementById('resumenInstalacion') || {}).innerText || ''"));
+  const enBase = sql(`SELECT CONCAT(TIME_FORMAT(t.hora_inicio, '%H:%i'), ' – ', TIME_FORMAT(t.hora_fin, '%H:%i')),
+      COALESCE((SELECT CONCAT(u.nombre, ' ', u.apellido) FROM reserva r JOIN socio s ON s.id_socio = r.id_socio
+      JOIN usuario u ON u.id_usuario = s.id_usuario WHERE r.id_turno = t.id_turno AND r.fecha_turno = '${dia}'
+      AND r.estado IN ('PENDIENTE_PAGO','CONFIRMADA')), '') FROM turno t WHERE t.id_instalacion = ${idInstalacion}
+      ORDER BY t.hora_inicio`);
+  igual(enBase.length, enPantalla.length, `turnos de ${nombre} el ${dmy(dia)}`);
+  enBase.forEach(([horario, socio], k) => {
+    const t = enPantalla[k];
+    igual(horario, t.horario, `turno ${k + 1}`);
+    igual(socio ? 'Reservado' : 'Libre', t.valor, `${horario}`);
+    verificar(!socio || t.detalle.startsWith(socio + ' · '), `${horario}: la base dice ${socio} y la pantalla <${t.detalle}>`);
+  });
+  const reservados = enBase.filter((f) => f[1]).length;
+  verificar(resumen.startsWith(nombre) && resumen.includes(`${reservados} de ${enBase.length} turnos`),
+    `el resumen no coincide: <${resumen}>`);
+  const evidencia = [await captura('cp42-ocupacion-de-un-dia-de-una-instalacion.png')];
+  return {
+    detalle: `En la pantalla: Reportes → período "Un día" (${dmy(dia)}) → Ocupación y uso → instalación "${nombre}". Muestra "${resumen}" `
+      + `y los ${enPantalla.length} turnos uno por uno; los ${reservados} reservados con el socio y su estado, igual que la base.`,
+    evidencia,
+  };
+}
+
+async function cp52pantalla() {
+  await p.tamano(1280, 900);
+  await ingresar(p, BASE, ADMIN, CLAVE);
+  const [nombre, cuantas] = sql(`SELECT i.nombre, COUNT(*) FROM reserva r JOIN turno t ON t.id_turno = r.id_turno
+      JOIN instalacion i ON i.id_instalacion = t.id_instalacion GROUP BY i.nombre ORDER BY COUNT(*) DESC LIMIT 1`)[0];
+  await p.ir(BASE + '/admin/reservas-dashboard-admin.xhtml');
+  await elegir('select[aria-label="Filtrar por instalación"]', nombre);
+  const mostrando = async () => limpio(await p.js("(document.body.innerText.match(/Mostrando [\\d.]+ de [\\d.]+/) || [''])[0]"));
+  const total = (await mostrando()).split(' de ')[1];
+  igual(cuantas, total, `reservas de ${nombre} que informa el listado`);
+  const deOtra = await enPagina((n) => [...document.querySelectorAll('#filas table tbody tr')]
+    .map((tr) => tr.cells[1].querySelector('.adm-cell-main').textContent.trim()).filter((x) => x !== n), nombre);
+  verificar(deOtra.length === 0, 'el listado muestra reservas de otras instalaciones: ' + deOtra.join(', '));
+  // instalación, estado y período juntos, y el PDF
+  const hoy = uno('SELECT CURDATE()');
+  const desde = sumarDias(hoy, -30);
+  await elegir('select[aria-label="Filtrar por estado de la reserva"]', 'CONFIRMADA');
+  await conAjax(() => p.escribir('input[aria-label="Turnos desde el día"]', desde));
+  await conAjax(() => p.escribir('input[aria-label="Turnos hasta el día"]', hoy));
+  const combinado = uno(`SELECT COUNT(*) FROM reserva r JOIN turno t ON t.id_turno = r.id_turno JOIN instalacion i ON i.id_instalacion = t.id_instalacion
+      WHERE i.nombre = '${nombre}' AND r.estado = 'CONFIRMADA' AND r.fecha_turno BETWEEN '${desde}' AND '${hoy}'`);
+  igual(combinado, (await mostrando()).split(' de ')[1], `confirmadas de ${nombre} del ${dmy(desde)} al ${dmy(hoy)}`);
+  const evidencia = [await captura('cp52-reservas-filtradas-por-instalacion.png')];
+  await p.js('window.__impresiones = 0');
+  await conAjax(() => p.clic('#filtros a[title^="Exportar a PDF"]', { espera: 0 }));
+  await p.dormir(300);
+  const filtros = limpio(await p.js("(() => { const dt = [...document.querySelectorAll('.rv-informe-cab dt')].find(d => d.textContent.trim() === 'Filtros'); return dt ? dt.nextElementSibling.textContent : ''; })()"));
+  const filasPdf = await p.js("document.querySelectorAll('.rv-informe-tabla tbody tr').length");
+  verificar(filtros.includes('Instalación: ' + nombre), `el PDF no dice la instalación elegida: <${filtros}>`);
+  igual(combinado, filasPdf, 'reservas en el PDF');
+  await p.pdf(evid('cp52-pdf-de-una-instalacion.pdf'));
+  evidencia.push(rel('cp52-pdf-de-una-instalacion.pdf'));
+  return {
+    detalle: `En la pantalla: Reservas → filtro "Todas las instalaciones" → "${nombre}": el listado informa ${total} reservas, `
+      + `las mismas que la base, y todas las filas son de esa instalación. Con instalación, estado "Confirmadas" y período `
+      + `${dmy(desde)} al ${dmy(hoy)}: ${combinado}, igual que la base; el PDF las trae y dice "${filtros}".`,
+    evidencia,
+  };
+}
+
 // ---------- CP-45 ----------
 
 const META_MS = 5000; // Tabla 3 del plan: "5 s o menos [A CONFIRMAR: tiempo máximo]"
@@ -841,6 +940,7 @@ const CASOS = {
   'CP-05': ['Iniciar sesión como socio y como administrador; un socio abre una ruta de /admin', cp05],
   'CP-36': ['Abrir las pantallas de tarifas del socio y del administrador', cp36],
   'CP-41': ['Revisar menú, títulos, reportes y PDF ("Grado de satisfacción")', cp41],
+  'CP-42': ['Reporte de ocupación de un día para una instalación (en la pantalla)', cp42pantalla],
   'CP-43': ['Exportar el PDF de reservas de un solo día', cp43],
   'CP-44': ['Exportar el PDF de un período sin reservas', cp44],
   'CP-45': ['Con 500.000 reservas, listar y exportar un período acotado', cp45],
@@ -850,6 +950,7 @@ const CASOS = {
   'CP-49': ['Revisar los estados de reserva sin depender solo del color', cp49],
   'CP-50': ['Abrir las pantallas principales en 360, 768 y 1280 px', cp50],
   'CP-51': ['El socio abre su historial de reservas', cp51],
+  'CP-52': ['El administrador filtra el listado de reservas por fecha, instalación y estado (en la pantalla)', cp52pantalla],
 };
 
 // CP-45 necesita la base con 500.000 reservas: se corre aparte, al final (ver README.md)
@@ -860,6 +961,18 @@ if (existsSync(archivo)) {
   for (const l of readFileSync(archivo, 'utf8').split(/\r?\n/)) if (l.startsWith('CP-')) anteriores.set(l.split('|')[0], l);
 }
 mkdirSync(EVID, { recursive: true });
+const MINUTOS_POR_CASO = 10;
+
+/** Escribe resultados.txt con lo que hay hasta ahora (se llama después de cada caso, para no perder lo hecho). */
+function guardar() {
+  const ahora = new Date();
+  const fecha = ahora.toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit', year: 'numeric' }) + ' '
+    + ahora.toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit', hour12: false });
+  writeFileSync(archivo, `# Pruebas de sistema y de accesibilidad de SIGRID. Última ejecución: ${fecha}, contra ${BASE} (GlassFish 7, `
+    + `Edge sin ventana) con la base de prueba ${DB} (MySQL ${uno('SELECT VERSION()')}). Formato: caso|resultado|detalle|evidencia\n`
+    + [...anteriores.keys()].sort().map((k) => anteriores.get(k)).join('\n') + '\n', 'utf8');
+}
+
 p = await abrirNavegador();
 let fallaron = 0;
 try {
@@ -868,27 +981,29 @@ try {
     let estado = 'Aprobado';
     let detalle;
     let evidencia = [];
+    let reloj;
     try {
-      ({ detalle, evidencia } = await correr());
+      // si el navegador se cuelga, el caso termina con error en vez de quedar esperando para siempre
+      const limite = new Promise((_, mal) => { reloj = setTimeout(() => mal(new Error(`el caso tardó más de ${MINUTOS_POR_CASO} minutos`)), MINUTOS_POR_CASO * 60000); });
+      ({ detalle, evidencia } = await Promise.race([correr(), limite]));
     } catch (e) {
-      estado = 'Falló';
+      estado = e instanceof Falla ? 'Falló' : 'Error';
       detalle = e instanceof Falla ? e.message : 'ERROR DE LA PRUEBA (no del sistema): ' + (e.stack || e);
-      if (!(e instanceof Falla)) estado = 'Error';
       fallaron++;
+      if (!(e instanceof Falla)) {
+        await p.cerrar();
+        p = await abrirNavegador();
+      }
+    } finally {
+      clearTimeout(reloj);
     }
     detalle = limpio(detalle).replace(/\|/g, '/');
     anteriores.set(codigo, [codigo, estado, detalle, (evidencia || []).join(';')].join('|'));
+    guardar();
     console.log(`${codigo} ${titulo}\n   -> ${estado.toUpperCase()}: ${detalle}\n`);
   }
 } finally {
   await p.cerrar();
 }
-const ahora = new Date();
-const fecha = ahora.toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit', year: 'numeric' }) + ' '
-  + ahora.toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit', hour12: false });
-const version = uno('SELECT VERSION()');
-writeFileSync(archivo, `# Pruebas de sistema y de accesibilidad de SIGRID. Última ejecución: ${fecha}, contra ${BASE} (GlassFish 7, `
-  + `Edge sin ventana) con la base de prueba ${DB} (MySQL ${version}). Formato: caso|resultado|detalle|evidencia\n`
-  + [...anteriores.keys()].sort().map((k) => anteriores.get(k)).join('\n') + '\n', 'utf8');
 console.log('Escrito ' + archivo);
 process.exit(fallaron ? 1 : 0);

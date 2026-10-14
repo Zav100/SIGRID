@@ -10,9 +10,9 @@ No forma parte del proyecto Maven: se compila y se corre aparte, igual que la me
 |---|---|---|
 | CP-04 | Registra con un correo que ya existe (también en mayúsculas y con espacios) y con un DNI que ya existe | El mensaje del servicio, que no se cree ninguna fila, y que la base rechace el `INSERT` directo (`uq_usuario_email`, `uq_socio_dni`). Control: con datos nuevos la misma alta se crea |
 | CP-12 | Dos socios piden el mismo turno y día con dos conexiones: una vez paso a paso (el segundo espera en el `INSERT` hasta que el primero confirma) y 20 veces saliendo a la vez | Queda una sola reserva viva y el otro recibe "Ese turno acaba de ser reservado por otra persona" |
-| CP-16 | Sube un archivo y vuelve a subir el mismo a otra reserva (del mismo socio y de otro); después, el mismo archivo en dos cargas a la vez | Un solo comprobante con ese hash, sin pagos nuevos, y el mensaje "Ese comprobante ya fue usado en otra operación" |
-| CP-42 | Pide la ocupación por instalación en los 6 períodos de la pantalla y en 6 días sueltos | Turnos reservados y disponibles contados con SQL sobre las tablas |
-| CP-52 | Filtra el listado del administrador por estado, período e instalación (468 combinaciones) | Los mismos números de reserva que devuelve una consulta SQL directa, y el total informado |
+| CP-16 | Sube un archivo y vuelve a subir el mismo a otra reserva (del mismo socio y de otro); después, el mismo archivo en dos cargas a la vez | Un solo comprobante con ese hash, sin pagos nuevos, y el mensaje "Ese comprobante ya fue usado en otra operación" (también en las dos cargas a la vez) |
+| CP-42 | Pide la ocupación por instalación en los 6 períodos de la pantalla y en "Un día" (hoy y los 5 días más ocupados); en cada día, cada instalación turno por turno | Turnos reservados y disponibles contados con SQL; turno por turno, libre o reservado y por quién |
+| CP-52 | Filtra el listado del administrador por estado, período e instalación (y por disciplina): 468 combinaciones | Los mismos números de reserva que devuelve una consulta SQL directa, y el total informado |
 
 Deja la base como la encontró (borra las reservas, pagos y comprobantes que crea) y los archivos van a una carpeta temporal, no a la de comprobantes reales.
 
@@ -45,12 +45,11 @@ Las líneas `[EL Warning] ... Duplicate entry` que aparecen son esperadas: es la
 5. Regenerar el reporte de V&V (lee `resultados.txt`): desde la raíz, `python docs/calidad/generar_reporte_vv.py`.
 6. Al terminar: `DROP DATABASE sigrid_integ;` y borrar `docs/calidad/cp45/META-INF/` y `cp.txt` (tienen la clave; están en el `.gitignore`).
 
-## Resultado (13/10/2026)
+## Resultado (14/10/2026)
 
 Los cinco casos aprobados; el detalle de cada uno está en `resultados.txt`. Para confirmar que las pruebas detectan el problema, se quitaron en la base de prueba los `UNIQUE` de correo, de turno y día y de hash: CP-04, CP-12 y CP-16 fallaron, como corresponde.
 
 ## Observaciones
 
-- **Dos cargas del mismo archivo a la vez (D-6).** La base deja una sola, pero la segunda no recibe el mensaje de "ya fue usado": `subirComprobante` manda el `INSERT` al cerrar la transacción y el error sale como una excepción técnica (`RollbackException`) que la pantalla no atrapa. `reservar` ya resuelve el mismo problema mandando el `INSERT` en el momento (`ReservaDAO.insertar`).
-- **CP-42:** la pantalla de reportes no ofrece un período de un día (el menor es "Últimos 7 días") ni elegir una instalación: muestra todas juntas. El día suelto se comprobó llamando al servicio.
-- **CP-52:** la pantalla filtra la instalación por disciplina (desplegable) o escribiendo el nombre en el buscador; no hay un desplegable de instalaciones.
+- **D-6 (corregido el 14/10/2026).** La primera corrida (13/10) encontró que, con dos cargas del mismo archivo a la vez, la segunda terminaba en una excepción técnica (`RollbackException`) en lugar del aviso. Ahora `subirComprobante` manda el `INSERT` en el momento (como `reservar`) y la segunda recibe "Ese comprobante ya fue usado en otra operación."
+- **CP-42 y CP-52 (14/10/2026).** Para que coincidan con el plan se agregó a las pantallas lo que faltaba: en Reportes, el período "Un día" y elegir una instalación para verla turno por turno; en Reservas, el filtro por instalación. Las pruebas usan esos mismos caminos, y en `docs/calidad/sistema` se comprobaron además en la aplicación desplegada.

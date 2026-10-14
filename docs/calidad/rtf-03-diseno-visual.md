@@ -35,7 +35,7 @@ Los hallazgos de abajo salen de las pruebas de sistema del 14/10/2026 ([sistema/
 Para decidir en la reunión:
 
 - **CC-04 en el panel del socio:** el administrador ya dice "Grado de satisfacción"; el socio sigue con "valoración" (7 textos).
-- **Fuera del alcance de CP-53:** CP-42 y CP-52 hablan de filtros por instalación y de un período de un día que las pantallas no ofrecen. Hay que actualizar el texto del plan o agregar esos filtros.
+- **Pantallas nuevas para revisar:** en Reportes, el período "Un día" y la tarjeta "Ocupación de una instalación" (CP-42); en Reservas, el filtro "Todas las instalaciones" (CP-52). Se agregaron el 14/10/2026 para que coincidan con el plan.
 
 ## E.3 Decisión y firmas
 

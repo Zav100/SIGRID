@@ -117,7 +117,7 @@ DEFECTOS = [
     ("D-5", "CP-20", "Media", "El rechazo de una solicitud admite no dar motivo; el plan lo exige",
      "diferido por decisión del equipo (13/10/2026): el motivo sigue opcional por ahora"),
     ("D-6", "CP-16", "Baja", "Dos cargas del mismo comprobante a la vez: la base deja una sola, pero la segunda recibe un "
-     "error técnico en lugar del mensaje \"ya fue usado\"", "abierto (encontrado el 13/10/2026 en la prueba de integración)"),
+     "error técnico en lugar del mensaje \"ya fue usado\"", "corregido el 14/10/2026"),
     ("D-7", "CP-49", "Media", "En la grilla del calendario del administrador el estado de cada reserva se distingue solo por el color",
      "abierto (encontrado el 14/10/2026 en la prueba de sistema)"),
     ("D-8", "CP-50", "Media", "A 360 px el panel del administrador se desborda 27 px (el botón de salir queda cortado) y \"Mis reservas\" "
@@ -155,12 +155,12 @@ NOTAS = {
              "actualizar el texto del caso en el plan ([A CONFIRMAR] resuelto).",
     "CP-27": "Con CC-02, si la instalación se da de baja definitiva el crédito también vale en una equivalente "
              "(misma disciplina); en cualquier otro caso (otra instalación, mantenimiento) se rechaza.",
-    "CP-16": "Observación D-6: si el mismo archivo se sube en dos cargas a la vez, la segunda se rechaza (queda un solo "
-             "comprobante) pero con un error técnico, no con el mensaje.",
-    "CP-42": "La pantalla no ofrece un período de un día ni elegir una instalación (el menor es 7 días y muestra todas): "
-             "el día suelto se comprobó llamando al servicio.",
-    "CP-52": "La pantalla filtra la instalación por disciplina o por nombre en el buscador; no hay un desplegable de "
-             "instalaciones.",
+    "CP-16": "D-6 corregido (14/10/2026): si el mismo archivo se sube en dos cargas a la vez, la segunda también recibe "
+             "\"Ese comprobante ya fue usado en otra operación.\"",
+    "CP-42": "Para coincidir con el plan (14/10/2026), Reportes ofrece el período \"Un día\" y, en Ocupación, elegir una "
+             "instalación para verla turno por turno; también se comprobó en la pantalla desplegada (sección de sistema).",
+    "CP-52": "Para coincidir con el plan (14/10/2026), Reservas filtra por instalación además de por disciplina; también se "
+             "comprobó en la pantalla desplegada (sección de sistema).",
     "CP-46": "Observación D-12: en hoja A4 el horario y el monto se parten en dos renglones.",
     "CP-51": "Observación D-13: \"Mis reservas\" repite la fecha del turno.",
     "CP-41": "El panel del socio sigue diciendo \"valoración\" (el cambio se aplicó solo al administrador hasta que el equipo decida).",
@@ -361,7 +361,8 @@ def main():
     w("| Defectos abiertos y cerrados, por severidad | Solo se informa | Abiertos: %s. Cerrados: %s | — |" %
       (por_severidad(ABIERTOS), por_severidad(cerrados)))
     w("| Tiempo medio de corrección de un defecto (días) | Solo se informa | %s | — |" %
-      ("1 día (D-1 a D-4: informados el 12/10/2026 y corregidos el 13/10/2026)" if cerrados
+      ("1 día (D-1 a D-4: informados el 12/10/2026 y corregidos el 13/10/2026; D-6: informado el 13/10/2026 y corregido el "
+       "14/10/2026)" if cerrados
        else "Sin datos: todavía no se corrigió ninguno"))
     sin_caso = [r for r, cps in MATRIZ if not cps.strip()]
     w("| Requerimientos sin caso de prueba | 0 | %d | %s |" % (len(sin_caso), si(not sin_caso)))

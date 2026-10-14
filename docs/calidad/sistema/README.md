@@ -24,10 +24,12 @@ No forma parte del proyecto Maven y no instala nada: usa Node 22 o superior (que
 | CP-45 | Aprobado | Con 500.403 reservas, contra la aplicación desplegada (GlassFish con 512 MB): abrir Reservas 1,7 s, filtrar una semana 0,3 s, PDF de un día o de una semana 0,5 s, buscar un nombre en todo el historial 2,1 s, sin agotar la memoria. Meta de la Tabla 3: 5 s o menos (todavía "[A CONFIRMAR]" en el plan) | `cp45-*` |
 | CP-46 | Aprobado | 225 reservas en 12 páginas: cada una repite el encabezado de la tabla y lleva "Emitido el ..." y "Página N de 12". Observación de prolijidad: INC-12 | `cp46-*` |
 | CP-47 | **Falló** | 714 textos y campos medidos en 9 vistas del socio: 3 combinaciones de color no llegan al mínimo (INC-10) | `cp47-contraste.json` |
-| CP-48 | **Falló** | 3.239 textos y campos medidos en 13 vistas del administrador: 7 combinaciones no llegan al mínimo (INC-11) | `cp48-contraste.json` |
+| CP-48 | **Falló** | 3.245 textos y campos medidos en 13 vistas del administrador: 7 combinaciones no llegan al mínimo (INC-11) | `cp48-contraste.json` |
 | CP-49 | **Falló** | Las listas muestran el estado con texto, pero en la grilla del calendario del administrador el estado de cada reserva se distingue solo por el color (INC-07) | `cp49-*-en-grises.png` |
 | CP-50 | **Falló** | 19 pantallas en 360, 768 y 1280 px (57 capturas). A 360 px el panel del administrador se desborda (el botón de salir queda cortado) y "Mis reservas" del socio también (INC-08). A 1280 px tres tablas del administrador no entran en su tarjeta (INC-09) | `cp50/` |
 | CP-51 | Aprobado | "Próximas", "Historial" y "Todas" del socio coinciden con sus 9 reservas en la base; cada una con instalación, día, horario y estado | `cp51-*.png` |
+| CP-42 (pantalla) | Aprobado | El caso es de integración (está en `docs/calidad/integracion`); acá se comprueba que la pantalla lo ofrece: Reportes → "Un día" → Ocupación → una instalación muestra cada turno libre o reservado y por quién, igual que la base | `cp42-*.png` |
+| CP-52 (pantalla) | Aprobado | Igual: Reservas → filtro por instalación (también junto con estado y período) trae lo mismo que la base, y el PDF dice la instalación elegida | `cp52-*` |
 | CP-53 | No ejecutado | Lo aprueban la cátedra y el equipo en la RTF-03: se preparó el informe con los hallazgos ([rtf-03-diseno-visual.md](../rtf-03-diseno-visual.md)) y las capturas de todas las pantallas están en `evidencia/cp50/` | — |
 
 Las incidencias (INC-07 a INC-13) están en [incidencias.md](../incidencias.md) con la plantilla del Apéndice G.

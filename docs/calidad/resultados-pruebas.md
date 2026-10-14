@@ -48,9 +48,9 @@ Dónde ver los resultados:
 | Medida | Valor |
 |---|---|
 | Clases de prueba | 28 |
-| Pruebas (métodos) | 657 |
-| Ejecuciones (casos, contando cada valor de las parametrizadas) | 716 |
-| Pasan | 715 |
+| Pruebas (métodos) | 669 |
+| Ejecuciones (casos, contando cada valor de las parametrizadas) | 728 |
+| Pasan | 727 |
 | Deshabilitadas (defectos D-1 a D-5) | 1 |
 | Fallan | 0 |
 | Tiempo total | unos segundos (la mayor parte es el hash PBKDF2 de 120 000 iteraciones) |
@@ -388,12 +388,13 @@ Cada nombre describe un único comportamiento. En las pruebas parametrizadas, "N
 | `sinNombreElNombreDePilaEsLaParteLocalDelCorreo` | Sin nombre el nombre de pila es la parte local del correo | Pasa |
 | `unVigenteSinSuscripcionVigenteNoTieneFechaDeVencimiento` | Un vigente sin suscripcion vigente no tiene fecha de vencimiento | Pasa |
 
-### `servicio.PanelSocioServicioComprobanteTest` (19 pruebas, 19 casos)
+### `servicio.PanelSocioServicioComprobanteTest` (20 pruebas, 20 casos)
 
 | Prueba | Qué verifica | Resultado |
 |---|---|---|
 | `guardaElComprobanteYCreaElPagoPorElPrecioDeLaTarifa` | Guarda el comprobante y crea el pago por el precio de la tarifa | Pasa |
 | `guardaUnPngConLaExtensionPng` | Guarda un PNG con la extensión PNG | Pasa |
+| `siLaBaseRechazaElArchivoRepetidoAvisaQueYaFueUsado` | Si la base rechaza el archivo repetido avisa que ya fue usado | Pasa |
 | `aceptaUnArchivoDeExactamente5MB` | Acepta un archivo de exactamente 5 MB | Pasa |
 | `rechazaUnArchivoDeUnByteMasQue5MB` | Rechaza un archivo de un byte más que 5 MB | Pasa |
 | `rechazaSinArchivo` | Rechaza sin archivo | Pasa |
@@ -607,11 +608,20 @@ Cada nombre describe un único comportamiento. En las pruebas parametrizadas, "N
 | `cp45_laCargaPideSoloElPeriodoYElPrevio` | Cp 45 la carga pide solo el periodo y el previo | Pasa |
 | `cargaLosTurnosDeCadaInstalacionReservable` | Carga los turnos de cada instalación reservable | Pasa |
 
-### `servicio.ReportesServicioTest` (60 pruebas, 68 casos)
+### `servicio.ReportesServicioTest` (69 pruebas, 77 casos)
 
 | Prueba | Qué verifica | Resultado |
 |---|---|---|
 | `CP-41: el resumen de reportes dice "Grado de satisfacción"` | Cp 41 el resumen de reportes dice grado de satisfacción | Pasa |
+| `CP-42: "Un día" es un período de un solo día, comparado con el mismo día de la semana anterior` | Cp 42 un día es un período de un solo día comparado con el mismo día de la semana anterior | Pasa |
+| `unDiaSinFechaEsHoy` | Un día sin fecha es hoy | Pasa |
+| `losDemasPeriodosNoUsanElDiaElegido` | Los demas periodos no usan el día elegido | Pasa |
+| `cp42_laOcupacionDeUnDiaDeUnaInstalacionVaTurnoPorTurno` | Cp 42 la ocupacion de un día de una instalación va turno por turno | Pasa |
+| `unaReservaEsperandoPagoTambienOcupaElTurno` | Una reserva esperando pago tambien ocupa el turno | Pasa |
+| `enUnPeriodoDeVariosDiasCuentaEnCuantosDiasSeReservoCadaTurno` | En un periodo de varios días cuenta en cuantos días se reservo cada turno | Pasa |
+| `unaInstalacionEnMantenimientoTodoElDiaNoTieneTurnosParaOfrecer` | Una instalación en mantenimiento todo el día no tiene turnos para ofrecer | Pasa |
+| `unTurnoSinReservasEnUnDiaDiceUnDiaEnSingular` | Un turno sin reservas en un día dice un día en singular | Pasa |
+| `sinInstalacionElegidaNoHayTurnos` | Sin instalación elegida no hay turnos | Pasa |
 | `losUltimos7DiasTerminanHoyYSeComparanConLos7Anteriores` | Los ultimos 7 días terminan hoy y se comparan con los 7 anteriores | Pasa |
 | `losUltimos30DiasIncluyenHoyYSeComparanConLos30Anteriores` | Los ultimos 30 días incluyen hoy y se comparan con los 30 anteriores | Pasa |
 | `losUltimos90DiasSeComparanConLos90Anteriores` | Los ultimos 90 días se comparan con los 90 anteriores | Pasa |
@@ -672,7 +682,7 @@ Cada nombre describe un único comportamiento. En las pruebas parametrizadas, "N
 | `avisaLosCreditosQueVencenEnLosProximos7DiasYNoLosDe8` | Avisa los creditos que vencen en los próximos 7 días y no los de 8 | Pasa |
 | `avisaLasInstalacionesEnMantenimientoConSuFechaDeReactivacion` | Avisa las instalaciones en mantenimiento con su fecha de reactivacion | Pasa |
 
-### `servicio.ReservaServicioFiltrosTest` (15 pruebas, 15 casos)
+### `servicio.ReservaServicioFiltrosTest` (17 pruebas, 17 casos)
 
 | Prueba | Qué verifica | Resultado |
 |---|---|---|
@@ -686,6 +696,8 @@ Cada nombre describe un único comportamiento. En las pruebas parametrizadas, "N
 | `cp43_elInformeDeUnDiaTraeEseDiaConPeriodoYEmision` | Cp 43 el informe de un día trae ese día con periodo y emision | Pasa |
 | `cp43_unPeriodoDeVariosDiasDiceDesdeYHasta` | Cp 43 un periodo de varios días dice desde y hasta | Pasa |
 | `cp43_elInformeDiceLosFiltrosAplicados` | Cp 43 el informe dice los filtros aplicados | Pasa |
+| `cp52_elegirUnaInstalacionEsFiltrar` | Cp 52 elegir una instalación es filtrar | Pasa |
+| `cp52_elFiltroOfreceCadaInstalacionQueSeReservaPorNombre` | Cp 52 el filtro ofrece cada instalación que se reserva por nombre | Pasa |
 | `cp44_unPeriodoSinReservasAvisaYNoArmaDocumento` | Cp 44 un periodo sin reservas avisa y no arma documento | Pasa |
 | `cp45_siSuperaElMaximoPideAcotarSinCargarLasFilas` | Cp 45 si supera el máximo pide acotar sin cargar las filas | Pasa |
 | `cp45_exactamenteElMaximoEntra` | Cp 45 exactamente el máximo entra | Pasa |
@@ -867,16 +879,16 @@ La cobertura la mide JaCoCo sobre el código de producción mientras corren las 
 
 | Paquete | Líneas | Ramas | Métodos |
 |---|---|---|---|
-| **`servicio`** | 88.8 % (2363/2662) | 80.7 % (1757/2176) | 81.1 % |
+| **`servicio`** | 88.9 % (2408/2708) | 81.0 % (1796/2218) | 81.5 % |
 | **`util`** | 95.1 % (39/41) | 100.0 % (44/44) | 100.0 % |
 | `repositorio` | 70.0 % (420/600) | 9.4 % (19/202) | 74.5 % |
-| `dto` | 68.8 % (734/1067) | 50.0 % (34/68) | 59.2 % |
-| `dao` | 1.0 % (4/409) | 0.0 % (0/54) | 0.9 % |
-| `bean` | 1.7 % (22/1333) | 0.2 % (1/527) | 0.6 % |
+| `dto` | 69.0 % (739/1071) | 61.1 % (44/72) | 59.5 % |
+| `dao` | 1.0 % (4/412) | 0.0 % (0/58) | 0.9 % |
+| `bean` | 1.6 % (22/1366) | 0.2 % (1/545) | 0.6 % |
 | `seguridad` | 0.0 % (0/40) | 0.0 % (0/18) | 0.0 % |
 | `resources` | 0.0 % (0/4) | n/a (0/0) | 0.0 % |
 | `(raíz)` | 0.0 % (0/1) | n/a (0/0) | 0.0 % |
-| **Total** | 58.2 % (3582/6157) | 60.1 % (1855/3089) | 45.9 % |
+| **Total** | 58.2 % (3632/6243) | 60.3 % (1904/3157) | 46.0 % |
 
 Cómo leer esta tabla: `servicio` y `util` son el alcance de este conjunto de pruebas. El total incluye paquetes que no se probaron a propósito (`bean`, con las pantallas JSF; `dao`, con las consultas a la base; y `seguridad`), que figuran en 0 %, por lo que el total solo no es un indicador de calidad. El porcentaje de `repositorio` y `dto` es incidental: son clases de datos que las pruebas construyen o recorren pero no verifican por sí mismas.
 
@@ -891,12 +903,12 @@ Cómo leer esta tabla: `servicio` y `util` son el alcance de este conjunto de pr
 | `servicio.RegistroServicio` | 100.0 % (86/86) | 100.0 % (76/76) |
 | `servicio.UsuarioServicio` | 100.0 % (9/9) | 100.0 % (10/10) |
 | `servicio.ValoracionesServicio` | 100.0 % (58/58) | 100.0 % (32/32) |
-| `servicio.ReportesServicio` | 99.8 % (541/542) | 84.2 % (406/482) |
+| `servicio.ReportesServicio` | 99.3 % (572/576) | 84.9 % (438/516) |
 | `servicio.HorarioServicio` | 99.2 % (128/129) | 98.1 % (104/106) |
 | `servicio.TarifasServicio` | 98.5 % (130/132) | 100.0 % (104/104) |
 | `servicio.CambiosReservaServicio` | 97.9 % (191/195) | 90.9 % (140/154) |
-| `servicio.PanelSocioServicio` | 97.8 % (406/415) | 89.3 % (333/373) |
-| `servicio.ReservaServicio` | 95.9 % (235/245) | 86.6 % (149/172) |
+| `servicio.PanelSocioServicio` | 97.9 % (410/419) | 89.3 % (333/373) |
+| `servicio.ReservaServicio` | 96.0 % (242/252) | 86.9 % (153/176) |
 | `servicio.SociosServicio` | 91.9 % (171/186) | 75.3 % (137/182) |
 | `servicio.InstalacionesServicio` | 81.2 % (199/245) | 71.4 % (142/199) |
 | `servicio.DashboardServicio` | 19.0 % (26/137) | 16.2 % (18/111) |
@@ -909,7 +921,7 @@ El porcentaje de la capa `servicio` completa mezcla las reglas con métodos que 
 
 | Clase | Líneas | Ramas |
 |---|---|---|
-| `PanelSocioServicio` | 98.4 % (124/126) | 100.0 % (106/106) |
+| `PanelSocioServicio` | 98.5 % (128/130) | 100.0 % (106/106) |
 | `CambiosReservaServicio` | 100.0 % (107/107) | 97.8 % (88/90) |
 | `MembresiasServicio` | 100.0 % (50/50) | 100.0 % (30/30) |
 | `TarifasServicio` | 100.0 % (85/85) | 100.0 % (90/90) |
@@ -918,7 +930,7 @@ El porcentaje de la capa `servicio` completa mezcla las reglas con métodos que 
 | `UsuarioServicio` | 100.0 % (8/8) | 100.0 % (10/10) |
 | `PasswordUtil` | 90.5 % (19/21) | 100.0 % (6/6) |
 | `ComprobanteArchivos` | 100.0 % (20/20) | 100.0 % (38/38) |
-| **Núcleo de reglas** | **99.2 % (518/522)** | **99.6 % (466/468)** |
+| **Núcleo de reglas** | **99.2 % (522/526)** | **99.6 % (466/468)** |
 
 Métodos incluidos: `PanelSocioServicio`: reservar, subirComprobante, valorar, liberar, liberarVencidas, propiaPendiente, sinValorar, debeValorarse, primerDiaReservable, sha256; `CambiosReservaServicio`: fueraDePlazo, solicitar, aprobar, rechazar, cancelarPorElPredio, validarDestino, cancelar, mover, registrar, recortar; `MembresiasServicio`: aceptar, denegar, cancelar, vencerVencidas, congelarSiCorresponde, estaPorValidar, validarPago; `TarifasServicio`: ordenValido, cambiarAlquiler, cambiarMembresia, aplicar, enVigencia, parsear; `ReservaServicio`: confirmar, rechazar, resolver; `RegistroServicio`: validarPasoUno, registrar, resolverCategoria, bajaDe, liberar, archivado; `UsuarioServicio`: autenticar; `PasswordUtil`: generarHash, verificar, hashear; `ComprobanteArchivos`: guardar, borrar, ruta, extension, tipoMime, carpeta.
 
@@ -983,7 +995,7 @@ Los identificadores `D-n` fueron defectos o discrepancias con una prueba deshabi
 | D-3 | CP-32 | Corregido | `MembresiasServicio.aceptar`: la renovación por adelantado empieza el mismo día en que vence la vigente (antes, un día después) |
 | D-4 | CP-02 | Corregido | `RegistroServicio.validarPasoUno`: la contraseña exige letras, números y al menos un símbolo (un espacio no cuenta), además de los 6 caracteres |
 | D-5 | CP-20 | Diferido | El motivo del rechazo sigue siendo opcional; la prueba queda deshabilitada |
-| D-6 | CP-16 | Abierto | Encontrado en la prueba de integración: dos cargas del mismo comprobante a la vez terminan bien en la base, pero la segunda recibe un error técnico (sección 11) |
+| D-6 | CP-16 | Corregido | `PanelSocioServicio.subirComprobante` manda el INSERT del comprobante en el momento: con dos cargas del mismo archivo a la vez, la segunda recibe "Ese comprobante ya fue usado en otra operación." en lugar de un error técnico (sección 11) |
 | D-7 a D-13 | CP-46 a CP-51 | Abiertos | Encontrados en las pruebas de sistema sobre la aplicación desplegada (sección 12) |
 
 Todos los defectos están registrados con la plantilla del Apéndice G en [incidencias.md](incidencias.md) (D-n es INC-nn).
@@ -1227,3 +1239,13 @@ Los casos de nivel S y A del plan se ejecutaron el 14/10/2026 sobre **SIGRID des
 - **¿Detectan el problema?** Las primeras corridas dieron falsos positivos y se corrigieron antes de dar el resultado: el menú plegado del administrador, los formularios dentro de desplegables cerrados, la flecha de los desplegables tomada como imagen de fondo y una captura de página entera que en modo teléfono corría los elementos. Cada hallazgo que quedó se confirmó en las capturas, por ejemplo la grilla del calendario en escala de grises o el panel a 360 px.
 - **Observaciones que no son incidencias:** el panel del socio sigue diciendo "valoración" (CC-04 se aplicó al administrador). GlassFish agrega `;jsessionid=` a la dirección en la primera visita sin cookies. Los Reportes de 12 meses con 500.000 reservas tardan 10,3 s (pendiente ya conocido de RNF-07).
 - **No se corrigió nada del código de producción:** los defectos D-7 a D-13 quedan para que el equipo decida.
+
+## 13. D-6 corregido y CP-42 y CP-52 alineados con el plan (rama `correccion/d6-y-casos-cp42-cp52`, sale de la de sistema)
+
+Pedido del responsable del proyecto (14/10/2026): corregir D-6 y que CP-42 y CP-52 coincidan con el plan. Se hizo con pruebas primero (commit en rojo: 1 falla de D-6, 6 de CP-42 y 3 de CP-52), después el código.
+
+- **D-6:** `subirComprobante` manda el INSERT del comprobante en el momento (`comprobanteDAO.flush()`). Si la base lo rechaza porque otro subió el mismo archivo a la vez, responde "Ese comprobante ya fue usado en otra operación." y no guarda el archivo. Prueba: `siLaBaseRechazaElArchivoRepetidoAvisaQueYaFueUsado`. En la integración contra MySQL, las dos cargas a la vez ahora terminan con ese aviso.
+- **CP-42 ("reporte de ocupación de un día para una instalación"):** Reportes suma el período **"Un día"**, con su fecha, que se compara con el mismo día de la semana anterior. En la pestaña Ocupación aparece la tarjeta **"Ocupación de una instalación"**: al elegir una instalación, muestra cada turno del período. En un día dice si quedó libre o quién lo reservó y en qué estado; en varios días, en cuántos estuvo reservado. Código: `ReportesServicio.rango(periodo, hoy, dia)` y `ocupacionPorTurno`. Pruebas: `cp42_unDiaEsUnPeriodoDeUnSoloDia`, `cp42_laOcupacionDeUnDiaDeUnaInstalacionVaTurnoPorTurno` y cinco más.
+- **CP-52 ("filtra por fecha, instalación y estado"):** Reservas suma el desplegable **"Todas las instalaciones"** (por nombre). El que existía pasa a llamarse "Todas las disciplinas". La consulta lo aplica en SQL y el PDF lo nombra en sus filtros ("Instalación: Cancha de Fútbol 11"). Pruebas: `cp52_elegirUnaInstalacionEsFiltrar`, `cp52_elFiltroOfreceCadaInstalacionQueSeReservaPorNombre` y `cp43_elInformeDiceLosFiltrosAplicados`, que cambió a propósito porque el PDF decía "Instalación: Fútbol" para una disciplina.
+- **Verificación:** las pruebas de integración (`docs/calidad/integracion`) usan esos mismos caminos contra MySQL: 174 turnos comparados uno por uno y 468 combinaciones de filtros. El recorrido de `docs/calidad/sistema` los comprobó además en la aplicación desplegada, con capturas `cp42-*` y `cp52-*`.
+- **De paso:** "Turnos que nunca se reservan" decía "en 1 días" con el período de un día; ahora dice "en 1 día".
