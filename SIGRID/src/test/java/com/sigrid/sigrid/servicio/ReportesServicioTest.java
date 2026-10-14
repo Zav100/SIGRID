@@ -215,6 +215,12 @@ class ReportesServicioTest {
     }
 
     @Test
+    void unTurnoSinReservasEnUnDiaDiceUnDiaEnSingular() {
+        List<ReporteItem> vacios = servicio.turnosSinReservas(d, servicio.rango("DIA", HOY, HOY));
+        assertEquals("en 1 día", vacios.get(0).getDetalle());
+    }
+
+    @Test
     void sinInstalacionElegidaNoHayTurnos() {
         assertTrue(servicio.ocupacionPorTurno(d, r30, null).isEmpty());
         assertTrue(servicio.ocupacionPorTurno(d, r30, 99).isEmpty());

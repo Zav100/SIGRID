@@ -742,7 +742,7 @@ public class ReportesServicio implements Serializable {
                 if (!reservado) {
                     items.add(new ReporteItem(i.getNombre() + " · " + t.getHoraInicio().format(HORA) + " – "
                             + t.getHoraFin().format(HORA), DashboardServicio.icono(i.getTipoDisciplina()), "0 reservas", 0,
-                            "en " + r.getDias() + " días", 0, 0, "off"));
+                            "en " + r.getDias() + (r.getDias() == 1 ? " día" : " días"), 0, 0, "off"));
                 }
             }
         }
