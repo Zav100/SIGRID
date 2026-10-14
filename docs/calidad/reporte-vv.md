@@ -10,10 +10,10 @@ Generado automáticamente por `docs/calidad/generar_reporte_vv.py` con la planti
 |---|---|
 | Reporte N.º | V&V-01 |
 | Fecha y responsable de la ejecución | 13/10/2026 — [completar: ingeniero de pruebas] |
-| Versión del código | rama `correccion/defectos-d1-a-d4`, commit `dfc6502` |
-| Entorno de pruebas | Windows 11, Java 21, Maven; JUnit 5 + Mockito; sin MySQL ni GlassFish |
-| Alcance de la ejecución | Parcial: casos de nivel U (unitarios). Los de nivel I, S y A no se ejecutaron |
-| Datos de prueba utilizados | Ficticios, armados en `DatosDePrueba` (reloj fijo: lunes 12/10/2026 10:00) |
+| Versión del código | rama `calidad/pruebas-integracion`, commit `6895746` |
+| Entorno de pruebas | Windows 11, Java 21, Maven; JUnit 5 + Mockito, sin MySQL ni GlassFish. Integración: servicios y consultas reales con EclipseLink contra MySQL, sin GlassFish |
+| Alcance de la ejecución | Parcial: casos de nivel U (unitarios) y de nivel I (integración). Los de nivel S y A no se ejecutaron |
+| Datos de prueba utilizados | Ficticios, armados en `DatosDePrueba` (reloj fijo: lunes 12/10/2026 10:00); en integración, los datos de la demo de `sigrid_schema.sql` en una base aparte |
 | Informe de cobertura adjunto | Sí (`SIGRID/target/site/jacoco/index.html`) |
 
 ## F.2 Resumen de resultados
@@ -22,13 +22,13 @@ Generado automáticamente por `docs/calidad/generar_reporte_vv.py` con la planti
 
 | Indicador | Meta | Resultado | ¿Cumple? |
 |---|---|---|---|
-| Casos ejecutados | 53 de 53 | 35 de 53 | No |
-| Casos aprobados, fallidos y no ejecutados | Solo se informa | 34 aprobados, 1 fallidos, 18 no ejecutados | — |
-| Casos críticos aprobados | 100 % | 25 de 29 (86 %) | No |
+| Casos ejecutados | 53 de 53 | 40 de 53 | No |
+| Casos aprobados, fallidos y no ejecutados | Solo se informa | 39 aprobados, 1 fallidos, 13 no ejecutados | — |
+| Casos críticos aprobados | 100 % | 27 de 29 (93 %) | No |
 | Cobertura de líneas de los servicios (JaCoCo) | 70 % o más | 88.8 % (2363 de 2662 líneas) | Sí |
 | Cobertura de ramas de los servicios (JaCoCo) | Solo se informa | 80.7 % (1757 de 2176 ramas) | — |
 | Defectos críticos y altos abiertos | 0 | 0 (ninguno) | Sí |
-| Defectos abiertos y cerrados, por severidad | Solo se informa | Abiertos: 1 media. Cerrados: 2 alta, 2 baja | — |
+| Defectos abiertos y cerrados, por severidad | Solo se informa | Abiertos: 1 baja, 1 media. Cerrados: 2 alta, 2 baja | — |
 | Tiempo medio de corrección de un defecto (días) | Solo se informa | 1 día (D-1 a D-4: informados el 12/10/2026 y corregidos el 13/10/2026) | — |
 | Requerimientos sin caso de prueba | 0 | 0 | Sí |
 | Contraste en las pantallas clave (CP-47 y CP-48) | 4,5:1 texto normal; 3:1 texto grande y componentes | No medido | No |
@@ -48,6 +48,7 @@ La severidad es una propuesta; la asigna el líder de SQA (Tabla 31). Detalle y 
 | D-3 | CP-32 | Alta | La renovación por adelantado empezaba el día siguiente al vencimiento, no el mismo día | corregido el 13/10/2026 |
 | D-4 | CP-02 | Alta | La contraseña solo exigía 6 caracteres; el plan pide letras, números y un símbolo | corregido el 13/10/2026 |
 | D-5 | CP-20 | Media | El rechazo de una solicitud admite no dar motivo; el plan lo exige | diferido por decisión del equipo (13/10/2026): el motivo sigue opcional por ahora |
+| D-6 | CP-16 | Baja | Dos cargas del mismo comprobante a la vez: la base deja una sola, pero la segunda recibe un error técnico en lugar del mensaje "ya fue usado" | abierto (encontrado el 13/10/2026 en la prueba de integración) |
 
 ## F.3 Resultado por caso de prueba
 
@@ -58,7 +59,7 @@ La severidad es una propuesta; la asigna el líder de SQA (Tabla 31). Detalle y 
 | CP-01 | Registrar un socio interno con datos válidos y legajo | U | No | Aprobado | — |
 | CP-02 | Registrar con contraseña sin símbolo especial | U | No | Aprobado | D-4 corregido (13/10/2026): la contraseña exige letras, números y un símbolo; un espacio no cuenta. |
 | CP-03 | Registrar un socio interno sin legajo | U | No | Aprobado | — |
-| CP-04 | Registrar con un correo o un DNI ya existente | I | No | No ejecutado | Falta la prueba de integración con una base MySQL de pruebas (no existe en este conjunto). Evidencia unitaria: 2 prueba(s) del servicio aprobadas (no reemplazan ese nivel). |
+| CP-04 | Registrar con un correo o un DNI ya existente | I | No | Aprobado | Prueba de integración contra una base MySQL de prueba (detalle más abajo). |
 | CP-05 | Iniciar sesión como socio y como administrador; ruta /admin | S | No | No ejecutado | Falta la prueba de sistema manual (RTF). Evidencia unitaria: 1 prueba(s) del servicio aprobadas (no reemplazan ese nivel). |
 | CP-06 | Iniciar sesión con cuenta dada de baja y con membresía vencida | U | No | Aprobado | — |
 | CP-07 | Guardar la misma contraseña para dos usuarios (hashes distintos) | U | No | Aprobado | D-1 corregido (13/10/2026): un hash mal formado ya no rompe el login, cuenta como contraseña incorrecta. |
@@ -66,11 +67,11 @@ La severidad es una propuesta; la asigna el líder de SQA (Tabla 31). Detalle y 
 | CP-09 | Un socio NO_ACTIVO intenta reservar | U | No | Aprobado | — |
 | CP-10 | Reservar un turno a más de 30 días | U | Sí | Aprobado | — |
 | CP-11 | Intentar una cuarta reserva sin comprobante | U | Sí | Aprobado | — |
-| CP-12 | Dos socios reservan a la vez el mismo turno y día | I | Sí | No ejecutado | Falta la prueba de integración con una base MySQL de pruebas (no existe en este conjunto). Evidencia unitaria: 2 prueba(s) del servicio aprobadas (no reemplazan ese nivel). |
+| CP-12 | Dos socios reservan a la vez el mismo turno y día | I | Sí | Aprobado | Prueba de integración contra una base MySQL de prueba (detalle más abajo). |
 | CP-13 | Subir un comprobante PDF, JPG o PNG de hasta 5 MB con fecha válida | U | Sí | Aprobado | — |
 | CP-14 | Subir un archivo de más de 5 MB o con extensión falsa | U | Sí | Aprobado | — |
 | CP-15 | Subir un comprobante con fecha futura o de más de 7 días | U | Sí | Aprobado | D-2 corregido (13/10/2026): la transferencia se tolera hasta 25 minutos en el futuro. |
-| CP-16 | Subir dos veces el mismo archivo | I | Sí | No ejecutado | Falta la prueba de integración con una base MySQL de pruebas (no existe en este conjunto). Evidencia unitaria: 1 prueba(s) del servicio aprobadas (no reemplazan ese nivel). |
+| CP-16 | Subir dos veces el mismo archivo | I | Sí | Aprobado | Prueba de integración contra una base MySQL de prueba (detalle más abajo). Observación D-6: si el mismo archivo se sube en dos cargas a la vez, la segunda se rechaza (queda un solo comprobante) pero con un error técnico, no con el mensaje. |
 | CP-17 | Pasan 60 minutos sin comprobante y corre la tarea programada | U | Sí | Aprobado | — |
 | CP-18 | El socio libera un turno todavía no pagado | U | Sí | Aprobado | — |
 | CP-19 | El administrador confirma una reserva con comprobante | U | No | Aprobado | — |
@@ -96,7 +97,7 @@ La severidad es una propuesta; la asigna el líder de SQA (Tabla 31). Detalle y 
 | CP-39 | Calificar por segunda vez la misma reserva | U | Sí | Aprobado | — |
 | CP-40 | Un turno realizado desde el 25/09/2026 sin calificar | U | Sí | Aprobado | — |
 | CP-41 | Revisar menú, títulos, reportes y PDF ("Grado de satisfacción") | S | Sí | No ejecutado | Falta la prueba de sistema manual (RTF). El cambio CC-04 ya está implementado; falta la revisión manual. Evidencia unitaria: 2 prueba(s) del servicio aprobadas (no reemplazan ese nivel). |
-| CP-42 | Reporte de ocupación de un día para una instalación | I | No | No ejecutado | Falta la prueba de integración con una base MySQL de pruebas (no existe en este conjunto). Evidencia unitaria: 1 prueba(s) del servicio aprobadas (no reemplazan ese nivel). |
+| CP-42 | Reporte de ocupación de un día para una instalación | I | No | Aprobado | Prueba de integración contra una base MySQL de prueba (detalle más abajo). La pantalla no ofrece un período de un día ni elegir una instalación (el menor es 7 días y muestra todas): el día suelto se comprobó llamando al servicio. |
 | CP-43 | Exportar el PDF de reservas de un solo día | S | No | No ejecutado | Falta la prueba de sistema manual (RTF). El cambio CC-06 ya está implementado; falta la revisión manual. Evidencia unitaria: 5 prueba(s) del servicio aprobadas (no reemplazan ese nivel). |
 | CP-44 | Exportar el PDF de un período sin reservas | S | No | No ejecutado | Falta la prueba de sistema manual (RTF). El cambio CC-06 ya está implementado; falta la revisión manual. Evidencia unitaria: 1 prueba(s) del servicio aprobadas (no reemplazan ese nivel). |
 | CP-45 | Con 500.000 reservas, listar y exportar un período acotado | A | No | No ejecutado | Falta la medición de accesibilidad o rendimiento. El cambio CC-06 ya está implementado; falta la revisión manual. Evidencia unitaria: 3 prueba(s) del servicio aprobadas (no reemplazan ese nivel). Medido aparte con 500.403 reservas (docs/calidad/cp45/README.md): el listado, el buscador y el PDF de un período acotado responden en menos de 3 s y con unos 10 MB de memoria; el código anterior no termina (OutOfMemoryError con 1 GB). Los reportes de 12 meses tardan 6,7 s y usan más de 500 MB. |
@@ -106,8 +107,20 @@ La severidad es una propuesta; la asigna el líder de SQA (Tabla 31). Detalle y 
 | CP-49 | Revisar los estados de reserva sin depender solo del color | S | No | No ejecutado | Falta la prueba de sistema manual (RTF). El cambio CC-05 ya está implementado; falta la revisión manual. Evidencia unitaria: 2 prueba(s) del servicio aprobadas (no reemplazan ese nivel). |
 | CP-50 | Abrir las pantallas principales en 360, 768 y 1280 px | A | No | No ejecutado | Falta la medición de accesibilidad o rendimiento. |
 | CP-51 | El socio abre su historial de reservas | S | No | No ejecutado | Falta la prueba de sistema manual (RTF). Evidencia unitaria: 1 prueba(s) del servicio aprobadas (no reemplazan ese nivel). |
-| CP-52 | El administrador filtra el listado de reservas | I | No | No ejecutado | Falta la prueba de integración con una base MySQL de pruebas (no existe en este conjunto). |
+| CP-52 | El administrador filtra el listado de reservas | I | No | Aprobado | Prueba de integración contra una base MySQL de prueba (detalle más abajo). La pantalla filtra la instalación por disciplina o por nombre en el buscador; no hay un desplegable de instalaciones. |
 | CP-53 | Revisar el diseño visual en RTF-03 | S | No | No ejecutado | Falta la prueba de sistema manual (RTF). |
+
+### Pruebas de integración (nivel I)
+
+Pruebas de integración de SIGRID. Ejecutadas el 13/10/2026 23:42 contra la base de prueba sigrid_integ (MySQL 8.0.36). No son parte de `mvn test`: se corren aparte con `docs/calidad/integracion/PruebasIntegracion.java` (cómo repetirlas, en su [README](integracion/README.md)).
+
+| Caso | Resultado | Qué se comprobó |
+|---|---|---|
+| CP-04 | Aprobado | Correo repetido (también en mayúsculas y con espacios) y DNI repetido: el servicio los rechaza con su mensaje y no se crea ninguna fila; si algo se saltea el servicio, la base rechaza el INSERT (uq_usuario_email y uq_socio_dni); con datos nuevos la misma alta se crea. |
+| CP-12 | Aprobado | Paso a paso: el segundo pedido pasa la consulta previa, queda esperando en el INSERT y, cuando el primero confirma, recibe "Ese turno acaba de ser reservado por otra persona. Elegí otro."; queda una sola reserva viva. A la vez (20 rondas, dos conexiones): siempre una sola reserva y el otro socio recibe ese mensaje (ganó 4 veces uno y 16 el otro). |
+| CP-16 | Aprobado | Primera carga: pago y comprobante creados y archivo guardado. El mismo archivo en otra reserva (del mismo socio y de otro socio): "Ese comprobante ya fue usado en otra operación.", sin pago ni comprobante nuevos. Dos cargas a la vez del mismo archivo: queda una sola (uq_comprobante_hash); la otra responde <ERROR RollbackException>. |
+| CP-42 | Aprobado | 84 comparaciones (7 instalaciones por los 6 períodos de la pantalla y 6 días sueltos): los turnos reservados y disponibles de cada instalación y el total coinciden con lo contado por SQL (1355 turnos ocupados sumando todos los períodos). La pantalla no ofrece un período de un día (el menor es 7 días): el día suelto se comprobó llamando al servicio. |
+| CP-52 | Aprobado | 468 combinaciones de estado (6), período (6) e instalación (5 disciplinas del desplegable y 7 nombres en el buscador) sobre 403 reservas: el listado trae exactamente las mismas reservas que la consulta SQL directa, sin repetidas, y el total informado coincide (206 combinaciones con resultados). La pantalla filtra la instalación por disciplina o escribiendo el nombre en el buscador: no hay un desplegable de instalaciones. |
 
 ## Matriz de trazabilidad con resultados (Tabla 30)
 
@@ -115,19 +128,19 @@ Un requerimiento figura como *Aprobado* si todos sus casos lo están.
 
 | Requerimiento | Casos | Resultado |
 |---|---|---|
-| RF-01 Gestión de socios | CP-01, CP-03, CP-04, CP-06, CP-32, CP-33 | Parcial: 5 de 6 aprobados |
-| RF-02 Seguimiento del uso | CP-51, CP-52 | Parcial: 0 de 2 aprobados |
-| RF-03 Pagos y cobros | CP-13, CP-14, CP-15, CP-16, CP-19, CP-34, CP-35 | Parcial: 6 de 7 aprobados |
+| RF-01 Gestión de socios | CP-01, CP-03, CP-04, CP-06, CP-32, CP-33 | Aprobado |
+| RF-02 Seguimiento del uso | CP-51, CP-52 | Parcial: 1 de 2 aprobados |
+| RF-03 Pagos y cobros | CP-13, CP-14, CP-15, CP-16, CP-19, CP-34, CP-35 | Aprobado |
 | RF-04 Reservas | CP-08, CP-09, CP-10, CP-11, CP-17, CP-18, CP-27, CP-28 | Aprobado |
 | RF-05 Administración de reservas e instalaciones | CP-19, CP-20, CP-31 | Falló (CP-20) |
-| RF-06 Reportes | CP-42 | Parcial: 0 de 1 aprobados |
+| RF-06 Reportes | CP-42 | Aprobado |
 | RF-07 Grado de satisfacción | CP-37, CP-38, CP-39, CP-40 | Aprobado |
 | RNF-01 Diseño adaptable | CP-50 | Parcial: 0 de 1 aprobados |
 | RNF-02 Estilo gráfico actual | CP-53 | Parcial: 0 de 1 aprobados |
 | RNF-03 Contraseñas | CP-02, CP-07 | Aprobado |
 | RNF-04 Mensajes de error | CP-02 | Aprobado |
 | RNF-05 Seguridad y acceso | CP-05, CP-14, CP-21 | Parcial: 2 de 3 aprobados |
-| RNF-06 Integridad y concurrencia | CP-12 | Parcial: 0 de 1 aprobados |
+| RNF-06 Integridad y concurrencia | CP-12 | Aprobado |
 | RNF-07 Rendimiento de listados y PDF | CP-45 | Parcial: 0 de 1 aprobados |
 | RNF-08 Accesibilidad visual | CP-47, CP-48, CP-49 | Parcial: 0 de 3 aprobados |
 | CC-01 Cancelación automática | CP-22, CP-23, CP-24, CP-25, CP-26 | Aprobado |

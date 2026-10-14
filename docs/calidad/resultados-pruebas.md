@@ -983,6 +983,7 @@ Los identificadores `D-n` fueron defectos o discrepancias con una prueba deshabi
 | D-3 | CP-32 | Corregido | `MembresiasServicio.aceptar`: la renovación por adelantado empieza el mismo día en que vence la vigente (antes, un día después) |
 | D-4 | CP-02 | Corregido | `RegistroServicio.validarPasoUno`: la contraseña exige letras, números y al menos un símbolo (un espacio no cuenta), además de los 6 caracteres |
 | D-5 | CP-20 | Diferido | El motivo del rechazo sigue siendo opcional; la prueba queda deshabilitada |
+| D-6 | CP-16 | Abierto | Encontrado en la prueba de integración: dos cargas del mismo comprobante a la vez terminan bien en la base, pero la segunda recibe un error técnico (sección 11) |
 
 **D-1. `PasswordUtil.verificar` lanzaba excepción con un hash mal formado** (corregido)
 
@@ -1052,8 +1053,8 @@ Los identificadores `D-n` fueron defectos o discrepancias con una prueba deshabi
 
 ## 7. Limitaciones de este conjunto de pruebas
 
-1. **Mockito simula los DAO.** No se ejecuta SQL ni JPQL, no hay transacciones (`@Transactional` no actúa en pruebas unitarias) ni concurrencia: el bloqueo pesimista (`buscarParaResolver`) y la carrera por el mismo turno no se ejercen.
-2. **No hay pruebas de interfaz ni de integración.** Nada verifica las páginas JSF, los filtros de seguridad, el despliegue ni la tarea programada.
+1. **Mockito simula los DAO.** En las pruebas unitarias no se ejecuta SQL ni JPQL, no hay transacciones (`@Transactional` no actúa) ni concurrencia. La carrera por el mismo turno, el registro repetido, el comprobante repetido, la ocupación y el filtro del listado se comprueban aparte contra MySQL (sección 11); el bloqueo pesimista (`buscarParaResolver`) sigue sin ejercerse.
+2. **No hay pruebas de interfaz.** Nada verifica las páginas JSF, los filtros de seguridad, el despliegue ni la tarea programada. Las de integración (sección 11) usan los servicios y los DAO reales, pero sin GlassFish: las transacciones las abre la prueba, no `@Transactional`.
 3. **La cobertura global (56 %) queda por debajo de la de las reglas por alcance, no por descuido.** El núcleo de reglas está en el 99 % de líneas y de ramas; la capa de servicio completa, en el 88 %. Una cobertura alta no garantiza que cada verificación sea fuerte: por eso se hizo la mutación manual de 4.5, que cubre 20 reglas y no reemplaza a una herramienta automática.
 4. **Las pruebas fijan los mensajes de error actuales.** Cambiar el texto de un mensaje rompe la prueba correspondiente, aunque la regla siga igual.
 5. **Una prueba está deshabilitada** (D-5): expresa la regla del plan, no el comportamiento actual, y el equipo decidió diferirla. Cuando se implemente hay que quitarle el `@Disabled`.
@@ -1177,3 +1178,23 @@ Lo que pide el plan (Tabla 12, opción A): el plazo de 30 días del crédito se 
 - **Las consultas SQL no las ejercitan las pruebas unitarias.** Se probó de punta a punta contra una base MySQL temporal con los datos de demostración (servicios y DAO reales, ya borrada): a un crédito con 20 días lo siguen mostrando con 20 días hoy y 60 días después, reactivar 50 días más tarde lo deja en la fecha de ese día + 20 (22/12/2026), el reporte trae los créditos en pausa y la baja definitiva del Quincho 1 ofrece las franjas del Quincho 2 y del 3.
 - **Lo que no se pudo comprobar:** las pantallas en GlassFish (el texto de "Mis reservas" y la pestaña "Con crédito" del administrador).
 - **A decidir:** (1) si la instalación se da de baja y no tiene ninguna equivalente (rugby, SUM), el crédito queda sin uso hasta que venza (el plan habla de "reintegro", que el sistema no maneja: no hay devoluciones de dinero); (2) al dar de baja desde un mantenimiento el plazo vuelve a correr ese día, con los días que le quedaban; (3) en el plan hay que actualizar el texto de CP-30 y de la sección de reglas de CC-02 ([A CONFIRMAR] resueltos).
+
+## 11. Pruebas de integración (rama `calidad/pruebas-integracion`, sale de la de D-1 a D-4)
+
+Los cinco casos de nivel I del plan (CP-04, CP-12, CP-16, CP-42 y CP-52) necesitan la base de datos. Se ejecutan con `docs/calidad/integracion/PruebasIntegracion.java`: los servicios y los DAO reales, con el EclipseLink y el driver de MySQL que trae GlassFish, contra una base MySQL de prueba cargada con `sigrid_schema.sql`. No se agregó ninguna dependencia al proyecto y `mvn test` sigue corriendo sin base. Cómo repetirlas: [integracion/README.md](integracion/README.md). El resultado queda en `integracion/resultados.txt` y el generador del reporte de V&V lo lee.
+
+| Caso | Resultado | Qué se comprobó |
+|---|---|---|
+| CP-04 | Aprobado | Un correo que ya existe (también en mayúsculas y con espacios) y un DNI que ya existe se rechazan con su mensaje y no se crea ninguna fila. Si algo se saltea el servicio, la base rechaza el `INSERT` (`uq_usuario_email`, `uq_socio_dni`). Con datos nuevos la misma alta se crea |
+| CP-12 | Aprobado | Dos socios, dos conexiones, el mismo turno y día. Paso a paso: el segundo pasa la consulta previa, queda esperando en el `INSERT` y cuando el primero confirma recibe "Ese turno acaba de ser reservado por otra persona". Saliendo a la vez, 20 rondas: siempre una sola reserva viva y el otro recibe ese mensaje |
+| CP-16 | Aprobado | El mismo archivo en otra reserva (del mismo socio y de otro) se rechaza con "Ese comprobante ya fue usado en otra operación"; no se crean pago ni comprobante. En dos cargas a la vez queda una sola (`uq_comprobante_hash`) |
+| CP-42 | Aprobado | 84 comparaciones (7 instalaciones, los 6 períodos de la pantalla y 6 días sueltos): los turnos reservados y disponibles de cada instalación y el total coinciden con lo contado por SQL |
+| CP-52 | Aprobado | 468 combinaciones de estado, período e instalación sobre las 403 reservas de la demo: el listado trae exactamente las mismas reservas que una consulta SQL directa, sin repetidas, y el total informado coincide |
+
+**¿Detectan el problema?** En la base de prueba se quitaron los `UNIQUE` de correo, de turno y día y de hash y se volvió a correr: CP-04, CP-12 y CP-16 fallaron (la base aceptó el duplicado), como corresponde. Se corrió dos veces seguidas sobre la misma base y deja los datos como estaban.
+
+**D-6 (abierto, severidad propuesta: baja).** Si el mismo archivo se sube en dos cargas a la vez, la consulta previa (`existePorHash`) no ve la otra y las dos siguen; la base deja pasar una sola, pero el `INSERT` del comprobante sale recién al cerrar la transacción, así que la segunda termina con una excepción técnica (`RollbackException`) que `SocioReservasBean.subir` no atrapa: el socio vería la página de error en vez de "ya fue usado". Los datos quedan bien. `PanelSocioServicio.reservar` resuelve el mismo problema mandando el `INSERT` en el momento (`ReservaDAO.insertar`) y traduciendo el error; el arreglo sería hacer lo mismo con el comprobante. No se corrigió: cambia código de producción y queda a decisión del equipo. El alta de socios tiene la misma forma (dos registros a la vez con el mismo correo): no se midió.
+
+**Diferencias con el texto del plan.** CP-42 habla del reporte "de un día para una instalación" y la pantalla de reportes no tiene período de un día (el menor es 7 días) ni selector de instalación (las muestra todas). CP-52 habla de filtrar "por instalación" y la pantalla filtra por disciplina o por el nombre escrito en el buscador. Se probó lo que la pantalla ofrece y, además, el día suelto llamando al servicio.
+
+**Lo que no cubren.** No pasan por GlassFish: no prueban `@Transactional`, los beans ni las páginas. Los casos de nivel S y A siguen pendientes.
