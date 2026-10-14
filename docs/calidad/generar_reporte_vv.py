@@ -8,6 +8,7 @@ Uso (desde la raíz del repositorio, después de correr `mvn test` en la carpeta
 Lee:  SIGRID/target/surefire-reports/TEST-*.xml  (resultados; cada caso sale con su @DisplayName "CP-22: ...")
       SIGRID/target/site/jacoco/jacoco.csv       (cobertura)
       docs/calidad/integracion/resultados.txt    (casos de nivel I, si se corrieron; ver su README.md)
+      docs/calidad/sistema/resultados.txt        (casos de nivel S y A, si se corrieron; ver su README.md)
 Escribe: docs/calidad/reporte-vv.md
 
 El código de cada caso (CP-nn) está en el @DisplayName de las pruebas: así la trazabilidad no depende de un
@@ -28,6 +29,7 @@ SUREFIRE = os.path.join(RAIZ, 'SIGRID', 'target', 'surefire-reports')
 JACOCO = os.path.join(RAIZ, 'SIGRID', 'target', 'site', 'jacoco', 'jacoco.csv')
 SALIDA = os.path.join(RAIZ, 'docs', 'calidad', 'reporte-vv.md')
 INTEGRACION = os.path.join(RAIZ, 'docs', 'calidad', 'integracion', 'resultados.txt')
+SISTEMA = os.path.join(RAIZ, 'docs', 'calidad', 'sistema', 'resultados.txt')
 
 # Caso | nivel | crítico | requisito | descripción corta  (Tablas 19 a 25, 29 y 42 del plan)
 CASOS = """\
@@ -100,7 +102,8 @@ MATRIZ = [
     ("CC-05 Colores y contrastes", "47 48 49"), ("CC-06 PDF con filtros de período", "43 44 45 46"),
 ]
 
-# Defectos encontrados (D-1 a D-5, con prueba unitaria; D-6, en integración). La severidad es una propuesta: la asigna el líder de SQA (Tabla 31).
+# Defectos encontrados (D-1 a D-5, con prueba unitaria; D-6, en integración; D-7 a D-13, en sistema). Cada uno es una
+# incidencia de docs/calidad/incidencias.md (D-n = INC-nn). La severidad es una propuesta: la asigna el líder de SQA (Tabla 31).
 # caso, severidad propuesta, qué pasa, estado
 DEFECTOS = [
     ("D-1", "CP-07", "Baja", "PasswordUtil.verificar lanzaba excepción con un hash mal formado en lugar de devolver false",
@@ -115,10 +118,24 @@ DEFECTOS = [
      "diferido por decisión del equipo (13/10/2026): el motivo sigue opcional por ahora"),
     ("D-6", "CP-16", "Baja", "Dos cargas del mismo comprobante a la vez: la base deja una sola, pero la segunda recibe un "
      "error técnico en lugar del mensaje \"ya fue usado\"", "abierto (encontrado el 13/10/2026 en la prueba de integración)"),
+    ("D-7", "CP-49", "Media", "En la grilla del calendario del administrador el estado de cada reserva se distingue solo por el color",
+     "abierto (encontrado el 14/10/2026 en la prueba de sistema)"),
+    ("D-8", "CP-50", "Media", "A 360 px el panel del administrador se desborda 27 px (el botón de salir queda cortado) y \"Mis reservas\" "
+     "del socio también", "abierto (14/10/2026)"),
+    ("D-9", "CP-50", "Baja", "A 1280 px tres tablas del administrador no entran en su tarjeta y esconden sus últimas columnas",
+     "abierto (14/10/2026)"),
+    ("D-10", "CP-47", "Media", "Contraste insuficiente en el carnet digital (3,85:1 y 4,20:1) y en el contorno del campo de comentario del socio",
+     "abierto (14/10/2026)"),
+    ("D-11", "CP-48", "Media", "Contraste insuficiente en el contorno de los filtros (1,2:1 a 1,4:1) y en los días de otros meses de los "
+     "calendarios (2,0:1 a 3,0:1)", "abierto (14/10/2026)"),
+    ("D-12", "CP-46", "Baja", "En el PDF de reservas el horario y el monto se parten en dos renglones", "abierto (14/10/2026)"),
+    ("D-13", "CP-51", "Baja", "\"Mis reservas\" del socio repite la fecha del turno", "abierto (14/10/2026)"),
 ]
 ABIERTOS = [d for d in DEFECTOS if not d[4].startswith("corregido")]
 # casos que FALLAN por un defecto (su prueba deshabilitada es justamente el criterio de aceptación del caso)
 FALLA_POR = {"CP-20": "D-5"}
+# casos de sistema que fallan y su incidencia
+FALLA_SISTEMA = {"CP-47": "D-10", "CP-48": "D-11", "CP-49": "D-7", "CP-50": "D-8 y D-9"}
 # casos que PASAN pero tienen una prueba deshabilitada sobre un detalle vecino
 OBSERVA = {}
 NOTAS = {
@@ -144,6 +161,13 @@ NOTAS = {
              "el día suelto se comprobó llamando al servicio.",
     "CP-52": "La pantalla filtra la instalación por disciplina o por nombre en el buscador; no hay un desplegable de "
              "instalaciones.",
+    "CP-46": "Observación D-12: en hoja A4 el horario y el monto se parten en dos renglones.",
+    "CP-51": "Observación D-13: \"Mis reservas\" repite la fecha del turno.",
+    "CP-41": "El panel del socio sigue diciendo \"valoración\" (el cambio se aplicó solo al administrador hasta que el equipo decida).",
+    "CP-45": "La meta de la Tabla 3 (5 s) sigue \"[A CONFIRMAR]\" en el plan. Reportes de 12 meses con 500.000 reservas: 10,3 s "
+             "(fuera del caso, pero pasa la meta de RNF-07).",
+    "CP-53": "Lo aprueban la cátedra y el equipo en la RTF-03: informe preparado con los hallazgos en "
+             "[rtf-03-diseno-visual.md](rtf-03-diseno-visual.md) y capturas de todas las pantallas en sistema/evidencia/cp50.",
     "CP-33": "La prueba cubre el servicio que usa la tarea horaria (MembresiasServicio.vencerVencidas); la clase "
              "MembresiaJob (el temporizador) no se prueba en unitarias.",
 }
@@ -157,6 +181,10 @@ FALTA_NIVEL = {"I": "prueba de integración con una base MySQL de pruebas (no ex
                "A": "medición de accesibilidad o rendimiento"}
 
 
+def CASOS_PENDIENTES(resultado):
+    return [(cp,) for cp in sorted(resultado) if resultado[cp] == "No ejecutado"]
+
+
 def comando(*args):
     try:
         return subprocess.check_output(args, cwd=RAIZ, text=True, stderr=subprocess.DEVNULL).strip()
@@ -164,17 +192,17 @@ def comando(*args):
         return "?"
 
 
-def leer_integracion():
-    """{caso: (resultado, detalle)} y la línea de encabezado de docs/calidad/integracion/resultados.txt (si existe)."""
+def leer_externos(ruta):
+    """{caso: (resultado, detalle, evidencia)} y la línea de encabezado de un resultados.txt de integración o de sistema."""
     casos, encabezado = {}, ""
-    if os.path.isfile(INTEGRACION):
-        with open(INTEGRACION, encoding='utf-8') as f:
+    if os.path.isfile(ruta):
+        with open(ruta, encoding='utf-8') as f:
             for linea in f.read().splitlines():
                 if linea.startswith('#'):
                     encabezado = linea.lstrip('# ').split(' Formato:')[0].rstrip('.')
                 elif linea.startswith('CP-'):
-                    cp, res, det = linea.split('|', 2)
-                    casos[cp] = (res, det)
+                    partes = linea.split('|')
+                    casos[partes[0]] = (partes[1], partes[2], partes[3] if len(partes) > 3 else "")
     return casos, encabezado
 
 
@@ -208,7 +236,8 @@ def main():
     if not os.path.isdir(SUREFIRE) or not os.path.isfile(JACOCO):
         sys.exit("Faltan los resultados: corré primero `mvn test` dentro de la carpeta SIGRID.")
     pruebas = leer_resultados()
-    integracion, corrida_integracion = leer_integracion()
+    integracion, corrida_integracion = leer_externos(INTEGRACION)
+    sistema, corrida_sistema = leer_externos(SISTEMA)
     por_caso = {}
     for clase, nombre, estado in pruebas:
         m = re.match(r'(CP-\d\d):', nombre)
@@ -228,6 +257,11 @@ def main():
         if nivel == 'I' and cp in integracion:
             res = integracion[cp][0]
             obs.append("Prueba de integración contra una base MySQL de prueba (detalle más abajo).")
+        elif nivel in ('S', 'A') and cp in sistema:
+            res = sistema[cp][0]
+            obs.append("Prueba sobre la aplicación desplegada (detalle más abajo).")
+            if cp in FALLA_SISTEMA:
+                obs.append("Defecto %s (ver incidencias.md)." % FALLA_SISTEMA[cp])
         elif nivel != 'U':
             res = "No ejecutado"
             obs.append("Falta la " + FALTA_NIVEL[nivel] + ".")
@@ -292,11 +326,16 @@ def main():
                                                           comando("git", "rev-parse", "--short", "HEAD")))
     w("| Entorno de pruebas | %s, Java %s, Maven; JUnit 5 + Mockito, sin MySQL ni GlassFish%s |" %
       (platform.system() + " " + platform.release(), "21",
-       ". Integración: servicios y consultas reales con EclipseLink contra MySQL, sin GlassFish" if integracion else ""))
-    w("| Alcance de la ejecución | Parcial: casos de nivel U (unitarios)%s. Los de nivel %sS y A no se ejecutaron |" %
-      ((" y de nivel I (integración)", "") if integracion else ("", "I, ")))
+       (". Integración: servicios y consultas reales con EclipseLink contra MySQL, sin GlassFish" if integracion else "")
+       + (". Sistema: SIGRID desplegado en GlassFish 7 con una base MySQL de prueba, recorrido con Edge sin ventana"
+          if sistema else "")))
+    niveles = ["U"] + (["I"] if integracion else []) + (["S", "A"] if sistema else [])
+    faltan = [c[0] for c in CASOS_PENDIENTES(resultado)]
+    w("| Alcance de la ejecución | Niveles %s%s |" % (", ".join(niveles),
+      ". No ejecutados: " + ", ".join(faltan) if faltan else ". Todos los casos"))
     w("| Datos de prueba utilizados | Ficticios, armados en `DatosDePrueba` (reloj fijo: lunes 12/10/2026 10:00)%s |" %
-      ("; en integración, los datos de la demo de `sigrid_schema.sql` en una base aparte" if integracion else ""))
+      ("; en integración y sistema, los datos de la demo de `sigrid_schema.sql` en una base aparte, y para CP-45 "
+       "500.403 reservas generadas" if integracion or sistema else ""))
     w("| Informe de cobertura adjunto | Sí (`SIGRID/target/site/jacoco/index.html`) |\n")
 
     w("## F.2 Resumen de resultados\n")
@@ -326,26 +365,44 @@ def main():
        else "Sin datos: todavía no se corrigió ninguno"))
     sin_caso = [r for r, cps in MATRIZ if not cps.strip()]
     w("| Requerimientos sin caso de prueba | 0 | %d | %s |" % (len(sin_caso), si(not sin_caso)))
+    if "CP-47" in sistema and "CP-48" in sistema:
+        cuantas = [re.search(r"No llegan al mínimo (\d+) combinaciones", sistema[c][1]) for c in ("CP-47", "CP-48")]
+        texto_contraste = "Medido en las pantallas desplegadas: socio %s, administrador %s (D-10, D-11)" % tuple(
+            ("%s combinaciones por debajo" % m.group(1)) if m else "todo cumple" for m in cuantas)
+        cumple_contraste = all(sistema[c][0] == "Aprobado" for c in ("CP-47", "CP-48"))
+    else:
+        texto_contraste, cumple_contraste = "No medido", False
     w("| Contraste en las pantallas clave (CP-47 y CP-48) | 4,5:1 texto normal; 3:1 texto grande y componentes | "
-      "No medido | No |")
-    w("| Exportación a PDF con 500.000 reservas (CP-45) | 6 de 6 | No ejecutado | No |")
+      "%s | %s |" % (texto_contraste, si(cumple_contraste)))
+    if "CP-45" in sistema:
+        tiempos = [float(x) for x in re.findall(r"(\d+\.\d) s", sistema["CP-45"][1].split("Meta")[0])]
+        texto_45 = "Con 500.403 reservas, listado y PDF de un período acotado en %s s o menos, sin agotar la memoria" % (
+            str(max(tiempos)).replace(".", ","))
+        cumple_45 = sistema["CP-45"][0] == "Aprobado"
+    else:
+        texto_45, cumple_45 = "No ejecutado", False
+    w("| Exportación a PDF con 500.000 reservas (CP-45) | 5 s o menos (Tabla 3, [A CONFIRMAR]) | %s | %s |" % (texto_45, si(cumple_45)))
     cc_ok = [cc for cc in ("CC-01", "CC-02", "CC-03", "CC-04", "CC-05", "CC-06")
              if all(resultado["CP-" + c] == "Aprobado" for r, cps in MATRIZ if r.startswith(cc) for c in cps.split())]
-    falta_manual = sorted(IMPLEMENTADOS - set(cc_ok))
+    con_fallas = [cc for cc in sorted(IMPLEMENTADOS - set(cc_ok))
+                  if any(resultado["CP-" + c] == "Falló" for r, cps in MATRIZ if r.startswith(cc) for c in cps.split())]
+    falta_manual = sorted(IMPLEMENTADOS - set(cc_ok) - set(con_fallas))
     w("| Cambios CC-01 a CC-06 verificados | 6 de 6 | %d de 6%s%s | %s |\n" %
       (len(cc_ok), " (" + ", ".join(cc_ok) + ")" if cc_ok else "",
-       "; implementados con revisión manual pendiente: " + ", ".join(falta_manual) if falta_manual else "",
+       ("; con casos fallidos: " + ", ".join(con_fallas) if con_fallas else "")
+       + ("; implementados con revisión manual pendiente: " + ", ".join(falta_manual) if falta_manual else ""),
        si(len(cc_ok) == 6)))
     w("Pruebas automáticas ejecutadas: **%d** (%d pasan, %d fallan, %d deshabilitadas). %d de ellas no corresponden a "
       "ningún caso del plan: son pruebas de regresión adicionales sobre las demás reglas del sistema.\n" %
       (total, ok_tot, fal_tot, sal_tot, sin_cp))
 
     w("### Defectos\n")
-    w("La severidad es una propuesta; la asigna el líder de SQA (Tabla 31). Detalle y evidencia en "
-      "[resultados-pruebas.md](resultados-pruebas.md).\n")
-    w("| Código | Caso | Severidad propuesta | Qué pasa | Estado |\n|---|---|---|---|---|")
+    w("La severidad es una propuesta; la asigna el líder de SQA (Tabla 31). Cada defecto está registrado con la "
+      "plantilla del Apéndice G en [incidencias.md](incidencias.md).\n")
+    w("| Código | Incidencia | Caso | Severidad propuesta | Qué pasa | Estado |\n|---|---|---|---|---|---|")
     for d in DEFECTOS:
-        w("| %s | %s | %s | %s | %s |" % (d[0], d[1], d[2], d[3], d[4]))
+        inc = "INC-%02d" % int(d[0][2:])
+        w("| %s | [%s](incidencias.md#%s) | %s | %s | %s | %s |" % (d[0], inc, inc.lower(), d[1], d[2], d[3], d[4]))
     w("")
 
     w("## F.3 Resultado por caso de prueba\n")
@@ -363,6 +420,17 @@ def main():
         for cp, *_ in catalogo:
             if cp in integracion:
                 w("| %s | %s | %s |" % (cp, integracion[cp][0], integracion[cp][1]))
+        w("")
+
+    if sistema:
+        w("### Pruebas de sistema y de accesibilidad (niveles S y A)\n")
+        w("%s. Se corren con `docs/calidad/sistema/recorrido.mjs` (cómo repetirlas, en su [README](sistema/README.md)); "
+          "la evidencia de cada caso está en `docs/calidad/sistema/`.\n" % corrida_sistema)
+        w("| Caso | Resultado | Qué se comprobó | Evidencia |\n|---|---|---|---|")
+        for cp, *_ in catalogo:
+            if cp in sistema:
+                ev = ", ".join("`%s`" % e for e in sistema[cp][2].split(";") if e) or "—"
+                w("| %s | %s | %s | %s |" % (cp, sistema[cp][0], sistema[cp][1], ev))
         w("")
 
     w("## Matriz de trazabilidad con resultados (Tabla 30)\n")

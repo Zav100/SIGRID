@@ -4,7 +4,7 @@ Documento del Plan de Garantía de Calidad. Reúne qué se probó, con qué resu
 
 | Dato | Valor |
 |---|---|
-| Fecha de ejecución | 13/10/2026 |
+| Fecha de ejecución | 14/10/2026 |
 | Rama | `calidad/pruebas-junit` |
 | Proyecto Maven | `SIGRID/` (carpeta `D:\SIGRID\SIGRID`) |
 | Java | JDK 21.0.10 (el código se compila con `source/target 11`) |
@@ -984,6 +984,9 @@ Los identificadores `D-n` fueron defectos o discrepancias con una prueba deshabi
 | D-4 | CP-02 | Corregido | `RegistroServicio.validarPasoUno`: la contraseña exige letras, números y al menos un símbolo (un espacio no cuenta), además de los 6 caracteres |
 | D-5 | CP-20 | Diferido | El motivo del rechazo sigue siendo opcional; la prueba queda deshabilitada |
 | D-6 | CP-16 | Abierto | Encontrado en la prueba de integración: dos cargas del mismo comprobante a la vez terminan bien en la base, pero la segunda recibe un error técnico (sección 11) |
+| D-7 a D-13 | CP-46 a CP-51 | Abiertos | Encontrados en las pruebas de sistema sobre la aplicación desplegada (sección 12) |
+
+Todos los defectos están registrados con la plantilla del Apéndice G en [incidencias.md](incidencias.md) (D-n es INC-nn).
 
 **D-1. `PasswordUtil.verificar` lanzaba excepción con un hash mal formado** (corregido)
 
@@ -1054,7 +1057,7 @@ Los identificadores `D-n` fueron defectos o discrepancias con una prueba deshabi
 ## 7. Limitaciones de este conjunto de pruebas
 
 1. **Mockito simula los DAO.** En las pruebas unitarias no se ejecuta SQL ni JPQL, no hay transacciones (`@Transactional` no actúa) ni concurrencia. La carrera por el mismo turno, el registro repetido, el comprobante repetido, la ocupación y el filtro del listado se comprueban aparte contra MySQL (sección 11); el bloqueo pesimista (`buscarParaResolver`) sigue sin ejercerse.
-2. **No hay pruebas de interfaz.** Nada verifica las páginas JSF, los filtros de seguridad, el despliegue ni la tarea programada. Las de integración (sección 11) usan los servicios y los DAO reales, pero sin GlassFish: las transacciones las abre la prueba, no `@Transactional`.
+2. **Las pruebas de interfaz no son parte de `mvn test`.** Las páginas JSF, los filtros de seguridad y el despliegue se prueban aparte, sobre la aplicación desplegada (sección 12). Las de integración (sección 11) usan los servicios y los DAO reales sin GlassFish: las transacciones las abre la prueba, no `@Transactional`. La tarea programada (`MembresiaJob`) no tiene una prueba propia.
 3. **La cobertura global (56 %) queda por debajo de la de las reglas por alcance, no por descuido.** El núcleo de reglas está en el 99 % de líneas y de ramas; la capa de servicio completa, en el 88 %. Una cobertura alta no garantiza que cada verificación sea fuerte: por eso se hizo la mutación manual de 4.5, que cubre 20 reglas y no reemplaza a una herramienta automática.
 4. **Las pruebas fijan los mensajes de error actuales.** Cambiar el texto de un mensaje rompe la prueba correspondiente, aunque la regla siga igual.
 5. **Una prueba está deshabilitada** (D-5): expresa la regla del plan, no el comportamiento actual, y el equipo decidió diferirla. Cuando se implemente hay que quitarle el `@Disabled`.
@@ -1198,3 +1201,29 @@ Los cinco casos de nivel I del plan (CP-04, CP-12, CP-16, CP-42 y CP-52) necesit
 **Diferencias con el texto del plan.** CP-42 habla del reporte "de un día para una instalación" y la pantalla de reportes no tiene período de un día (el menor es 7 días) ni selector de instalación (las muestra todas). CP-52 habla de filtrar "por instalación" y la pantalla filtra por disciplina o por el nombre escrito en el buscador. Se probó lo que la pantalla ofrece y, además, el día suelto llamando al servicio.
 
 **Lo que no cubren.** No pasan por GlassFish: no prueban `@Transactional`, los beans ni las páginas. Los casos de nivel S y A siguen pendientes.
+
+## 12. Pruebas de sistema y de accesibilidad (rama `calidad/pruebas-de-sistema`, sale de la de integración)
+
+Los casos de nivel S y A del plan se ejecutaron el 14/10/2026 sobre **SIGRID desplegado en GlassFish 7**, en un dominio aparte (`sigridcalidad`) y con una base MySQL aparte (`sigrid_pruebas`, cargada con `sigrid_schema.sql`). No se tocaron el dominio de trabajo ni la base `sigrid`, y los dos se borraron al terminar. `docs/calidad/sistema/recorrido.mjs` maneja Edge sin ventana: inicia sesión con las cuentas de prueba, hace lo que haría una persona, compara con la base y guarda capturas y PDF en `docs/calidad/sistema/evidencia/`. No se agregó ninguna dependencia: usa Node y el Edge de Windows. Cómo repetirlo: [sistema/README.md](sistema/README.md).
+
+| Caso | Resultado | Resumen |
+|---|---|---|
+| CP-05 | Aprobado | Cada rol llega a su panel; sin sesión o como socio, las 10 pantallas de `/admin` (y el archivo de un comprobante) vuelven al login |
+| CP-36 | Aprobado | Con un cambio de precios y de cuotas programado desde las pantallas, administrador y socio ven precio vigente, desde cuándo rige y el próximo cambio, igual que la base (40 precios comparados) |
+| CP-41 | Aprobado | El panel del administrador y sus PDF dicen "Grado de satisfacción" en todos lados |
+| CP-43 | Aprobado | El PDF de un día trae exactamente las reservas de ese día, con encabezado, período y emisión |
+| CP-44 | Aprobado | Sin reservas, sin período o con el período al revés: aviso y nada para imprimir |
+| CP-45 | Aprobado | Con 500.403 reservas y GlassFish con 512 MB: listado 1,7 s, filtro 0,3 s, PDF 0,5 s, buscador 2,1 s; sin errores de memoria |
+| CP-46 | Aprobado | 12 páginas numeradas, con el encabezado de la tabla repetido. Observación D-12 |
+| CP-47 | **Falló** | Contraste del socio: el carnet digital (3,85:1 y 4,20:1) y el contorno de un campo (D-10) |
+| CP-48 | **Falló** | Contraste del administrador: contorno de los filtros (1,2:1 a 1,4:1) y días de otros meses del calendario (2,0:1 a 3,0:1) (D-11) |
+| CP-49 | **Falló** | La grilla del calendario distingue los estados solo por el color (D-7); las listas los dicen con texto |
+| CP-50 | **Falló** | A 360 px el panel del administrador se desborda 27 px y "Mis reservas" también (D-8); a 1280 px tres tablas esconden columnas (D-9) |
+| CP-51 | Aprobado | Próximas, Historial y Todas coinciden con las reservas del socio en la base. Observación D-13 |
+| CP-53 | No ejecutado | Lo aprueban la cátedra y el equipo en la RTF-03: informe preparado en [rtf-03-diseno-visual.md](rtf-03-diseno-visual.md) |
+
+- **Cómo se midió el contraste:** con una medición propia sobre la página real. Para cada texto visible se toman los colores que calcula el navegador, se compone el fondo y se aplica la fórmula de WCAG 2.1. El plan nombra axe o Lighthouse: en el README están los pasos para confirmarlo con Lighthouse. Los íconos que acompañan a un texto que dice lo mismo no se exigen.
+- **Cómo se midió la adaptación:** desbordes de la página, controles fuera de la pantalla o tapados, textos cortados o estrujados, importes partidos y tablas con desplazamiento propio. Las 57 capturas se revisaron además a ojo. El carrusel de fotos y el panel deslizante del registro son así a propósito y no se cuentan.
+- **¿Detectan el problema?** Las primeras corridas dieron falsos positivos y se corrigieron antes de dar el resultado: el menú plegado del administrador, los formularios dentro de desplegables cerrados, la flecha de los desplegables tomada como imagen de fondo y una captura de página entera que en modo teléfono corría los elementos. Cada hallazgo que quedó se confirmó en las capturas, por ejemplo la grilla del calendario en escala de grises o el panel a 360 px.
+- **Observaciones que no son incidencias:** el panel del socio sigue diciendo "valoración" (CC-04 se aplicó al administrador). GlassFish agrega `;jsessionid=` a la dirección en la primera visita sin cookies. Los Reportes de 12 meses con 500.000 reservas tardan 10,3 s (pendiente ya conocido de RNF-07).
+- **No se corrigió nada del código de producción:** los defectos D-7 a D-13 quedan para que el equipo decida.
