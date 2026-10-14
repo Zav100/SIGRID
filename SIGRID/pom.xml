@@ -63,8 +63,9 @@
                 <artifactId>maven-surefire-plugin</artifactId>
                 <version>3.2.5</version>
                 <configuration>
-                    <!-- @{argLine} es el agente de JaCoCo; el otro flag evita la advertencia de Mockito en JDK 21 -->
-                    <argLine>@{argLine} -XX:+EnableDynamicAgentLoading</argLine>
+                    <!-- @{argLine} es el agente de JaCoCo; EnableDynamicAgentLoading evita la advertencia de Mockito en JDK 21;
+                         bytebuddy.experimental deja que Mockito simule clases si Maven corre con un JDK más nuevo (25) -->
+                    <argLine>@{argLine} -XX:+EnableDynamicAgentLoading -Dnet.bytebuddy.experimental=true</argLine>
                     <!-- en el XML de resultados cada caso sale con su @DisplayName ("CP-22: ..."), así se rastrea contra el plan -->
                     <statelessTestsetReporter implementation="org.apache.maven.plugin.surefire.extensions.junit5.JUnit5Xml30StatelessReporter">
                         <usePhrasedTestCaseMethodName>true</usePhrasedTestCaseMethodName>
