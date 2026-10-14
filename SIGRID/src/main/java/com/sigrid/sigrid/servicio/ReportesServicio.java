@@ -274,6 +274,11 @@ public class ReportesServicio implements Serializable {
         }
     }
 
+    /** Igual que {@link #rango(String, LocalDate)}; "DIA" es el día elegido (hoy si no se eligió). */
+    public Rango rango(String periodo, LocalDate hoy, LocalDate dia) {
+        return rango(periodo, hoy);
+    }
+
     private static Rango ultimosDias(String nombre, int dias, LocalDate hoy) {
         LocalDate desde = hoy.minusDays(dias - 1L);
         return new Rango(nombre, desde, hoy, desde.minusDays(dias), desde.minusDays(1));
@@ -599,6 +604,11 @@ public class ReportesServicio implements Serializable {
         }
         items.sort(Comparator.comparingDouble(ReporteItem::getNumero));
         return items;
+    }
+
+    /** Ocupación de una instalación turno por turno en el período. */
+    public List<ReporteItem> ocupacionPorTurno(Datos d, Rango r, Integer idInstalacion) {
+        return new ArrayList<>();
     }
 
     /** [hora][día de la semana 0=lunes] = {reservados, disponibles} de todas las instalaciones. */

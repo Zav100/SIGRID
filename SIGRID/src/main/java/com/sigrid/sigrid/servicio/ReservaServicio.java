@@ -277,6 +277,11 @@ public class ReservaServicio implements Serializable {
         return new ArrayList<>(tipos);
     }
 
+    /** Los nombres de las instalaciones que se reservan, para el filtro. */
+    public List<String> instalaciones() {
+        return new ArrayList<>();
+    }
+
     /** Las confirmadas que todavía no terminaron, la más próxima primero (las que el predio puede cancelar). */
     public List<ReservaListado> listarProximasConfirmadas(LocalDateTime ahora) {
         LocalDate hoy = ahora.toLocalDate();

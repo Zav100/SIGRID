@@ -129,6 +129,97 @@ class ReportesServicioTest {
 
     // ---------- períodos ----------
 
+    @DisplayName("CP-42: \"Un día\" es un período de un solo día, comparado con el mismo día de la semana anterior")
+    @Test
+    void cp42_unDiaEsUnPeriodoDeUnSoloDia() {
+        LocalDate dia = LocalDate.of(2026, 10, 15);
+        ReportesServicio.Rango r = servicio.rango("DIA", HOY, dia);
+
+        assertEquals("Un día", r.getNombre());
+        assertEquals(dia, r.getDesde());
+        assertEquals(dia, r.getHasta());
+        assertEquals(1, r.getDias());
+        assertEquals(dia.minusDays(7), r.getPrevioDesde());
+        assertEquals(dia.minusDays(7), r.getPrevioHasta());
+    }
+
+    @Test
+    void unDiaSinFechaEsHoy() {
+        ReportesServicio.Rango r = servicio.rango("DIA", HOY, null);
+        assertEquals(HOY, r.getDesde());
+        assertEquals(HOY, r.getHasta());
+    }
+
+    @Test
+    void losDemasPeriodosNoUsanElDiaElegido() {
+        assertEquals(servicio.rango("7D", HOY).getDesde(), servicio.rango("7D", HOY, LocalDate.of(2026, 1, 1)).getDesde());
+    }
+
+    @DisplayName("CP-42: la ocupación de un día de una instalación dice, turno por turno, si está libre o quién lo reservó")
+    @Test
+    void cp42_laOcupacionDeUnDiaDeUnaInstalacionVaTurnoPorTurno() {
+        LocalDate dia = HOY.plusDays(2);
+        reserva(1, t2, dia, Reserva.Estado.CONFIRMADA);
+        reserva(2, t1, dia, Reserva.Estado.CANCELADA);   // no ocupa el turno
+        reserva(3, t1, dia.plusDays(1), Reserva.Estado.CONFIRMADA); // otro día
+        reserva(4, t3, dia, Reserva.Estado.CONFIRMADA);   // otra instalación
+        ReportesServicio.Rango r = servicio.rango("DIA", HOY, dia);
+
+        List<ReporteItem> turnos = servicio.ocupacionPorTurno(d, r, cancha.getIdInstalacion());
+
+        assertEquals(2, turnos.size());
+        ReporteItem manana = turnos.get(0);
+        assertEquals("10:00 – 11:00", manana.getEtiqueta());
+        assertEquals("Libre", manana.getValor());
+        assertEquals(0, manana.getNumero());
+        ReporteItem tarde = turnos.get(1);
+        assertEquals("18:00 – 19:00", tarde.getEtiqueta());
+        assertEquals("Reservado", tarde.getValor());
+        assertEquals(1, tarde.getNumero());
+        assertEquals("Lucía Gómez · Confirmada", tarde.getDetalle());
+        assertEquals(100, tarde.getPorcentaje());
+    }
+
+    @Test
+    void unaReservaEsperandoPagoTambienOcupaElTurno() {
+        LocalDate dia = HOY.plusDays(2);
+        reserva(1, t1, dia, Reserva.Estado.PENDIENTE_PAGO);
+
+        ReporteItem i = servicio.ocupacionPorTurno(d, servicio.rango("DIA", HOY, dia), cancha.getIdInstalacion()).get(0);
+
+        assertEquals("Reservado", i.getValor());
+        assertEquals("Lucía Gómez · Pendiente de confirmación", i.getDetalle());
+    }
+
+    @Test
+    void enUnPeriodoDeVariosDiasCuentaEnCuantosDiasSeReservoCadaTurno() {
+        reserva(1, t2, HOY, Reserva.Estado.CONFIRMADA);
+        reserva(2, t2, HOY.minusDays(1), Reserva.Estado.CONFIRMADA);
+        ReportesServicio.Rango r = servicio.rango("7D", HOY);
+
+        ReporteItem tarde = servicio.ocupacionPorTurno(d, r, cancha.getIdInstalacion()).get(1);
+
+        assertEquals("2 de 7 días", tarde.getValor());
+        assertEquals(2, tarde.getNumero());
+        assertEquals(29, tarde.getPorcentaje());
+    }
+
+    @Test
+    void unaInstalacionEnMantenimientoTodoElDiaNoTieneTurnosParaOfrecer() {
+        rugby.setEstado(Instalacion.Estado.DESHABILITADA_MANTENIMIENTO);
+        rugby.setFechaInicioBaja(HOY.minusDays(3));
+
+        ReporteItem i = servicio.ocupacionPorTurno(d, servicio.rango("DIA", HOY, HOY), rugby.getIdInstalacion()).get(0);
+
+        assertEquals("En mantenimiento", i.getValor());
+    }
+
+    @Test
+    void sinInstalacionElegidaNoHayTurnos() {
+        assertTrue(servicio.ocupacionPorTurno(d, r30, null).isEmpty());
+        assertTrue(servicio.ocupacionPorTurno(d, r30, 99).isEmpty());
+    }
+
     @Test
     void losUltimos7DiasTerminanHoyYSeComparanConLos7Anteriores() {
         ReportesServicio.Rango r = servicio.rango("7D", HOY);

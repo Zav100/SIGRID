@@ -12,6 +12,7 @@ public class FiltroReservas implements Serializable {
     private String texto = "";        // buscador libre: socio, correo, DNI, instalación, disciplina, fecha o número
     private String estado = "";       // "", POR_CONFIRMAR, ESPERANDO_PAGO, CONFIRMADA, CANCELADA o RECHAZADA
     private String disciplina = "";   // "" o el tipo de instalación
+    private String instalacion = "";  // "" o el nombre de una instalación
     private LocalDate desde;          // primer día del turno (inclusive)
     private LocalDate hasta;          // último día del turno (inclusive)
     private Boolean finalizadas;      // null: todas; true: las que ya terminaron; false: las que todavía no
@@ -38,6 +39,14 @@ public class FiltroReservas implements Serializable {
 
     public void setDisciplina(String disciplina) {
         this.disciplina = disciplina == null ? "" : disciplina;
+    }
+
+    public String getInstalacion() {
+        return instalacion;
+    }
+
+    public void setInstalacion(String instalacion) {
+        this.instalacion = instalacion;
     }
 
     public LocalDate getDesde() {

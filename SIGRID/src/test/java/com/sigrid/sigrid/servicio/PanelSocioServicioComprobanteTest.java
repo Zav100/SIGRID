@@ -8,6 +8,7 @@ import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -16,6 +17,7 @@ import static org.mockito.Mockito.when;
 import com.sigrid.sigrid.repositorio.ComprobantePago;
 import com.sigrid.sigrid.repositorio.Pago;
 import com.sigrid.sigrid.repositorio.Reserva;
+import jakarta.persistence.PersistenceException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -106,6 +108,24 @@ class PanelSocioServicioComprobanteTest extends PanelSocioServicioPruebaBase {
 
         verify(comprobanteDAO).crear(comprobante.capture());
         assertTrue(comprobante.getValue().getArchivoUrl().endsWith(".png"));
+    }
+
+    /**
+     * D-6: si dos socios suben el mismo archivo exactamente a la vez, los dos pasan la consulta previa (existePorHash) y
+     * la base deja uno solo (UNIQUE de hash_archivo). El INSERT tiene que salir en el momento, como en reservar(), para
+     * que el segundo reciba el aviso y no un error técnico al cerrar la transacción; y su archivo no se guarda.
+     */
+    @DisplayName("CP-16: si la base rechaza el archivo repetido (dos cargas a la vez) avisa que ya fue usado (D-6)")
+    @Test
+    void siLaBaseRechazaElArchivoRepetidoAvisaQueYaFueUsado() {
+        byte[] datos = DatosDePrueba.png(3_000);
+        doThrow(new PersistenceException("Duplicate entry for key uq_comprobante_hash")).when(comprobanteDAO).flush();
+
+        ReglaReservaException e = assertThrows(ReglaReservaException.class,
+                () -> servicio.subirComprobante(7, 10, datos, AHORA.minusHours(1), AHORA));
+
+        assertEquals("Ese comprobante ya fue usado en otra operación.", e.getMessage());
+        assertFalse(Files.exists(raiz.resolve("comprobantes")), "el archivo del que perdió no se guarda");
     }
 
     // ---------- tamaño máximo de 5 MB ----------

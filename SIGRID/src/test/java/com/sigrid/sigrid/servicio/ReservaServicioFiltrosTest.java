@@ -265,13 +265,37 @@ class ReservaServicioFiltrosTest {
         FiltroReservas f = periodo(LocalDate.of(2026, 10, 1), LocalDate.of(2026, 10, 31));
         f.setEstado("CONFIRMADA");
         f.setDisciplina("Fútbol");
+        f.setInstalacion("Cancha de Fútbol 11");
         f.setTexto("gomez");
         when(reservaDAO.contarParaAdmin(eq(f), eq(HOY), any(LocalTime.class))).thenReturn(1L);
         when(reservaDAO.buscarParaInforme(eq(f), eq(HOY), any(LocalTime.class), eq(ReservaServicio.MAXIMO_INFORME)))
                 .thenReturn(List.of(reserva(10, LocalDate.of(2026, 10, 14), Reserva.Estado.CONFIRMADA)));
 
-        assertEquals("Estado: Confirmadas · Instalación: Fútbol · Búsqueda: «gomez»",
+        assertEquals("Estado: Confirmadas · Disciplina: Fútbol · Instalación: Cancha de Fútbol 11 · Búsqueda: «gomez»",
                 servicio.informe(f, AHORA).getFiltros());
+    }
+
+    @DisplayName("CP-52: elegir una instalación cuenta como filtro")
+    @Test
+    void cp52_elegirUnaInstalacionEsFiltrar() {
+        FiltroReservas f = new FiltroReservas();
+        assertFalse(f.isFiltrando());
+        f.setInstalacion("Quincho 1");
+        assertTrue(f.isFiltrando());
+        f.setInstalacion(null);
+        assertEquals("", f.getInstalacion());
+    }
+
+    @DisplayName("CP-52: el filtro ofrece cada instalación que se reserva, por nombre")
+    @Test
+    void cp52_elFiltroOfreceCadaInstalacionQueSeReservaPorNombre() {
+        Instalacion quincho = DatosDePrueba.instalacion(3, "Quincho 1", Instalacion.TipoAcceso.ARANCELADO,
+                Instalacion.Estado.HABILITADA);
+        Instalacion beach = DatosDePrueba.instalacion(4, "Cancha de Beach Vóley", Instalacion.TipoAcceso.ARANCELADO,
+                Instalacion.Estado.HABILITADA);
+        when(instalacionDAO.listarReservables()).thenReturn(List.of(quincho, cancha, beach));
+
+        assertEquals(List.of("Cancha de Beach Vóley", cancha.getNombre(), "Quincho 1"), servicio.instalaciones());
     }
 
     @DisplayName("CP-44: un período sin reservas avisa y no arma un documento vacío")
