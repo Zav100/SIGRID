@@ -299,6 +299,10 @@ public class ReservaDAO extends BaseDAO<Reserva> {
             w.append(" AND i.tipoDisciplina = :disciplina");
             parametros.put("disciplina", f.getDisciplina());
         }
+        if (!f.getInstalacion().isEmpty()) {
+            w.append(" AND i.nombre = :instalacion");
+            parametros.put("instalacion", f.getInstalacion());
+        }
         switch (f.getEstado()) {
             case "CONFIRMADA":
                 w.append(" AND r.estado = :estado");
@@ -388,7 +392,7 @@ public class ReservaDAO extends BaseDAO<Reserva> {
         String donde = donde(f, hoy, ahora, parametros);
         // solo las uniones que el filtro necesita: cada reserva tiene turno, socio y usuario, así que no cambian la cuenta
         boolean texto = !f.getTexto().isEmpty();
-        boolean instalacion = texto || !f.getDisciplina().isEmpty();
+        boolean instalacion = texto || !f.getDisciplina().isEmpty() || !f.getInstalacion().isEmpty();
         boolean pago = f.getEstado().equals("POR_CONFIRMAR") || f.getEstado().equals("ESPERANDO_PAGO");
         String uniones = (instalacion || f.getFinalizadas() != null ? " JOIN r.idTurno t" : "")
                 + (instalacion ? " JOIN t.idInstalacion i" : "")

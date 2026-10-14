@@ -683,6 +683,11 @@ public class PanelSocioServicio implements Serializable {
         comprobante.setHashArchivo(hash);
         comprobante.setFechaOperacionDeclarada(operacion);
         comprobanteDAO.crear(comprobante);
+        try {
+            comprobanteDAO.flush(); // el INSERT sale ya: si otro subió el mismo archivo a la vez, el UNIQUE de la BD falla acá
+        } catch (PersistenceException e) {
+            throw new ReglaReservaException("Ese comprobante ya fue usado en otra operación.");
+        }
         r.setIdPago(pago);
         try {
             // ponytail: si el commit falla después queda el archivo suelto (el nombre lleva el hash, reintentar lo pisa)

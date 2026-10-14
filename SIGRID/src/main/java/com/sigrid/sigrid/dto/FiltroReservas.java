@@ -46,7 +46,7 @@ public class FiltroReservas implements Serializable {
     }
 
     public void setInstalacion(String instalacion) {
-        this.instalacion = instalacion;
+        this.instalacion = instalacion == null ? "" : instalacion;
     }
 
     public LocalDate getDesde() {
@@ -75,7 +75,8 @@ public class FiltroReservas implements Serializable {
 
     /** ¿Hay alguna condición puesta? */
     public boolean isFiltrando() {
-        return !texto.isEmpty() || !estado.isEmpty() || !disciplina.isEmpty() || desde != null || hasta != null
+        return !texto.isEmpty() || !estado.isEmpty() || !disciplina.isEmpty() || !instalacion.isEmpty() || desde != null
+                || hasta != null
                 || finalizadas != null;
     }
 }

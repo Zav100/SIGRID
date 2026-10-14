@@ -234,7 +234,7 @@ public class ReservaServicio implements Serializable {
         return new InformeReservas(new ArrayList<>(), 0, periodo, textoDeFiltros(filtro), emitido, aviso);
     }
 
-    /** "Estado: Confirmadas · Instalación: Fútbol · Búsqueda: «gomez»"; vacío si no hay filtros además del período. */
+    /** "Estado: Confirmadas · Disciplina: Fútbol · Instalación: Cancha de Fútbol 11 · Búsqueda: «gomez»"; vacío si no hay filtros además del período. */
     private static String textoDeFiltros(FiltroReservas f) {
         List<String> partes = new ArrayList<>();
         switch (f.getEstado()) {
@@ -257,7 +257,10 @@ public class ReservaServicio implements Serializable {
                 break;
         }
         if (!f.getDisciplina().isEmpty()) {
-            partes.add("Instalación: " + f.getDisciplina());
+            partes.add("Disciplina: " + f.getDisciplina());
+        }
+        if (!f.getInstalacion().isEmpty()) {
+            partes.add("Instalación: " + f.getInstalacion());
         }
         if (f.getFinalizadas() != null) {
             partes.add(f.getFinalizadas() ? "Turnos: ya pasaron" : "Turnos: próximos");
@@ -279,7 +282,11 @@ public class ReservaServicio implements Serializable {
 
     /** Los nombres de las instalaciones que se reservan, para el filtro. */
     public List<String> instalaciones() {
-        return new ArrayList<>();
+        TreeSet<String> nombres = new TreeSet<>();
+        for (Instalacion i : instalacionDAO.listarReservables()) {
+            nombres.add(i.getNombre());
+        }
+        return new ArrayList<>(nombres);
     }
 
     /** Las confirmadas que todavía no terminaron, la más próxima primero (las que el predio puede cancelar). */

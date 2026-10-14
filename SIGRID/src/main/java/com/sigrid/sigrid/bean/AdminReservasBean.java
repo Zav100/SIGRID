@@ -43,6 +43,7 @@ public class AdminReservasBean implements Serializable {
 
     private LocalDate hoy;
     private List<String> tipos;
+    private List<String> instalaciones;
     private ResumenReservas resumen;
     private PaginaReservas pagina;
     private FiltroReservas filtro = new FiltroReservas();
@@ -54,6 +55,7 @@ public class AdminReservasBean implements Serializable {
     private String estado = "";  // "", POR_CONFIRMAR, ESPERANDO_PAGO, CONFIRMADA, CANCELADA o RECHAZADA
     private String tiempo = "";  // "", HOY, PROXIMAS, PASADAS, SEMANA o MES
     private String tipo = "";    // "" o una disciplina (tipo de instalación)
+    private String instalacion = ""; // "" o el nombre de una instalación
     private String desde = "";   // "" o aaaa-mm-dd (un día elegido a mano pisa al de "tiempo")
     private String hasta = "";
 
@@ -61,6 +63,7 @@ public class AdminReservasBean implements Serializable {
     public void init() {
         hoy = LocalDate.now();
         tipos = servicio.disciplinas();
+        instalaciones = servicio.instalaciones();
         recargar();
     }
 
@@ -87,6 +90,7 @@ public class AdminReservasBean implements Serializable {
         f.setTexto(busqueda);
         f.setEstado(estado);
         f.setDisciplina(tipo);
+        f.setInstalacion(instalacion);
         switch (tiempo) {
             case "HOY":
                 f.setDesde(hoy);
@@ -138,6 +142,7 @@ public class AdminReservasBean implements Serializable {
         estado = "";
         tiempo = "";
         tipo = "";
+        instalacion = "";
         desde = "";
         hasta = "";
         filtrar();
@@ -283,6 +288,18 @@ public class AdminReservasBean implements Serializable {
 
     public void setTipo(String tipo) {
         this.tipo = tipo == null ? "" : tipo;
+    }
+
+    public List<String> getInstalaciones() {
+        return instalaciones;
+    }
+
+    public String getInstalacion() {
+        return instalacion;
+    }
+
+    public void setInstalacion(String instalacion) {
+        this.instalacion = instalacion == null ? "" : instalacion;
     }
 
     public String getDesde() {

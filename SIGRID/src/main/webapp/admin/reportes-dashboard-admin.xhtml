@@ -56,14 +56,19 @@
                 <div class="rep-controls">
                     <h:selectOneMenu value="#{adminReportesBean.periodo}" styleClass="soc-select"
                                      p:aria-label="Período del reporte">
+                        <f:selectItem itemValue="DIA" itemLabel="Un día"/>
                         <f:selectItem itemValue="7D" itemLabel="Últimos 7 días"/>
                         <f:selectItem itemValue="30D" itemLabel="Últimos 30 días"/>
                         <f:selectItem itemValue="MES" itemLabel="Este mes"/>
                         <f:selectItem itemValue="MES_ANT" itemLabel="Mes anterior"/>
                         <f:selectItem itemValue="90D" itemLabel="Últimos 90 días"/>
                         <f:selectItem itemValue="12M" itemLabel="Últimos 12 meses"/>
-                        <f:ajax listener="#{adminReportesBean.recalcular}" render=":contenido :periodoTexto"/>
+                        <f:ajax listener="#{adminReportesBean.recalcular}" render=":barra :contenido :periodoTexto"/>
                     </h:selectOneMenu>
+                    <h:inputText value="#{adminReportesBean.dia}" rendered="#{adminReportesBean.periodo eq 'DIA'}"
+                                 styleClass="soc-select" p:type="date" p:aria-label="Día del reporte">
+                        <f:ajax listener="#{adminReportesBean.recalcular}" render=":contenido :periodoTexto"/>
+                    </h:inputText>
 
                     <ui:include src="/templates/boton-pdf.xhtml">
                         <ui:param name="clase" value="soc-btn"/>
@@ -71,7 +76,7 @@
                 </div>
             </h:form>
             <h:panelGroup id="periodoTexto" layout="block" styleClass="rep-periodo">
-                <strong>#{adminReportesBean.rango.nombre}:</strong> del #{adminReportesBean.rango.texto}
+                <strong>#{adminReportesBean.rango.nombre}:</strong> #{adminReportesBean.rango.dias eq 1 ? 'el' : 'del'} #{adminReportesBean.rango.texto}
                 · comparado con el #{adminReportesBean.rango.textoPrevio}
             </h:panelGroup>
         </section>
@@ -185,6 +190,27 @@
                         <ui:include src="/templates/reportes/items.xhtml">
                             <ui:param name="items" value="#{adminReportesBean.ocupacionPorInstalacion}"/>
                             <ui:param name="vacio" value="Todavía no hay instalaciones."/>
+                        </ui:include>
+                    </section>
+
+                    <section class="adm-card" aria-labelledby="tTurnos">
+                        <header class="adm-card-head">
+                            <h2 class="adm-card-title" id="tTurnos">Ocupación de una instalación</h2>
+                            <h:form id="instalacionForm">
+                                <h:selectOneMenu value="#{adminReportesBean.instalacion}" styleClass="soc-select"
+                                                 p:aria-label="Instalación del reporte de ocupación">
+                                    <f:selectItem itemValue="#{null}" itemLabel="Elegí una instalación" noSelectionOption="true"/>
+                                    <f:selectItems value="#{adminReportesBean.instalaciones}"/>
+                                    <f:ajax listener="#{adminReportesBean.recalcular}" render=":contenido"/>
+                                </h:selectOneMenu>
+                            </h:form>
+                        </header>
+                        <ui:fragment rendered="#{not empty adminReportesBean.resumenInstalacion}">
+                            <p class="rep-periodo" id="resumenInstalacion">#{adminReportesBean.resumenInstalacion}</p>
+                        </ui:fragment>
+                        <ui:include src="/templates/reportes/items.xhtml">
+                            <ui:param name="items" value="#{adminReportesBean.ocupacionTurnos}"/>
+                            <ui:param name="vacio" value="Elegí una instalación para ver sus turnos: con el período «Un día», cada turno dice si quedó libre o quién lo reservó."/>
                         </ui:include>
                     </section>
 

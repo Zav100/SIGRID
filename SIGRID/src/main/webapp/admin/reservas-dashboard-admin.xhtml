@@ -196,9 +196,16 @@
                 </h:selectOneMenu>
 
                 <h:selectOneMenu value="#{adminReservasBean.tipo}" styleClass="soc-select"
-                                 p:aria-label="Filtrar por tipo de instalación">
-                    <f:selectItem itemValue="" itemLabel="Todas las instalaciones"/>
+                                 p:aria-label="Filtrar por disciplina">
+                    <f:selectItem itemValue="" itemLabel="Todas las disciplinas"/>
                     <f:selectItems value="#{adminReservasBean.tipos}"/>
+                    <f:ajax listener="#{adminReservasBean.filtrar}" render=":tabla :informe"/>
+                </h:selectOneMenu>
+
+                <h:selectOneMenu value="#{adminReservasBean.instalacion}" styleClass="soc-select"
+                                 p:aria-label="Filtrar por instalación">
+                    <f:selectItem itemValue="" itemLabel="Todas las instalaciones"/>
+                    <f:selectItems value="#{adminReservasBean.instalaciones}"/>
                     <f:ajax listener="#{adminReservasBean.filtrar}" render=":tabla :informe"/>
                 </h:selectOneMenu>
 
