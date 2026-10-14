@@ -49,6 +49,9 @@ public class RegistroServicio implements Serializable {
         if (password == null || password.length() < 6) {
             return "La contraseña tiene que tener al menos 6 caracteres.";
         }
+        if (!password.matches(".*\\p{L}.*") || !password.matches(".*\\d.*") || !password.matches(".*[^\\p{L}\\d\\s].*")) {
+            return "La contraseña tiene que tener letras, números y al menos un símbolo (por ejemplo ! # $ %).";
+        }
         if (!password.equals(confirmarPassword)) {
             return "Las contraseñas no coinciden.";
         }

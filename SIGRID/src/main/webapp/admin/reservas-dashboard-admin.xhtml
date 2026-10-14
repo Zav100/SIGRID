@@ -155,7 +155,7 @@
                                  p:placeholder="Buscar por socio, DNI, correo, instalación o fecha…"
                                  p:aria-label="Buscar reservas"
                                  onkeydown="if (event.key === 'Enter') return false;">
-                        <f:ajax event="keyup" delay="300" listener="#{adminReservasBean.filtrar}" render=":tabla"/>
+                        <f:ajax event="keyup" delay="300" listener="#{adminReservasBean.filtrar}" render=":tabla :informe"/>
                     </h:inputText>
                 </div>
 
@@ -167,8 +167,22 @@
                     <f:selectItem itemValue="SEMANA" itemLabel="Esta semana"/>
                     <f:selectItem itemValue="MES" itemLabel="Este mes"/>
                     <f:selectItem itemValue="PASADAS" itemLabel="Ya pasaron"/>
-                    <f:ajax listener="#{adminReservasBean.filtrar}" render=":tabla"/>
+                    <f:ajax listener="#{adminReservasBean.filtrar}" render=":tabla :informe"/>
                 </h:selectOneMenu>
+
+                <!-- período elegido a mano (pisa a "Cualquier fecha / Hoy / ..."); el PDF lo exige -->
+                <label class="rv-fecha"><span>Desde</span>
+                    <h:inputText value="#{adminReservasBean.desde}" styleClass="rv-fecha-input" p:type="date"
+                                 p:aria-label="Turnos desde el día">
+                        <f:ajax listener="#{adminReservasBean.filtrar}" render=":tabla :informe"/>
+                    </h:inputText>
+                </label>
+                <label class="rv-fecha"><span>Hasta</span>
+                    <h:inputText value="#{adminReservasBean.hasta}" styleClass="rv-fecha-input" p:type="date"
+                                 p:aria-label="Turnos hasta el día">
+                        <f:ajax listener="#{adminReservasBean.filtrar}" render=":tabla :informe"/>
+                    </h:inputText>
+                </label>
 
                 <h:selectOneMenu value="#{adminReservasBean.estado}" styleClass="soc-select"
                                  p:aria-label="Filtrar por estado de la reserva">
@@ -178,25 +192,33 @@
                     <f:selectItem itemValue="CONFIRMADA" itemLabel="Confirmadas"/>
                     <f:selectItem itemValue="CANCELADA" itemLabel="Canceladas"/>
                     <f:selectItem itemValue="RECHAZADA" itemLabel="Rechazadas"/>
-                    <f:ajax listener="#{adminReservasBean.filtrar}" render=":tabla"/>
+                    <f:ajax listener="#{adminReservasBean.filtrar}" render=":tabla :informe"/>
                 </h:selectOneMenu>
 
                 <h:selectOneMenu value="#{adminReservasBean.tipo}" styleClass="soc-select"
-                                 p:aria-label="Filtrar por tipo de instalación">
-                    <f:selectItem itemValue="" itemLabel="Todas las instalaciones"/>
+                                 p:aria-label="Filtrar por disciplina">
+                    <f:selectItem itemValue="" itemLabel="Todas las disciplinas"/>
                     <f:selectItems value="#{adminReservasBean.tipos}"/>
-                    <f:ajax listener="#{adminReservasBean.filtrar}" render=":tabla"/>
+                    <f:ajax listener="#{adminReservasBean.filtrar}" render=":tabla :informe"/>
+                </h:selectOneMenu>
+
+                <h:selectOneMenu value="#{adminReservasBean.instalacion}" styleClass="soc-select"
+                                 p:aria-label="Filtrar por instalación">
+                    <f:selectItem itemValue="" itemLabel="Todas las instalaciones"/>
+                    <f:selectItems value="#{adminReservasBean.instalaciones}"/>
+                    <f:ajax listener="#{adminReservasBean.filtrar}" render=":tabla :informe"/>
                 </h:selectOneMenu>
 
                 <h:commandLink styleClass="soc-btn"
                                action="#{adminReservasBean.limpiar}" title="Quitar todos los filtros">
-                    <f:ajax execute="@this" render=":filtros :tabla"/>
+                    <f:ajax execute="@this" render=":filtros :tabla :informe"/>
                     <span class="icon" aria-hidden="true">close</span>Limpiar
                 </h:commandLink>
 
-                <h:commandLink styleClass="soc-btn" action="#{adminReservasBean.mostrarTodo}"
-                               title="Guardar la lista completa como PDF (se abre el cuadro de impresión: elegí «Guardar como PDF»)">
-                    <f:ajax execute="@this" render=":tabla" onevent="sigridImprimir"/>
+                <!-- PDF: lleva el período y los filtros de esta barra; sin período no se exporta -->
+                <h:commandLink styleClass="soc-btn" action="#{adminReservasBean.prepararInforme}"
+                               title="Exportar a PDF las reservas del período elegido (se abre el cuadro de impresión: elegí «Guardar como PDF»)">
+                    <f:ajax execute="@form" render=":tabla :informe" onevent="sigridImprimirInforme"/>
                     <span class="icon" aria-hidden="true">download</span>Exportar PDF
                 </h:commandLink>
             </h:form>
@@ -292,6 +314,50 @@
                 </ui:fragment>
             </h:panelGroup>
         </section>
+
+        <!-- Lo que sale en el PDF: solo se ve al imprimir (reservas.css y print.css). Se arma al apretar "Exportar PDF". -->
+        <h:panelGroup id="informe" layout="block">
+            <ui:fragment rendered="#{not empty adminReservasBean.informe and adminReservasBean.informe.listo}">
+                <section class="rv-informe" aria-label="Reporte de reservas para imprimir">
+                    <span id="informeListo" hidden="hidden" data-emitido="#{adminReservasBean.informe.emitido}"></span>
+                    <header class="rv-informe-cab">
+                        <h2>Reporte de reservas</h2>
+                        <dl>
+                            <dt>Período</dt><dd>#{adminReservasBean.informe.periodo}</dd>
+                            <ui:fragment rendered="#{not empty adminReservasBean.informe.filtros}">
+                                <dt>Filtros</dt><dd>#{adminReservasBean.informe.filtros}</dd>
+                            </ui:fragment>
+                            <dt>Reservas</dt><dd>#{adminReservasBean.informe.total}</dd>
+                            <dt>Emitido</dt><dd>#{adminReservasBean.informe.emitido}</dd>
+                        </dl>
+                    </header>
+                    <table class="rv-informe-tabla">
+                        <thead>
+                            <tr>
+                                <th scope="col">Turno</th>
+                                <th scope="col">Horario</th>
+                                <th scope="col">Instalación</th>
+                                <th scope="col">Socio</th>
+                                <th scope="col">Estado</th>
+                                <th scope="col">Monto</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <ui:repeat var="r" value="#{adminReservasBean.informe.filas}">
+                                <tr>
+                                    <td>#{r.cuando}</td>
+                                    <td>#{r.horario}</td>
+                                    <td>#{r.instalacion}</td>
+                                    <td>#{r.socio}</td>
+                                    <td>#{r.estadoTexto}</td>
+                                    <td>#{empty r.monto ? '—' : r.monto}</td>
+                                </tr>
+                            </ui:repeat>
+                        </tbody>
+                    </table>
+                </section>
+            </ui:fragment>
+        </h:panelGroup>
 
     </ui:define>
 

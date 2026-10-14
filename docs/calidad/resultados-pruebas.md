@@ -1,0 +1,1251 @@
+# Resultados de las pruebas automatizadas de SIGRID
+
+Documento del Plan de Garantía de Calidad. Reúne qué se probó, con qué resultado, cuánta parte del código ejercitan las pruebas y qué hallazgos aparecieron.
+
+| Dato | Valor |
+|---|---|
+| Fecha de ejecución | 14/10/2026 |
+| Rama | `calidad/pruebas-junit` |
+| Proyecto Maven | `SIGRID/` (carpeta `D:\SIGRID\SIGRID`) |
+| Java | JDK 21.0.10 (el código se compila con `source/target 11`) |
+| Herramientas | JUnit Jupiter 5.10.3, Mockito 5.17.0, Maven Surefire 3.2.5, JaCoCo 0.8.12 |
+| Qué se necesita | Solo Java y Maven. **No** hace falta MySQL, GlassFish ni red (la primera vez Maven descarga las herramientas). |
+
+## 1. Cómo ejecutar las pruebas y dónde ver el informe
+
+Desde la carpeta del proyecto Maven (`SIGRID/`, donde está el `pom.xml`):
+
+```bash
+JAVA_HOME="/c/Program Files/Java/jdk-21.0.10" mvn test
+```
+
+En PowerShell:
+
+```powershell
+$env:JAVA_HOME = "C:\Program Files\Java\jdk-21.0.10"
+mvn test
+```
+
+Notas:
+
+- La variable `JAVA_HOME` del sistema apunta a `C:\Program Files\Java\jdk-21`, una carpeta que no existe. Por eso se indica el JDK 21 real en cada comando. El `java` del PATH es el 25 y **no** debe usarse para las pruebas (las versiones de JaCoCo y Mockito usadas no lo soportan oficialmente).
+- No usar `mvn clean`: la carpeta `SIGRID/target/` está versionada en git (388 archivos) y `clean` la borraría.
+- Una sola clase de prueba: `mvn test -Dtest=TarifasServicioTest`.
+- Ver las pruebas deshabilitadas fallar (hoy solo queda D-5, sección 5):
+  `mvn test -Djunit.jupiter.conditions.deactivate="org.junit.*DisabledCondition"`.
+
+Dónde ver los resultados:
+
+| Qué | Dónde |
+|---|---|
+| Informe de cobertura (abrir en el navegador) | `SIGRID/target/site/jacoco/index.html` |
+| Cobertura en CSV / XML | `SIGRID/target/site/jacoco/jacoco.csv` y `jacoco.xml` |
+| Resultado de cada clase de prueba | `SIGRID/target/surefire-reports/` (cada caso con su código del plan, por ejemplo `CP-22: ...`) |
+| Reporte de V&V del plan (Apéndice F: tablas 40, 41 y 42) | [reporte-vv.md](reporte-vv.md), generado con `python docs/calidad/generar_reporte_vv.py` después de `mvn test` |
+
+## 2. Resumen de resultados
+
+| Medida | Valor |
+|---|---|
+| Clases de prueba | 28 |
+| Pruebas (métodos) | 669 |
+| Ejecuciones (casos, contando cada valor de las parametrizadas) | 728 |
+| Pasan | 727 |
+| Deshabilitadas (defectos D-1 a D-5) | 1 |
+| Fallan | 0 |
+| Tiempo total | unos segundos (la mayor parte es el hash PBKDF2 de 120 000 iteraciones) |
+
+Queda **una prueba deshabilitada** (D-5, sección 5): describe la regla del plan (el rechazo exige un motivo) y el equipo decidió el 13/10/2026 dejar el motivo opcional por ahora. No es una prueba rota. Las otras cinco que estaban deshabilitadas (D-1 a D-4) se habilitaron cuando el responsable autorizó corregir el código, y pasan.
+
+## 3. Pruebas por clase
+
+Cada nombre describe un único comportamiento. En las pruebas parametrizadas, "N casos" son los valores distintos con que se ejecuta la misma prueba (por ejemplo, los puntajes 1, 2, 3, 4 y 5).
+
+### `util.ComprobanteArchivosTest` (21 pruebas, 29 casos)
+
+| Prueba | Qué verifica | Resultado |
+|---|---|---|
+| `detectaUnPdfPorSusPrimerosBytes` | Detecta un PDF por sus primeros bytes | Pasa |
+| `detectaUnPngPorSusPrimerosBytes` | Detecta un PNG por sus primeros bytes | Pasa |
+| `detectaUnJpegPorSusPrimerosBytes` | Detecta un JPEG por sus primeros bytes | Pasa |
+| `elTipoSaleDeLosBytesYNoDelNombreDelArchivo` | El tipo sale de los bytes y no del nombre del archivo | Pasa |
+| `rechazaUnEjecutableRenombradoComoPdf` | Rechaza un ejecutable renombrado como PDF | Pasa |
+| `rechazaUnTextoPlano` | Rechaza un texto plano | Pasa |
+| `rechazaUnArchivoVacio` | Rechaza un archivo vacío | Pasa |
+| `noReconoceUnPdfDeSoloCuatroBytes` | No reconoce un PDF de solo cuatro bytes | Pasa |
+| `reconoceUnPdfDeCincoBytes` | Reconoce un PDF de cinco bytes | Pasa |
+| `noReconoceUnPngDeSoloOchoBytes` | No reconoce un PNG de solo ocho bytes | Pasa |
+| `noReconoceUnJpegDeSoloTresBytes` | No reconoce un JPEG de solo tres bytes | Pasa |
+| `rechazaUnJpegCuyoTercerByteNoEsFF` | Rechaza un JPEG cuyo tercer byte no es FF | Pasa |
+| `asignaElTipoMimeSegunLaExtensionDelNombreGuardado` | Asigna el tipo MIME según la extensión del nombre guardado | Pasa |
+| `guardaElArchivoYDevuelveSuRuta` | Guarda el archivo y devuelve su ruta | Pasa |
+| `laRutaEsNulaSiElArchivoNoExiste` | La ruta es nula si el archivo no existe | Pasa |
+| `laRutaEsNulaSiElNombreIntentaSalirseDeLaCarpeta` | La ruta es nula si el nombre intenta salirse de la carpeta | Pasa |
+| `borraElArchivoGuardado` | Borra el archivo guardado | Pasa |
+| `borrarUnArchivoInexistenteNoLanzaExcepcion` | Borrar un archivo inexistente no lanza excepción | Pasa |
+| `rechazaUnaFirmaConUnSoloByteIncorrecto` | Rechaza una firma con un solo byte incorrecto | Pasa (9 casos) |
+| `sinPropiedadGuardaEnSigridComprobantesDentroDeLaCarpetaDelUsuario` | Sin propiedad guarda en sigrid comprobantes dentro de la carpeta del usuario | Pasa |
+| `borrarNoLanzaExcepcionSiNoSePuedeEliminarElElemento` | Borrar no lanza excepción si no se puede eliminar el elemento | Pasa |
+
+### `util.PasswordUtilTest` (14 pruebas, 14 casos)
+
+| Prueba | Qué verifica | Resultado |
+|---|---|---|
+| `generaElHashConTresPartesIteracionesSalYHash` | Genera el hash con tres partes iteraciones sal y hash | Pasa |
+| `dosHashesDeLaMismaContrasenaUsanSalDistinta` | Dos hashes de la misma contraseña usan sal distinta | Pasa |
+| `dosHashesDeLaMismaContrasenaSeVerificanAmbos` | Dos hashes de la misma contraseña se verifican ambos | Pasa |
+| `verificaLaContrasenaCorrecta` | Verifica la contraseña correcta | Pasa |
+| `rechazaUnaContrasenaIncorrecta` | Rechaza una contraseña incorrecta | Pasa |
+| `distingueMayusculasDeMinusculas` | Distingue mayúsculas de minúsculas | Pasa |
+| `verificaContrasenasConAcentosYEnie` | Verifica contraseñas con acentos y eñe | Pasa |
+| `rechazaUnaContrasenaNulaSinLanzarExcepcion` | Rechaza una contraseña nula sin lanzar excepción | Pasa |
+| `rechazaUnHashNuloSinLanzarExcepcion` | Rechaza un hash nulo sin lanzar excepción | Pasa |
+| `rechazaUnHashConCantidadDePartesIncorrecta` | Rechaza un hash con cantidad de partes incorrecta | Pasa |
+| `rechazaUnHashVacio` | Rechaza un hash vacío | Pasa |
+| `laContrasenaVaciaSeHasheaYSoloVerificaConVacia` | La contraseña vacía se hashea y solo verifica con vacía | Pasa |
+| `generarHashConContrasenaNulaLanzaNullPointerException` | Generar hash con contraseña nula lanza null pointer exception | Pasa |
+| `rechazaUnHashMalFormadoSinLanzarExcepcion` | Rechaza un hash mal formado sin lanzar excepción | Pasa |
+
+### `bean.AdminNavBeanTest` (2 pruebas, 2 casos)
+
+| Prueba | Qué verifica | Resultado |
+|---|---|---|
+| `CP-41: el menú dice "Grado de satisfacción" y no "Valoraciones"` | Cp 41 el menú dice grado de satisfacción y no valoraciones | Pasa |
+| `laSeccionRenombradaSigueEnLaMismaDireccion` | La seccion renombrada sigue en la misma direccion | Pasa |
+
+### `servicio.CambiosReservaServicioListadosTest` (12 pruebas, 12 casos)
+
+| Prueba | Qué verifica | Resultado |
+|---|---|---|
+| `elPedidoDiceConCuantasHorasDeAnticipacionSeHizo` | El pedido dice con cuantas horas de anticipación se hizo | Pasa |
+| `conMasDe72HorasLaAnticipacionSeDiceEnDias` | Con más de 72 horas la anticipación se dice en días | Pasa |
+| `elPedidoDeUnaReservaConCreditoDiceHastaCuandoVale` | El pedido de una reserva con crédito dice hasta cuando vale | Pasa |
+| `elPedidoMuestraLaEsperaYElMonto` | El pedido muestra la espera y el monto | Pasa |
+| `elPedidoMuestraElTurnoActualYElNuevoSiEsReprogramacion` | El pedido muestra el turno actual y el nuevo si es reprogramación | Pasa |
+| `unaCancelacionNoTieneTurnoNuevo` | Una cancelación no tiene turno nuevo | Pasa |
+| `cp29_unCreditoEnPausaSeMuestraVigenteConLosDiasQueLeQuedan` | Cp 29 un crédito en pausa se muestra vigente con los días que le quedan | Pasa |
+| `unCreditoQueVenceHoyEstaVigenteYPorVencer` | Un crédito que vence hoy está vigente y por vencer | Pasa |
+| `unCreditoQueVenceEnSieteDiasEstaPorVencerYEnOchoNo` | Un crédito que vence en siete días está por vencer y en ocho no | Pasa |
+| `elPlazoDiceCuantosDiasQuedan` | El plazo dice cuantos días quedan | Pasa |
+| `unCreditoVencidoNoEstaVigenteNiPorVencerYDiceHaceCuanto` | Un crédito vencido no está vigente ni por vencer y dice hace cuanto | Pasa |
+| `laReprogramacionMuestraDeQueTurnoAQueTurnoYCuando` | La reprogramación muestra de que turno a que turno y cuando | Pasa |
+
+### `servicio.CambiosReservaServicioTest` (63 pruebas, 67 casos)
+
+| Prueba | Qué verifica | Resultado |
+|---|---|---|
+| `cp22_cancelaAutomaticamenteConCredito` | Cp 22 cancela automaticamente con crédito | Pasa |
+| `cp22_noCreaPedidoNiInvolucraAlAdministrador` | Cp 22 no crea pedido ni involucra al administrador | Pasa |
+| `cp22_noCancelaDosVeces` | Cp 22 no cancela dos veces | Pasa |
+| `cp23_noCancelaA47Horas59Minutos` | Cp 23 no cancela a 47 horas 59 minutos | Pasa |
+| `cp24_cancelaExactamenteA48Horas` | Cp 24 cancela exactamente a 48 horas | Pasa |
+| `cp21_noCancelaLaReservaDeOtroSocio` | Cp 21 no cancela la reserva de otro socio | Pasa |
+| `cp25_conElCreditoDeLaCancelacionAutomaticaSeReprogramaConAprobacion` | Cp 25 con el crédito de la cancelación automatica se reprograma con aprobacion | Pasa |
+| `unTurnoQueEmpiezaEn47HorasEstaFueraDePlazo` | Un turno que empieza en 47 horas está fuera de plazo | Pasa |
+| `unTurnoQueEmpiezaEn48HorasExactasEstaEnPlazo` | Un turno que empieza en 48 horas exactas está en plazo | Pasa |
+| `unTurnoQueEmpiezaEn49HorasEstaEnPlazo` | Un turno que empieza en 49 horas está en plazo | Pasa |
+| `unTurnoQueEmpiezaEn47Horas59MinutosEstaFueraDePlazo` | Un turno que empieza en 47 horas 59 minutos está fuera de plazo | Pasa |
+| `rechazaPedirLaCancelacionConMenosDe48Horas` | Rechaza pedir la cancelación con menos de 48 horas | Pasa |
+| `rechazaPedirLaCancelacionConUnMinutoMenosDe48Horas` | Rechaza pedir la cancelación con un minuto menos de 48 horas | Pasa |
+| `rechazaElPedidoDeUnaReservaQueEsDeOtroSocio` | Rechaza el pedido de una reserva que es de otro socio | Pasa |
+| `rechazaElPedidoDeUnaReservaInexistente` | Rechaza el pedido de una reserva inexistente | Pasa |
+| `rechazaElPedidoSinMotivo` | Rechaza el pedido sin motivo | Pasa (3 casos) |
+| `rechazaUnSegundoPedidoPendienteParaLaMismaReserva` | Rechaza un segundo pedido pendiente para la misma reserva | Pasa |
+| `rechazaPedirLaCancelacionDeUnaReservaQueNoEstaConfirmada` | Rechaza pedir la cancelación de una reserva que no está confirmada | Pasa |
+| `elMotivoDeLaCancelacionSeRecortaA255CaracteresEnElHistorial` | El motivo de la cancelación se recorta a 255 caracteres en el historial | Pasa |
+| `elMotivoDeLaReprogramacionSeRecortaA255Caracteres` | El motivo de la reprogramación se recorta a 255 caracteres | Pasa |
+| `aceptaReprogramarConUnCreditoVigenteAUnTurnoLibreDeLaMismaInstalacion` | Acepta reprogramar con un crédito vigente a un turno libre de la misma instalación | Pasa |
+| `aceptaUsarElCreditoElUltimoDiaDeSuVigencia` | Acepta usar el crédito el último día de su vigencia | Pasa |
+| `rechazaReprogramarConElCreditoVencidoAyer` | Rechaza reprogramar con el crédito vencido ayer | Pasa |
+| `rechazaReprogramarUnaReservaConfirmadaQueNoTieneCredito` | Rechaza reprogramar una reserva confirmada que no tiene crédito | Pasa |
+| `rechazaReprogramarAUnTurnoDeOtraInstalacion` | Rechaza reprogramar a un turno de otra instalación | Pasa |
+| `rechazaReprogramarAUnTurnoQueYaEstaReservado` | Rechaza reprogramar a un turno que ya está reservado | Pasa |
+| `aceptaReprogramarAUnTurnoQueEmpiezaEnExactamente48Horas` | Acepta reprogramar a un turno que empieza en exactamente 48 horas | Pasa |
+| `rechazaReprogramarAUnTurnoQueEmpiezaEn47Horas59Minutos` | Rechaza reprogramar a un turno que empieza en 47 horas 59 minutos | Pasa |
+| `rechazaReprogramarSinElegirElTurnoNuevo` | Rechaza reprogramar sin elegir el turno nuevo | Pasa |
+| `alAprobarUnaCancelacionLaReservaQuedaCanceladaConCreditoDe30Dias` | Al aprobar una cancelación la reserva queda cancelada con crédito de 30 días | Pasa |
+| `alAprobarUnaCancelacionDejaElTurnoAnteriorEnElHistorial` | Al aprobar una cancelación deja el turno anterior en el historial | Pasa |
+| `unaReservaCanceladaSinPagoNoDejaCredito` | Una reserva cancelada sin pago no deja crédito | Pasa |
+| `noApruebaUnPedidoQueYaEstabaResuelto` | No aprueba un pedido que ya estaba resuelto | Pasa |
+| `noApruebaUnPedidoInexistente` | No aprueba un pedido inexistente | Pasa |
+| `noApruebaLaCancelacionDeUnaReservaQueYaNoEstaConfirmada` | No aprueba la cancelación de una reserva que ya no está confirmada | Pasa |
+| `alAprobarUnaReprogramacionLaReservaVuelveAConfirmadaYConsumeElCredito` | Al aprobar una reprogramación la reserva vuelve a confirmada y consume el crédito | Pasa |
+| `noApruebaUnaReprogramacionSiElCreditoVencioAntesDelPedido` | No aprueba una reprogramación si el crédito venció antes del pedido | Pasa |
+| `noApruebaUnaReprogramacionSiElTurnoPedidoSeOcupoMientrasTanto` | No aprueba una reprogramación si el turno pedido se ocupó mientras tanto | Pasa |
+| `alRechazarUnPedidoLaReservaQuedaComoEstabaYSeGuardaElMotivo` | Al rechazar un pedido la reserva queda como estaba y se guarda el motivo | Pasa |
+| `rechazarUnaReprogramacionDejaElCreditoVigenteHastaSuVencimiento` | Rechazar una reprogramación deja el crédito vigente hasta su vencimiento | Pasa |
+| `rechazarSinMotivoNoGuardaMotivo` | Rechazar sin motivo no guarda motivo | Pasa |
+| `noRechazaUnPedidoQueYaEstabaResuelto` | No rechaza un pedido que ya estaba resuelto | Pasa |
+| `laCancelacionPorElPredioNoExige48HorasYDejaCreditoDe30Dias` | La cancelación por el predio no exige 48 horas y deja crédito de 30 días | Pasa |
+| `laCancelacionPorElPredioExigeUnMotivo` | La cancelación por el predio exige un motivo | Pasa (3 casos) |
+| `laCancelacionPorElPredioRechazaUnTurnoQueYaEmpezo` | La cancelación por el predio rechaza un turno que ya empezó | Pasa |
+| `laCancelacionPorElPredioRechazaUnaReservaNoConfirmada` | La cancelación por el predio rechaza una reserva no confirmada | Pasa |
+| `cp29_elCreditoNoVenceMientrasDuraElMantenimiento` | Cp 29 el crédito no vence mientras dura el mantenimiento | Pasa |
+| `cp29_losDiasQueLeQuedanNoCambianDuranteElMantenimiento` | Cp 29 los días que le quedan no cambian durante el mantenimiento | Pasa |
+| `cp29_unCreditoVencidoAntesDelMantenimientoSigueVencido` | Cp 29 un crédito vencido antes del mantenimiento sigue vencido | Pasa |
+| `cp28_sinMantenimientoElPlazoNoSeToca` | Cp 28 sin mantenimiento el plazo no se toca | Pasa |
+| `cp29_unaCancelacionDuranteElMantenimientoNoEmpiezaACorrerHastaReactivar` | Cp 29 una cancelación durante el mantenimiento no empieza a correr hasta reactivar | Pasa |
+| `conLaBajaDefinitivaElCreditoSeUsaEnUnaInstalacionEquivalente` | Con la baja definitiva el crédito se usa en una instalación equivalente | Pasa |
+| `conLaBajaDefinitivaUnaInstalacionDeOtraDisciplinaNoServe` | Con la baja definitiva una instalación de otra disciplina no serve | Pasa |
+| `enMantenimientoElCreditoNoSePasaAUnaEquivalente` | En mantenimiento el crédito no se pasa a una equivalente | Pasa |
+| `rechazaReprogramarAUnTurnoDeUnaInstalacionNoHabilitada` | Rechaza reprogramar a un turno de una instalación no habilitada | Pasa |
+| `rechazaReprogramarAUnTurnoQueYaPaso` | Rechaza reprogramar a un turno que ya paso | Pasa |
+| `rechazaReprogramarSinElegirLaFecha` | Rechaza reprogramar sin elegir la fecha | Pasa |
+| `rechazaReprogramarUnaReservaCanceladaSinFechaLimiteDeCredito` | Rechaza reprogramar una reserva cancelada sin fecha limite de crédito | Pasa |
+| `noApruebaUnaReprogramacionDeUnaReservaCanceladaSinCredito` | No aprueba una reprogramación de una reserva cancelada sin crédito | Pasa |
+| `noApruebaUnaReprogramacionDeUnaReservaQueNoEstaCancelada` | No aprueba una reprogramación de una reserva que no está cancelada | Pasa |
+| `noRechazaUnPedidoInexistente` | No rechaza un pedido inexistente | Pasa |
+| `rechazarConMotivoNuloNoGuardaMotivo` | Rechazar con motivo nulo no guarda motivo | Pasa |
+| `laCancelacionPorElPredioRechazaUnaReservaInexistente` | La cancelación por el predio rechaza una reserva inexistente | Pasa |
+
+### `estilos.ContrasteCssTest` (10 pruebas, 10 casos)
+
+| Prueba | Qué verifica | Resultado |
+|---|---|---|
+| `cp47_elTextoDelSocioLlegaA4_5` | Cp 47 el texto del socio llega a 4 5 | Pasa |
+| `cp48_elTextoDelAdministradorLlegaA4_5` | Cp 48 el texto del administrador llega a 4 5 | Pasa |
+| `cp48_lasSeriesDeLasBarrasSeDistinguen` | Cp 48 las series de las barras se distinguen | Pasa |
+| `cp48_laLeyendaCoincideConLasBarras` | Cp 48 la leyenda coincide con las barras | Pasa |
+| `cp49_laSerieDeMembresiasTieneDivision` | Cp 49 la serie de membresías tiene division | Pasa |
+| `cp48_losIndicadoresSeVenSobreElFondo` | Cp 48 los indicadores se ven sobre el fondo | Pasa |
+| `cp48_losTramosDeLaDonaSeVenSobreElFondo` | Cp 48 los tramos de la dona se ven sobre el fondo | Pasa |
+| `cp49_lasEstrellasSeDistinguenPorLaForma` | Cp 49 las estrellas se distinguen por la forma | Pasa |
+| `cp48_losNumerosDelMapaDeCalorSeLeen` | Cp 48 los numeros del mapa de calor se leen | Pasa |
+| `cp47_elFocoSeVe` | Cp 47 el foco se ve | Pasa |
+
+### `servicio.HorarioServicioTest` (37 pruebas, 44 casos)
+
+| Prueba | Qué verifica | Resultado |
+|---|---|---|
+| `dentroDeLaFranjaEstaAbiertaYDiceHastaCuando` | Dentro de la franja está abierta y dice hasta cuando | Pasa |
+| `abreExactamenteALaHoraDeApertura` | Abre exactamente a la hora de apertura | Pasa |
+| `unMinutoAntesDeAbrirTodaviaEstaCerrada` | Un minuto antes de abrir todavía está cerrada | Pasa |
+| `unMinutoAntesDelCierreSigueAbierta` | Un minuto antes del cierre sigue abierta | Pasa |
+| `aLaHoraDeCierreYaEstaCerradaYDiceCuandoAbreLaSemanaSiguiente` | A la hora de cierre ya está cerrada y dice cuando abre la semana siguiente | Pasa |
+| `siAbreMasTardeHoyDiceLaHora` | Si abre más tarde hoy dice la hora | Pasa |
+| `siHayDosFranjasMasTardeDiceLaPrimera` | Si hay dos franjas más tarde dice la primera | Pasa |
+| `siAbreMananaLoDiceAsi` | Si abre mañana lo dice asi | Pasa |
+| `siAbreOtroDiaDiceElDiaYLaFecha` | Si abre otro día dice el día y la fecha | Pasa |
+| `unaFranjaDeUnDiaPuntualSeSumaALasSemanales` | Una franja de un día puntual se suma a las semanales | Pasa |
+| `laFranjaDeUnDiaPuntualPuedeSerLaProximaApertura` | La franja de un día puntual puede ser la proxima apertura | Pasa |
+| `buscaLaProximaAperturaHastaCatorceDiasAdelante` | Busca la proxima apertura hasta catorce días adelante | Pasa |
+| `siLaProximaAperturaEstaAMasDeCatorceDiasDiceSoloCerrada` | Si la proxima apertura está a más de catorce días dice solo cerrada | Pasa |
+| `sinHorariosCargadosLoDice` | Sin horarios cargados lo dice | Pasa |
+| `elDiaDeHoyMuestraComoEstaAhora` | El día de hoy muestra como está ahora | Pasa |
+| `otroDiaMuestraTodasSusFranjas` | Otro día muestra todas sus franjas | Pasa |
+| `unDiaSinFranjasDiceCerradaEseDia` | Un día sin franjas dice cerrada ese día | Pasa |
+| `agrupaLosDiasConElMismoHorarioYLosAbrevia` | Agrupa los días con el mismo horario y los abrevia | Pasa |
+| `despuesDeLasSemanalesVanLosDiasPuntualesQueTodaviaNoPasaron` | Después de las semanales van los días puntuales que todavía no pasaron | Pasa |
+| `elTextoDeDiasAbreviaLasRachasDeTresOMas` | El texto de días abrevia las rachas de tres o más | Pasa (8 casos) |
+| `agregaUnaFilaPorCadaDiaElegido` | Agrega una fila por cada día elegido | Pasa |
+| `rechazaUnaInstalacionInexistente` | Rechaza una instalación inexistente | Pasa |
+| `rechazaUnaInstalacionQueSeReservaPorTurnos` | Rechaza una instalación que se reserva por turnos | Pasa |
+| `exigeLaHoraDeAperturaYLaDeCierre` | Exige la hora de apertura y la de cierre | Pasa |
+| `elCierreTieneQueSerPosteriorALaApertura` | El cierre tiene que ser posterior a la apertura | Pasa |
+| `exigeAlMenosUnDia` | Exige al menos un día | Pasa |
+| `rechazaUnaFranjaQueSeSuperponeConOtraDelMismoDia` | Rechaza una franja que se superpone con otra del mismo día | Pasa |
+| `unaFranjaQueEmpiezaJustoCuandoOtraTerminaNoSeSuperpone` | Una franja que empieza justo cuando otra termina no se superpone | Pasa |
+| `unaFranjaQueTerminaJustoCuandoOtraEmpiezaNoSeSuperpone` | Una franja que termina justo cuando otra empieza no se superpone | Pasa |
+| `lasFranjasDeOtroDiaNoSeSuperponen` | Las franjas de otro día no se superponen | Pasa |
+| `siUnSoloDiaChocaNoSeAgregaNingunoDeLosOtros` | Si un solo día choca no se agrega ninguno de los otros | Pasa |
+| `agregaLaFranjaDeUnDiaPuntual` | Agrega la franja de un día puntual | Pasa |
+| `elDiaPuntualPuedeSerHoyPeroNoUnDiaAnterior` | El día puntual puede ser hoy pero no un día anterior | Pasa |
+| `elDiaPuntualEsObligatorio` | El día puntual es obligatorio | Pasa |
+| `elDiaPuntualNoSePuedeSuperponerConElHorarioSemanalDeEseDia` | El día puntual no se puede superponer con el horario semanal de ese día | Pasa |
+| `elDiaPuntualPuedeIrDespuesDelHorarioSemanalSinTocarlo` | El día puntual puede ir después del horario semanal sin tocarlo | Pasa |
+| `quitaSoloLasFranjasDeEsaInstalacion` | Quita solo las franjas de esa instalación | Pasa |
+
+### `servicio.InstalacionesServicioTest` (48 pruebas, 51 casos)
+
+| Prueba | Qué verifica | Resultado |
+|---|---|---|
+| `poneEnMantenimientoUnaCanchaSinReservasEnElPeriodo` | Pone en mantenimiento una cancha sin reservas en el periodo | Pasa |
+| `laBajaDefinitivaNoGuardaFechaDeReactivacion` | La baja definitiva no guarda fecha de reactivacion | Pasa |
+| `recortaElMotivoA255Caracteres` | Recorta el motivo a 255 caracteres | Pasa |
+| `rechazaSacarDeServicioUnaInstalacionInexistente` | Rechaza sacar de servicio una instalación inexistente | Pasa |
+| `rechazaSacarDeServicioUnaInstalacionYaDadaDeBaja` | Rechaza sacar de servicio una instalación ya dada de baja | Pasa |
+| `rechazaPonerEnMantenimientoUnaInstalacionQueYaEstaEnMantenimiento` | Rechaza poner en mantenimiento una instalación que ya está en mantenimiento | Pasa |
+| `exigeElMotivo` | Exige el motivo | Pasa (3 casos) |
+| `rechazaUnaFechaDeReactivacionAnteriorAHoy` | Rechaza una fecha de reactivacion anterior a hoy | Pasa |
+| `aceptaUnaFechaDeReactivacionDeHoy` | Acepta una fecha de reactivacion de hoy | Pasa |
+| `bloqueaSiHayUnaSolicitudConComprobantePorConfirmar` | Bloquea si hay una solicitud con comprobante por confirmar | Pasa |
+| `laSolicitudPorConfirmarBloqueaAunqueSeMarqueCancelarReservas` | La solicitud por confirmar bloquea aunque se marque cancelar reservas | Pasa |
+| `pideMarcarLaOpcionDeCancelarSiHayUnaReserva` | Pide marcar la opcion de cancelar si hay una reserva | Pasa |
+| `pideMarcarLaOpcionDeCancelarSiHayVariasReservas` | Pide marcar la opcion de cancelar si hay varias reservas | Pasa |
+| `alCancelarLasConfirmadasVanPorElPredioYLasQueEsperanPagoSeLiberan` | Al cancelar las confirmadas van por el predio y las que esperan pago se liberan | Pasa |
+| `laCausaDeUnaBajaDefinitivaEmpiezaConBajaDe` | La causa de una baja definitiva empieza con baja de | Pasa |
+| `siFallaLaCancelacionDeUnaReservaLaInstalacionSigueEnServicio` | Si falla la cancelación de una reserva la instalación sigue en servicio | Pasa |
+| `unaReservaQueYaEmpezoHoyNoCuentaComoConflicto` | Una reserva que ya empezó hoy no cuenta como conflicto | Pasa |
+| `clasificaLosConflictosEnConfirmadasEsperandoPagoYPorConfirmar` | Clasifica los conflictos en confirmadas esperando pago y por confirmar | Pasa |
+| `sinFechaDeFinBuscaConflictosHastaCincoAniosAdelante` | Sin fecha de fin busca conflictos hasta cinco anios adelante | Pasa |
+| `reactivarVuelveAHabilitarYLimpiaLosDatosDeLaBaja` | Reactivar vuelve a habilitar y limpia los datos de la baja | Pasa |
+| `laBajaDefinitivaNoSeReviertePorReactivar` | La baja definitiva no se revierte por reactivar | Pasa |
+| `noReactivaUnaInstalacionQueYaEstaHabilitada` | No reactiva una instalación que ya está habilitada | Pasa |
+| `noReactivaUnaInstalacionInexistente` | No reactiva una instalación inexistente | Pasa |
+| `cp30_alReactivarElCreditoRetomaLosDiasQueLeQuedaban` | Cp 30 al reactivar el crédito retoma los días que le quedaban | Pasa |
+| `cp30_unCreditoVencidoAntesDelMantenimientoNoRevive` | Cp 30 un crédito vencido antes del mantenimiento no revive | Pasa |
+| `cp30_reactivarElMismoDiaNoCorreElPlazo` | Cp 30 reactivar el mismo día no corre el plazo | Pasa |
+| `laBajaDefinitivaDesdeMantenimientoRetomaElPlazoDeLosCreditos` | La baja definitiva desde mantenimiento retoma el plazo de los creditos | Pasa |
+| `editaLaDescripcionSinEspaciosYLaCapacidad` | Edita la descripcion sin espacios y la capacidad | Pasa |
+| `unaDescripcionEnBlancoQuedaNulaYLaCapacidadVaciaEsSinLimite` | Una descripcion en blanco queda nula y la capacidad vacía es sin limite | Pasa |
+| `rechazaUnaCapacidadQueNoEsMayorACero` | Rechaza una capacidad que no es mayor a cero | Pasa (2 casos) |
+| `aceptaUnaDescripcionDeExactamente1000Caracteres` | Acepta una descripcion de exactamente 1000 caracteres | Pasa |
+| `rechazaUnaDescripcionDeMasDe1000Caracteres` | Rechaza una descripcion de más de 1000 caracteres | Pasa |
+| `laDemandaSumaReservasConfirmadasEIngresosSoloDeLasConfirmadasEnLosUltimos30Dias` | La demanda suma reservas confirmadas e ingresos solo de las confirmadas en los ultimos 30 días | Pasa |
+| `laOcupacionEsElPorcentajeDeLasFranjasDeLosUltimos30Dias` | La ocupacion es el porcentaje de las franjas de los ultimos 30 días | Pasa |
+| `laOcupacionNoPasaDe100` | La ocupacion no pasa de 100 | Pasa |
+| `sinTurnosLaOcupacionEsCero` | Sin turnos la ocupacion es cero | Pasa |
+| `elRankingVaDeLaMasALaMenosSolicitadaConPorcentajesSobreLaPrimera` | El ranking va de la más a la menos solicitada con porcentajes sobre la primera | Pasa |
+| `sinReservasElRankingMuestraCeroPorCiento` | Sin reservas el ranking muestra cero por ciento | Pasa |
+| `losPreciosSeMuestranPorTipoDeSocioYLasDeAccesoLibreNoTienenPrecio` | Los precios se muestran por tipo de socio y las de acceso libre no tienen precio | Pasa |
+| `marcaConOrdenIncorrectoLaFilaEnQueElAlumnoPagaMasQueElExterno` | Marca con orden incorrecto la fila en que el alumno paga más que el externo | Pasa |
+| `noHayFichaDeUnaInstalacionInexistente` | No hay ficha de una instalación inexistente | Pasa |
+| `laFichaDeUnaCanchaHabilitadaMuestraEstadoTurnosYOcupacion` | La ficha de una cancha habilitada muestra estado turnos y ocupacion | Pasa |
+| `laFichaMuestraLaReactivacionEstimadaDeUnMantenimiento` | La ficha muestra la reactivacion estimada de un mantenimiento | Pasa |
+| `laFichaAvisaQueLaFechaEstimadaDeReactivacionYaPaso` | La ficha avisa que la fecha estimada de reactivacion ya paso | Pasa |
+| `laFichaDeUnaBajaDefinitivaLoDice` | La ficha de una baja definitiva lo dice | Pasa |
+| `laFichaMuestraSoloLasTresProximasReservasQueTodaviaNoTerminaron` | La ficha muestra solo las tres proximas reservas que todavía no terminaron | Pasa |
+| `cp36_cadaPrecioMuestraDesdeCuandoRigeYElProximoCambio` | Cp 36 cada precio muestra desde cuando rige y el proximo cambio | Pasa |
+| `cp36_unPrecioQueTodaviaNoRigeSeVeComoProximoCambio` | Cp 36 un precio que todavía no rige se ve como proximo cambio | Pasa |
+
+### `servicio.MembresiasServicioListadosTest` (16 pruebas, 16 casos)
+
+| Prueba | Qué verifica | Resultado |
+|---|---|---|
+| `ordenaPendientesVigentesVencidasYCanceladasConservandoElOrdenPorFecha` | Ordena pendientes vigentes vencidas y canceladas conservando el orden por fecha | Pasa |
+| `unaVigenteQueVenceHoyOMananaLoDiceYEstaPorVencer` | Una vigente que vence hoy o mañana lo dice y está por vencer | Pasa |
+| `unaVigenteEstaPorVencerHastaSieteDiasInclusive` | Una vigente está por vencer hasta siete días inclusive | Pasa |
+| `unaPendienteConComprobanteDiceQueHayQueValidarlo` | Una pendiente con comprobante dice que hay que validarlo | Pasa |
+| `unaPendienteSinComprobanteEstaEsperandolo` | Una pendiente sin comprobante está esperandolo | Pasa |
+| `unaCanceladaPorComprobanteDenegadoLoDiceYUnaBajaTambien` | Una cancelada por comprobante denegado lo dice y una baja tambien | Pasa |
+| `unaVencidaAvisaQueElCarnetSeCongelaSiNoRenovo` | Una vencida avisa que el carnet se congela si no renovó | Pasa |
+| `laFilaMuestraElSocioSusInicialesYSuTipo` | La fila muestra el socio sus iniciales y su tipo | Pasa |
+| `laListaDeProximosVencimientosPideAlDaoDesdeHoyHastaLaFechaLimite` | La lista de próximos vencimientos pide al dao desde hoy hasta la fecha limite | Pasa |
+| `elIngresoDelMesSeComparaConElMesAnteriorYSeReparteEntreLosTipos` | El ingreso del mes se compara con el mes anterior y se reparte entre los tipos | Pasa |
+| `siElMesBajoLaComparacionEsNegativa` | Si el mes bajo la comparacion es negativa | Pasa |
+| `siElMesAnteriorNoTuvoIngresosNoHayPorcentaje` | Si el mes anterior no tuvo ingresos no hay porcentaje | Pasa |
+| `sinIngresosEnNingunMesLoDice` | Sin ingresos en ningún mes lo dice | Pasa |
+| `lasCuotasSonLaTarifaVigenteDeCadaTipoONulaSiNoHay` | Las cuotas son la tarifa vigente de cada tipo o nula si no hay | Pasa |
+| `losTiposDeSocioSonLosNombresDeLasCategorias` | Los tipos de socio son los nombres de las categorias | Pasa |
+| `cp36_cadaCuotaMuestraDesdeCuandoRigeYElProximoCambio` | Cp 36 cada cuota muestra desde cuando rige y el proximo cambio | Pasa |
+
+### `servicio.MembresiasServicioTest` (24 pruebas, 24 casos)
+
+| Prueba | Qué verifica | Resultado |
+|---|---|---|
+| `laMembresiaEmpiezaElDiaDeLaValidacionYVenceUnMesDespues` | La membresía empieza el día de la validación y vence un mes después | Pasa |
+| `siSePagaDespuesDelVencimientoLaMembresiaEmpiezaElDiaDelPago` | Si se paga después del vencimiento la membresía empieza el día del pago | Pasa |
+| `unMesDesdeElTreintaYUnoDeEneroTerminaElUltimoDiaDeFebrero` | Un mes desde el treinta y uno de enero termina el último día de febrero | Pasa |
+| `alAceptarElSocioQuedaActivoYSuCarnetSeActiva` | Al aceptar el socio queda activo y su carnet se activa | Pasa |
+| `alAceptarElPagoQuedaConfirmadoConQuienLoValido` | Al aceptar el pago queda confirmado con quién lo validó | Pasa |
+| `alAceptarSinCarnetNoFallaYElSocioQuedaActivo` | Al aceptar sin carnet no falla y el socio queda activo | Pasa |
+| `laRenovacionPorAdelantadoNuncaEmpiezaAntesDeQueTermineLaVigente` | La renovación por adelantado nunca empieza antes de que termine la vigente | Pasa |
+| `laRenovacionPorAdelantadoMantieneElMismoDiaDelMes` | La renovación por adelantado mantiene el mismo día del mes | Pasa |
+| `siSePagaElMismoDiaDelVencimientoLaNuevaEmpiezaEseDia` | Si se paga el mismo día del vencimiento la nueva empieza ese día | Pasa |
+| `noAceptaUnaSolicitudQueYaEstabaResuelta` | No acepta una solicitud que ya estaba resuelta | Pasa |
+| `noAceptaSiElPagoYaFueValidado` | No acepta si el pago ya fue validado | Pasa |
+| `noAceptaUnaSolicitudSinComprobante` | No acepta una solicitud sin comprobante | Pasa |
+| `noAceptaUnaSolicitudInexistente` | No acepta una solicitud inexistente | Pasa |
+| `alDenegarElPagoQuedaRechazadoYLaSolicitudCancelada` | Al denegar el pago queda rechazado y la solicitud cancelada | Pasa |
+| `noDeniegaUnaSolicitudQueYaEstabaResuelta` | No deniega una solicitud que ya estaba resuelta | Pasa |
+| `cancelarLaUnicaVigenteCongelaAlSocio` | Cancelar la única vigente congela al socio | Pasa |
+| `cancelarUnaVigenteNoCongelaAlSocioSiTieneOtraRenovada` | Cancelar una vigente no congela al socio si tiene otra renovada | Pasa |
+| `noCancelaUnaMembresiaQueNoEstaVigente` | No cancela una membresía que no está vigente | Pasa |
+| `alVencerLaUnicaVigenteElSocioQuedaNoActivoYElCarnetInactivo` | Al vencer la única vigente el socio queda no activo y el carnet inactivo | Pasa |
+| `alVencerNoCongelaAlSocioQueYaRenovo` | Al vencer no congela al socio que ya renovó | Pasa |
+| `alVencerCongelaACadaSocioQueQuedoSinMembresia` | Al vencer congela a cada socio que quedó sin membresía | Pasa |
+| `alVencerNoFallaSiElSocioNoTieneCarnet` | Al vencer no falla si el socio no tiene carnet | Pasa |
+| `sinMembresiasVencidasNoCambiaNada` | Sin membresías vencidas no cambia nada | Pasa |
+| `noCancelaUnaMembresiaInexistente` | No cancela una membresía inexistente | Pasa |
+
+### `servicio.PanelSocioServicioAvisosTest` (25 pruebas, 28 casos)
+
+| Prueba | Qué verifica | Resultado |
+|---|---|---|
+| `avisaQueLaMembresiaEstaVencidaYQueNoSePuedeReservar` | Avisa que la membresía está vencida y que no se puede reservar | Pasa |
+| `unSocioQueNuncaTuvoMembresiaRecibeElAvisoDeQueTodaviaNoLaTiene` | Un socio que nunca tuvo membresía recibe el aviso de que todavía no la tiene | Pasa |
+| `avisaCuandoLaMembresiaVenceEnSieteDiasOMenos` | Avisa cuando la membresía vence en siete días o menos | Pasa (4 casos) |
+| `noAvisaSiLaMembresiaVenceEnOchoDias` | No avisa si la membresía vence en ocho días | Pasa |
+| `avisaDeLaValoracionPendienteDeUnTurnoTerminado` | Avisa de la valoración pendiente de un turno terminado | Pasa |
+| `sinComprobanteAvisaHastaQueHoraTieneParaSubirlo` | Sin comprobante avisa hasta que hora tiene para subirlo | Pasa |
+| `conComprobanteAvisaQueSeEstaRevisando` | Con comprobante avisa que se está revisando | Pasa |
+| `unTurnoConfirmadoDeMananaAvisaQueEsManana` | Un turno confirmado de mañana avisa que es mañana | Pasa |
+| `unaConfirmadaLejanaYRecienteAvisaQueSeConfirmo` | Una confirmada lejana y reciente avisa que se confirmo | Pasa |
+| `unaConfirmadaLejanaConfirmadaHaceMasDeUnaSemanaYaNoAvisa` | Una confirmada lejana confirmada hace más de una semana ya no avisa | Pasa |
+| `unaRechazadaRecienteAvisaConElMotivo` | Una rechazada reciente avisa con el motivo | Pasa |
+| `unaRechazadaDeHaceMasDeDosSemanasYaNoAvisa` | Una rechazada de hace más de dos semanas ya no avisa | Pasa |
+| `unaCanceladaConCreditoVigenteAvisaHastaCuandoPuedeUsarlo` | Una cancelada con crédito vigente avisa hasta cuando puede usarlo | Pasa |
+| `unPedidoDeCancelacionSinResponderAvisaQueEstaEnRevision` | Un pedido de cancelación sin responder avisa que está en revision | Pasa |
+| `unaCancelacionAprobadaAvisaDelCreditoDe30Dias` | Una cancelación aprobada avisa del crédito de 30 días | Pasa |
+| `unaCancelacionRechazadaAvisaElMotivoYQueLaReservaSigueEnPie` | Una cancelación rechazada avisa el motivo y que la reserva sigue en pie | Pasa |
+| `unaRespuestaDeHaceMasDeDosSemanasYaNoAvisa` | Una respuesta de hace más de dos semanas ya no avisa | Pasa |
+| `ordenaLosAvisosDelMasAlMenosImportante` | Ordena los avisos del más al menos importante | Pasa |
+| `elPerfilDeUnSocioVigenteCalculaDiasRestantesYProgreso` | El perfil de un socio vigente calcula días restantes y progreso | Pasa |
+| `elProgresoLlegaA100ElDiaDelVencimiento` | El progreso llega a 100 el día del vencimiento | Pasa |
+| `elProgresoNuncaEsNegativoSiLaMembresiaTodaviaNoEmpezo` | El progreso nunca es negativo si la membresía todavía no empezó | Pasa |
+| `elPerfilDeUnSocioSinMembresiaMuestraLaUltimaVencida` | El perfil de un socio sin membresía muestra la ultima vencida | Pasa |
+| `elPerfilUsaLaPrimeraPalabraDelNombreComoNombreDePila` | El perfil usa la primera palabra del nombre como nombre de pila | Pasa |
+| `sinNombreElNombreDePilaEsLaParteLocalDelCorreo` | Sin nombre el nombre de pila es la parte local del correo | Pasa |
+| `unVigenteSinSuscripcionVigenteNoTieneFechaDeVencimiento` | Un vigente sin suscripcion vigente no tiene fecha de vencimiento | Pasa |
+
+### `servicio.PanelSocioServicioComprobanteTest` (20 pruebas, 20 casos)
+
+| Prueba | Qué verifica | Resultado |
+|---|---|---|
+| `guardaElComprobanteYCreaElPagoPorElPrecioDeLaTarifa` | Guarda el comprobante y crea el pago por el precio de la tarifa | Pasa |
+| `guardaUnPngConLaExtensionPng` | Guarda un PNG con la extensión PNG | Pasa |
+| `siLaBaseRechazaElArchivoRepetidoAvisaQueYaFueUsado` | Si la base rechaza el archivo repetido avisa que ya fue usado | Pasa |
+| `aceptaUnArchivoDeExactamente5MB` | Acepta un archivo de exactamente 5 MB | Pasa |
+| `rechazaUnArchivoDeUnByteMasQue5MB` | Rechaza un archivo de un byte más que 5 MB | Pasa |
+| `rechazaSinArchivo` | Rechaza sin archivo | Pasa |
+| `rechazaUnArchivoVacio` | Rechaza un archivo vacío | Pasa |
+| `rechazaUnArchivoQueNoEsImagenNiPdf` | Rechaza un archivo que no es imagen ni PDF | Pasa |
+| `rechazaSinLaFechaDeLaTransferencia` | Rechaza sin la fecha de la transferencia | Pasa |
+| `aceptaUnaTransferenciaHechaJustoAhora` | Acepta una transferencia hecha justo ahora | Pasa |
+| `aceptaUnaTransferenciaDeExactamente7DiasAtras` | Acepta una transferencia de exactamente 7 días atrás | Pasa |
+| `rechazaUnaTransferenciaDeUnMinutoMasDe7Dias` | Rechaza una transferencia de un minuto más de 7 días | Pasa |
+| `rechazaUnaTransferenciaConFechaDeUnaHoraEnElFuturo` | Rechaza una transferencia con fecha de una hora en el futuro | Pasa |
+| `rechazaUnaTransferenciaAdelantadaMasDe25Minutos` | Rechaza una transferencia adelantada más de 25 minutos | Pasa |
+| `aceptaUnaTransferenciaAdelantadaHasta25Minutos` | Acepta una transferencia adelantada hasta 25 minutos | Pasa |
+| `rechazaUnComprobanteCuyoHashYaSeUsoEnOtraOperacion` | Rechaza un comprobante cuyo hash ya se uso en otra operación | Pasa |
+| `rechazaUnaReservaQueYaTieneComprobante` | Rechaza una reserva que ya tiene comprobante | Pasa |
+| `rechazaUnaReservaDeOtroSocio` | Rechaza una reserva de otro socio | Pasa |
+| `rechazaUnaReservaQueYaNoEsperaElPago` | Rechaza una reserva que ya no espera el pago | Pasa |
+| `siNoSePuedeGuardarElArchivoAvisaAlSocioQueReintente` | Si no se puede guardar el archivo avisa al socio que reintente | Pasa |
+
+### `servicio.PanelSocioServicioConsultasTest` (25 pruebas, 25 casos)
+
+| Prueba | Qué verifica | Resultado |
+|---|---|---|
+| `buscaElSocioDeUnaCuentaActiva` | Busca el socio de una cuenta activa | Pasa |
+| `unaCuentaDeUnSocioDadoDeBajaNoTieneSocio` | Una cuenta de un socio dado de baja no tiene socio | Pasa |
+| `unaCuentaQueNoEsDeUnSocioNoTieneSocio` | Una cuenta que no es de un socio no tiene socio | Pasa |
+| `sinIdDeUsuarioNoHaySocio` | Sin id de usuario no hay socio | Pasa |
+| `unaInstalacionHabilitadaConPrecioSePuedeReservar` | Una instalación habilitada con precio se puede reservar | Pasa |
+| `unaInstalacionEnMantenimientoMuestraHastaCuando` | Una instalación en mantenimiento muestra hasta cuando | Pasa |
+| `unaInstalacionDadaDeBajaNoEstaDisponible` | Una instalación dada de baja no está disponible | Pasa |
+| `unaInstalacionSinPrecioParaElTipoDeSocioNoSePuedeReservar` | Una instalación sin precio para el tipo de socio no se puede reservar | Pasa |
+| `unaFranjaQueEmpezaEn48HorasExactasEstaLibre` | Una franja que empeza en 48 horas exactas está libre | Pasa |
+| `unaFranjaQueEmpezaEn46HorasNoSePuedeElegir` | Una franja que empeza en 46 horas no se puede elegir | Pasa |
+| `unaFranjaDeHoyQueYaEmpezoDiceYaPaso` | Una franja de hoy que ya empezó dice ya paso | Pasa |
+| `unaFranjaReservadaPorOtroSocioDiceReservado` | Una franja reservada por otro socio dice reservado | Pasa |
+| `unaFranjaReservadaPorElPropioSocioDiceTuReserva` | Una franja reservada por el propio socio dice tu reserva | Pasa |
+| `lasFranjasDeUnDiaConviertenCadaMotivoSegunSuEstado` | Las franjas de un día convierten cada motivo según su estado | Pasa |
+| `lasFranjasParaReprogramarSonLasDeLaInstalacionDeLaReservaPropia` | Las franjas para reprogramar son las de la instalación de la reserva propia | Pasa |
+| `conLaBajaDefinitivaLasFranjasParaReprogramarSonLasDeLasEquivalentes` | Con la baja definitiva las franjas para reprogramar son las de las equivalentes | Pasa |
+| `noMuestraFranjasParaReprogramarUnaReservaAjena` | No muestra franjas para reprogramar una reserva ajena | Pasa |
+| `losDiasReservablesVanDelTercerDiaHastaDentroDe30Dias` | Los días reservables van del tercer día hasta dentro de 30 días | Pasa |
+| `cuentaCuantasReservasProximasTieneElSocioCadaDia` | Cuenta cuantas reservas proximas tiene el socio cada día | Pasa |
+| `laCuotaMensualSaleDeLaTarifaVigenteDelTipoDeSocio` | La cuota mensual sale de la tarifa vigente del tipo de socio | Pasa |
+| `sinTarifaVigenteNoHayCuotaNiPrecio` | Sin tarifa vigente no hay cuota ni precio | Pasa |
+| `elPrecioDelTurnoEsElDeLaTarifaVigenteEseDia` | El precio del turno es el de la tarifa vigente ese día | Pasa |
+| `cp36_laTarifaDelSocioMuestraDesdeCuandoRigeYElProximoCambio` | Cp 36 la tarifa del socio muestra desde cuando rige y el proximo cambio | Pasa |
+| `cp36_laTarifaDelSocioSinCambioProgramadoLoDice` | Cp 36 la tarifa del socio sin cambio programado lo dice | Pasa |
+| `cp36_laCuotaDelSocioMuestraDesdeCuandoRigeYElProximoCambio` | Cp 36 la cuota del socio muestra desde cuando rige y el proximo cambio | Pasa |
+
+### `servicio.PanelSocioServicioMisReservasTest` (21 pruebas, 21 casos)
+
+| Prueba | Qué verifica | Resultado |
+|---|---|---|
+| `unaConfirmadaConExactamente48HorasPermitePedirLaCancelacion` | Una confirmada con exactamente 48 horas permite pedir la cancelación | Pasa |
+| `unaConfirmadaConMenosDe48HorasYaNoPermitePedirLaCancelacion` | Una confirmada con menos de 48 horas ya no permite pedir la cancelación | Pasa |
+| `unaConfirmadaConMasDe48HorasPermitePedirLaCancelacion` | Una confirmada con más de 48 horas permite pedir la cancelación | Pasa |
+| `conUnPedidoPendienteSeMuestraCancelacionPedidaYNoSeOfreceOtro` | Con un pedido pendiente se muestra cancelación pedida y no se ofrece otro | Pasa |
+| `elMontoSaleDelPagoCuandoLoHay` | El monto sale del pago cuando lo hay | Pasa |
+| `sinPagoElMontoSaleDeLaTarifa` | Sin pago el monto sale de la tarifa | Pasa |
+| `unaConfirmadaQueTerminoSeMuestraRealizadaYPideValoracion` | Una confirmada que terminó se muestra realizada y pide valoración | Pasa |
+| `unaRealizadaYaValoradaMuestraElPuntaje` | Una realizada ya valorada muestra el puntaje | Pasa |
+| `unaRealizadaAnteriorALaFuncionDeValoracionesNoPideValorar` | Una realizada anterior a la función de valoraciones no pide valorar | Pasa |
+| `sinComprobanteSeOfreceSubirloYLiberarConElLimiteDe60Minutos` | Sin comprobante se ofrece subirlo y liberar con el limite de 60 minutos | Pasa |
+| `conComprobanteQuedaEnRevisionYNoSePuedeLiberar` | Con comprobante queda en revision y no se puede liberar | Pasa |
+| `unaCanceladaConCreditoVigentePermiteReprogramar` | Una cancelada con crédito vigente permite reprogramar | Pasa |
+| `cp29_conLaInstalacionEnMantenimientoElCreditoEstaEnPausa` | Cp 29 con la instalación en mantenimiento el crédito está en pausa | Pasa |
+| `elUltimoDiaDelCreditoTodaviaPermiteReprogramar` | El último día del crédito todavía permite reprogramar | Pasa |
+| `conElCreditoVencidoAyerNoPermiteReprogramar` | Con el crédito vencido ayer no permite reprogramar | Pasa |
+| `conUnPedidoDeReprogramacionPendienteNoSeOfreceReprogramarOtraVez` | Con un pedido de reprogramación pendiente no se ofrece reprogramar otra vez | Pasa |
+| `unaRechazadaMuestraElMotivoDelAdministrador` | Una rechazada muestra el motivo del administrador | Pasa |
+| `unaRechazadaSinMotivoDiceQueElTurnoQuedoLibre` | Una rechazada sin motivo dice que el turno quedó libre | Pasa |
+| `elSeguimientoDeUnaConfirmadaTieneCuatroPasos` | El seguimiento de una confirmada tiene cuatro pasos | Pasa |
+| `elSeguimientoSinComprobanteMarcaElComprobanteComoPasoActual` | El seguimiento sin comprobante marca el comprobante como paso actual | Pasa |
+| `elSeguimientoDeUnaCanceladaTerminaEnReservaCancelada` | El seguimiento de una cancelada termina en reserva cancelada | Pasa |
+
+### `servicio.PanelSocioServicioReservaTest` (35 pruebas, 35 casos)
+
+| Prueba | Qué verifica | Resultado |
+|---|---|---|
+| `reservaConExactamente48HorasDeAnticipacion` | Reserva con exactamente 48 horas de anticipación | Pasa |
+| `reservaConMasDe48HorasDeAnticipacion` | Reserva con más de 48 horas de anticipación | Pasa |
+| `rechazaReservarConMenosDe48HorasDeAnticipacion` | Rechaza reservar con menos de 48 horas de anticipación | Pasa |
+| `rechazaReservarConUnMinutoMenosDe48Horas` | Rechaza reservar con un minuto menos de 48 horas | Pasa |
+| `rechazaUnTurnoQueYaPaso` | Rechaza un turno que ya paso | Pasa |
+| `buscaLaTarifaDeLaInstalacionYDelTipoDeSocioParaEseDia` | Busca la tarifa de la instalación y del tipo de socio para ese día | Pasa |
+| `aceptaReservarUnTurnoDentroDeLosProximos30Dias` | Acepta reservar un turno dentro de los próximos 30 días | Pasa |
+| `rechazaReservarUnTurnoAMasDe30DiasDeHoy` | Rechaza reservar un turno a más de 30 días de hoy | Pasa |
+| `rechazaReservarUnDiaAnteriorAHoy` | Rechaza reservar un día anterior a hoy | Pasa |
+| `rechazaReservarSiLaMembresiaNoEstaVigente` | Rechaza reservar si la membresía no está vigente | Pasa |
+| `rechazaReservarSiElSocioFueDadoDeBaja` | Rechaza reservar si el socio fue dado de baja | Pasa |
+| `rechazaReservarSiElSocioNoExiste` | Rechaza reservar si el socio no existe | Pasa |
+| `aceptaReservarConDosReservasEsperandoElComprobante` | Acepta reservar con dos reservas esperando el comprobante | Pasa |
+| `rechazaReservarConTresReservasEsperandoElComprobante` | Rechaza reservar con tres reservas esperando el comprobante | Pasa |
+| `rechazaUnaInstalacionDeAccesoLibre` | Rechaza una instalación de acceso libre | Pasa |
+| `rechazaUnaInstalacionEnMantenimiento` | Rechaza una instalación en mantenimiento | Pasa |
+| `rechazaSiLaInstalacionNoTienePrecioParaElTipoDeSocio` | Rechaza si la instalación no tiene precio para el tipo de socio | Pasa |
+| `rechazaUnTurnoQueYaTomoOtroSocio` | Rechaza un turno que ya tomó otro socio | Pasa |
+| `traduceElChoqueConLaRestriccionUnicaDeLaBaseEnUnMensajeParaElSocio` | Traduce el choque con la restricción única de la base en un mensaje para el socio | Pasa |
+| `exigeElegirUnTurno` | Exige elegir un turno | Pasa |
+| `rechazaReservarSiHayUnTurnoTerminadoSinValorar` | Rechaza reservar si hay un turno terminado sin valorar | Pasa |
+| `noExigeValorarUnTurnoQueYaFueValorado` | No exige valorar un turno que ya fue valorado | Pasa |
+| `noExigeValorarTurnosAnterioresALaFuncionDeValoraciones` | No exige valorar turnos anteriores a la función de valoraciones | Pasa |
+| `liberaUnaReservaPropiaQueEsperaElComprobante` | Libera una reserva propia que espera el comprobante | Pasa |
+| `noLiberaUnaReservaQueYaTieneComprobante` | No libera una reserva que ya tiene comprobante | Pasa |
+| `noLiberaUnaReservaDeOtroSocio` | No libera una reserva de otro socio | Pasa |
+| `noLiberaUnaReservaQueYaNoEsperaElPago` | No libera una reserva que ya no espera el pago | Pasa |
+| `liberaLasReservasSinComprobanteCreadasAntesDeLos60Minutos` | Libera las reservas sin comprobante creadas antes de los 60 minutos | Pasa |
+| `noLiberaLaReservaCuyoComprobanteSeSubioJustoAntes` | No libera la reserva cuyo comprobante se subió justo antes | Pasa |
+| `sinReservasVencidasNoLiberaNada` | Sin reservas vencidas no libera nada | Pasa |
+| `elPrimerDiaReservableEsElDeDentroDeDosDias` | El primer día reservable es el de dentro de dos días | Pasa |
+| `elMensajeDeValoracionesPendientesVaEnPluralConDosOMas` | El mensaje de valoraciones pendientes va en plural con dos o más | Pasa |
+| `exigeElegirElDia` | Exige elegir el día | Pasa |
+| `noLiberaLaReservaQueMientrasTantoFueConfirmada` | No libera la reserva que mientras tanto fue confirmada | Pasa |
+| `noLiberaSinIndicarLaReserva` | No libera sin indicar la reserva | Pasa |
+
+### `servicio.PanelSocioServicioValoracionTest` (24 pruebas, 24 casos)
+
+| Prueba | Qué verifica | Resultado |
+|---|---|---|
+| `CP-37: acepta los puntajes de 1 a 5[1] 1` | Cp 37 acepta los puntajes de 1 a 5 1 1 | Pasa |
+| `CP-37: acepta los puntajes de 1 a 5[2] 2` | Cp 37 acepta los puntajes de 1 a 5 2 2 | Pasa |
+| `CP-37: acepta los puntajes de 1 a 5[3] 3` | Cp 37 acepta los puntajes de 1 a 5 3 3 | Pasa |
+| `CP-37: acepta los puntajes de 1 a 5[4] 4` | Cp 37 acepta los puntajes de 1 a 5 4 4 | Pasa |
+| `CP-37: acepta los puntajes de 1 a 5[5] 5` | Cp 37 acepta los puntajes de 1 a 5 5 5 | Pasa |
+| `CP-38: rechaza puntajes 0 y 6[1] -1` | Cp 38 rechaza puntajes 0 y 6 1 1 | Pasa |
+| `CP-38: rechaza puntajes 0 y 6[2] 0` | Cp 38 rechaza puntajes 0 y 6 2 0 | Pasa |
+| `CP-38: rechaza puntajes 0 y 6[3] 6` | Cp 38 rechaza puntajes 0 y 6 3 6 | Pasa |
+| `CP-38: rechaza puntajes 0 y 6[4] 10` | Cp 38 rechaza puntajes 0 y 6 4 10 | Pasa |
+| `guardaLaValoracionConSuPuntajeComentarioYFecha` | Guarda la valoración con su puntaje comentario y fecha | Pasa |
+| `rechazaUnPuntajeNulo` | Rechaza un puntaje nulo | Pasa |
+| `guardaCompletoUnComentarioDeExactamente500Caracteres` | Guarda completo un comentario de exactamente 500 caracteres | Pasa |
+| `recortaA500CaracteresUnComentarioMasLargo` | Recorta a 500 caracteres un comentario más largo | Pasa |
+| `guardaComoNuloUnComentarioEnBlanco` | Guarda como nulo un comentario en blanco | Pasa |
+| `guardaComoNuloUnComentarioNulo` | Guarda como nulo un comentario nulo | Pasa |
+| `quitaLosEspaciosDeLosExtremosDelComentario` | Quita los espacios de los extremos del comentario | Pasa |
+| `rechazaValorarUnaReservaQueYaFueValorada` | Rechaza valorar una reserva que ya fue valorada | Pasa |
+| `rechazaLaValoracionSiLaBaseDetectaQueYaExistia` | Rechaza la valoración si la base detecta que ya existía | Pasa |
+| `rechazaValorarUnTurnoQueTodaviaNoTermino` | Rechaza valorar un turno que todavía no terminó | Pasa |
+| `aceptaValorarJustoCuandoTerminaElTurno` | Acepta valorar justo cuando termina el turno | Pasa |
+| `rechazaValorarUnaReservaQueNoEstaConfirmada` | Rechaza valorar una reserva que no está confirmada | Pasa |
+| `rechazaValorarUnaReservaDeOtroSocio` | Rechaza valorar una reserva de otro socio | Pasa |
+| `rechazaValorarUnaReservaInexistente` | Rechaza valorar una reserva inexistente | Pasa |
+| `rechazaValorarSinIndicarLaReserva` | Rechaza valorar sin indicar la reserva | Pasa |
+
+### `dto.PromedioInstalacionTest` (5 pruebas, 5 casos)
+
+| Prueba | Qué verifica | Resultado |
+|---|---|---|
+| `conPromedioDe4EsNivelAlto` | Con promedio de 4 es nivel alto | Pasa |
+| `conPromedioDe3Coma5EsNivelMedioYNoParaRevisar` | Con promedio de 3 coma 5 es nivel medio y no para revisar | Pasa |
+| `conPromedioPorDebajoDe3Coma5EsNivelBajoYParaRevisar` | Con promedio por debajo de 3 coma 5 es nivel bajo y para revisar | Pasa |
+| `sinValoracionesEsNivelSinYNoSeMarcaParaRevisar` | Sin valoraciones es nivel sin y no se marca para revisar | Pasa |
+| `elPorcentajeDeLaBarraEsElPromedioSobre5` | El porcentaje de la barra es el promedio sobre 5 | Pasa |
+
+### `servicio.PruebaDeHumoTest` (1 prueba, 1 caso)
+
+| Prueba | Qué verifica | Resultado |
+|---|---|---|
+| `cargaUnaClaseDeProduccionYGuardaElMensajeTalCual` | Carga una clase de producción y guarda el mensaje tal cual | Pasa |
+
+### `servicio.RegistroServicioTest` (38 pruebas, 46 casos)
+
+| Prueba | Qué verifica | Resultado |
+|---|---|---|
+| `CP-02: rechaza una contraseña sin letras, sin números o sin símbolo[1] Clave2026` | Cp 02 rechaza una contraseña sin letras sin números o sin símbolo 1 clave 2026 | Pasa |
+| `CP-02: rechaza una contraseña sin letras, sin números o sin símbolo[2] Clave#abcd` | Cp 02 rechaza una contraseña sin letras sin números o sin símbolo 2 clave abcd | Pasa |
+| `CP-02: rechaza una contraseña sin letras, sin números o sin símbolo[3] 123#456` | Cp 02 rechaza una contraseña sin letras sin números o sin símbolo 3 123 456 | Pasa |
+| `CP-02: rechaza una contraseña sin letras, sin números o sin símbolo[4] Clave 2026` | Cp 02 rechaza una contraseña sin letras sin números o sin símbolo 4 clave 2026 | Pasa |
+| `CP-02: rechaza una contraseña sin letras, sin números o sin símbolo[5] 123456` | Cp 02 rechaza una contraseña sin letras sin números o sin símbolo 5 123456 | Pasa |
+| `rechazaUnCorreoConFormatoInvalido` | Rechaza un correo con formato inválido | Pasa (5 casos) |
+| `rechazaUnCorreoNulo` | Rechaza un correo nulo | Pasa |
+| `rechazaUnaContrasenaDeCincoCaracteres` | Rechaza una contraseña de cinco caracteres | Pasa |
+| `aceptaUnaContrasenaDeSeisCaracteresConLetrasNumerosYSimbolo` | Acepta una contraseña de seis caracteres con letras numeros y simbolo | Pasa |
+| `aceptaUnaContrasenaConLetrasConTilde` | Acepta una contraseña con letras con tilde | Pasa |
+| `rechazaCuandoLasContrasenasNoCoinciden` | Rechaza cuando las contraseñas no coinciden | Pasa |
+| `rechazaUnCorreoQueYaTieneUnaCuentaActiva` | Rechaza un correo que ya tiene una cuenta activa | Pasa |
+| `permiteRegistrarseConElCorreoDeUnSocioDadoDeBaja` | Permite registrarse con el correo de un socio dado de baja | Pasa |
+| `rechazaUnDniQueNoTieneEntre6Y15Digitos` | Rechaza un DNI que no tiene entre 6 y 15 dígitos | Pasa (4 casos) |
+| `aceptaUnDniDeSeisYDeQuinceDigitos` | Acepta un DNI de seis y de quince dígitos | Pasa (2 casos) |
+| `rechazaUnaAltaSinNombre` | Rechaza una alta sin nombre | Pasa |
+| `rechazaUnTelefonoConGuiones` | Rechaza un teléfono con guiones | Pasa |
+| `rechazaUnaFechaDeNacimientoVaciaOMalEscrita` | Rechaza una fecha de nacimiento vacía o mal escrita | Pasa |
+| `rechazaUnaFechaDeNacimientoDeHoy` | Rechaza una fecha de nacimiento de hoy | Pasa |
+| `rechazaUnAlumnoSinLegajo` | Rechaza un alumno sin legajo | Pasa |
+| `rechazaUnaAltaSinTipoDeSocio` | Rechaza una alta sin tipo de socio | Pasa |
+| `rechazaUnDniQueYaPerteneceAOtroSocio` | Rechaza un DNI que ya pertenece a otro socio | Pasa |
+| `alRegistrarVuelveAValidarElPasoUno` | Al registrar vuelve a validar el paso uno | Pasa |
+| `registraUsuarioSocioYCarnetEstudiantilParaUnAlumno` | Registra usuario socio y carnet estudiantil para un alumno | Pasa |
+| `elSocioNuevoNaceSinMembresiaHastaQueSeValideSuPago` | El socio nuevo nace sin membresía hasta que se valide su pago | Pasa |
+| `registraUnExternoConCarnetGeneralYSinGuardarLegajo` | Registra un externo con carnet general y sin guardar legajo | Pasa |
+| `alVolverARegistrarseArchivaElCorreoYElDniDeLaFichaDadaDeBaja` | Al volver a registrarse archiva el correo y el DNI de la ficha dada de baja | Pasa |
+| `elDniArchivadoSeCortaA15CaracteresParaEntrarEnLaColumna` | El DNI archivado se corta a 15 caracteres para entrar en la columna | Pasa |
+| `registraUnDocenteInternoConSuCategoria` | Registra un docente interno con su categoria | Pasa |
+| `registraUnNoDocenteInternoConSuCategoria` | Registra un no docente interno con su categoria | Pasa |
+| `rechazaUnaCategoriaInternaDesconocida` | Rechaza una categoria interna desconocida | Pasa |
+| `rechazaUnSocioInternoSinCategoria` | Rechaza un socio interno sin categoria | Pasa |
+| `rechazaUnaContrasenaNula` | Rechaza una contraseña nula | Pasa |
+| `unNombreNuloSeTrataComoVacio` | Un nombre nulo se trata como vacío | Pasa |
+| `unDniNuloSeTrataComoVacio` | Un DNI nulo se trata como vacío | Pasa |
+| `unLegajoNuloSeTrataComoVacio` | Un legajo nulo se trata como vacío | Pasa |
+| `unApellidoNuloSeTrataComoVacio` | Un apellido nulo se trata como vacío | Pasa |
+| `unTelefonoNuloSeTrataComoVacio` | Un teléfono nulo se trata como vacío | Pasa |
+
+### `servicio.ReportesServicioCargaTest` (6 pruebas, 6 casos)
+
+| Prueba | Qué verifica | Resultado |
+|---|---|---|
+| `soloSonIngresosLosPagosConfirmadosYValidadosAunqueLaReservaSeHayaCancelado` | Solo son ingresos los pagos confirmados y validados aunque la reserva se haya cancelado | Pasa |
+| `laTarifaPromedioDeUnaInstalacionEsElPromedioDeSusTarifasVigentes` | La tarifa promedio de una instalación es el promedio de sus tarifas vigentes | Pasa |
+| `laCuotaDeCadaTipoEsLaVigenteOCeroSiNoHay` | La cuota de cada tipo es la vigente o cero si no hay | Pasa |
+| `cuentaLosSociosActivosYElTotalSinLosDadosDeBaja` | Cuenta los socios activos y el total sin los dados de baja | Pasa |
+| `cp45_laCargaPideSoloElPeriodoYElPrevio` | Cp 45 la carga pide solo el periodo y el previo | Pasa |
+| `cargaLosTurnosDeCadaInstalacionReservable` | Carga los turnos de cada instalación reservable | Pasa |
+
+### `servicio.ReportesServicioTest` (69 pruebas, 77 casos)
+
+| Prueba | Qué verifica | Resultado |
+|---|---|---|
+| `CP-41: el resumen de reportes dice "Grado de satisfacción"` | Cp 41 el resumen de reportes dice grado de satisfacción | Pasa |
+| `CP-42: "Un día" es un período de un solo día, comparado con el mismo día de la semana anterior` | Cp 42 un día es un período de un solo día comparado con el mismo día de la semana anterior | Pasa |
+| `unDiaSinFechaEsHoy` | Un día sin fecha es hoy | Pasa |
+| `losDemasPeriodosNoUsanElDiaElegido` | Los demas periodos no usan el día elegido | Pasa |
+| `cp42_laOcupacionDeUnDiaDeUnaInstalacionVaTurnoPorTurno` | Cp 42 la ocupacion de un día de una instalación va turno por turno | Pasa |
+| `unaReservaEsperandoPagoTambienOcupaElTurno` | Una reserva esperando pago tambien ocupa el turno | Pasa |
+| `enUnPeriodoDeVariosDiasCuentaEnCuantosDiasSeReservoCadaTurno` | En un periodo de varios días cuenta en cuantos días se reservo cada turno | Pasa |
+| `unaInstalacionEnMantenimientoTodoElDiaNoTieneTurnosParaOfrecer` | Una instalación en mantenimiento todo el día no tiene turnos para ofrecer | Pasa |
+| `unTurnoSinReservasEnUnDiaDiceUnDiaEnSingular` | Un turno sin reservas en un día dice un día en singular | Pasa |
+| `sinInstalacionElegidaNoHayTurnos` | Sin instalación elegida no hay turnos | Pasa |
+| `losUltimos7DiasTerminanHoyYSeComparanConLos7Anteriores` | Los ultimos 7 días terminan hoy y se comparan con los 7 anteriores | Pasa |
+| `losUltimos30DiasIncluyenHoyYSeComparanConLos30Anteriores` | Los ultimos 30 días incluyen hoy y se comparan con los 30 anteriores | Pasa |
+| `losUltimos90DiasSeComparanConLos90Anteriores` | Los ultimos 90 días se comparan con los 90 anteriores | Pasa |
+| `losUltimos12MesesSeComparanConLos12Anteriores` | Los ultimos 12 meses se comparan con los 12 anteriores | Pasa |
+| `esteMesVaDelPrimeroAHoyYSeComparaConLosMismosDiasDelMesAnterior` | Este mes va del primero a hoy y se compara con los mismos días del mes anterior | Pasa |
+| `siElMesAnteriorEsMasCortoElPeriodoPrevioTerminaEnSuUltimoDia` | Si el mes anterior es más corto el periodo previo termina en su último día | Pasa |
+| `elMesAnteriorSeComparaConElMesPrevioCompleto` | El mes anterior se compara con el mes previo completo | Pasa |
+| `unPeriodoDesconocidoUsaLosUltimos30Dias` | Un periodo desconocido usa los ultimos 30 días | Pasa |
+| `elBalanceSumaReservasYMembresiasDelPeriodoYLoComparaConElAnterior` | El balance suma reservas y membresías del periodo y lo compara con el anterior | Pasa |
+| `elBalanceSeparaLoCobradoPorReservasYPorMembresias` | El balance separa lo cobrado por reservas y por membresías | Pasa |
+| `elTicketPromedioEsLoCobradoPorReservasSobreLaCantidadDeReservas` | El ticket promedio es lo cobrado por reservas sobre la cantidad de reservas | Pasa |
+| `sinIngresosEnNingunPeriodoNoHayCambios` | Sin ingresos en ningún periodo no hay cambios | Pasa |
+| `unIngresoSeCuentaElDiaEnQueSeValidaYNoElDiaEnQueSePago` | Un ingreso se cuenta el día en que se valida y no el día en que se pago | Pasa |
+| `unPeriodoDeUnMesSeAgrupaPorDiaConLaBarraMasAltaAl100` | Un periodo de un mes se agrupa por día con la barra más alta al 100 | Pasa |
+| `unPeriodoDeTresMesesSeAgrupaPorSemanaDesdeElLunes` | Un periodo de tres meses se agrupa por semana desde el lunes | Pasa |
+| `unPeriodoDeUnAnioSeAgrupaPorMes` | Un periodo de un anio se agrupa por mes | Pasa |
+| `laGranularidadSePuedeForzarYSoloSeMuestraUnaEtiquetaDeCadaTres` | La granularidad se puede forzar y solo se muestra una etiqueta de cada tres | Pasa |
+| `laInstalacionQueMasFacturaVaPrimeraConSuParticipacion` | La instalación que más factura va primera con su participacion | Pasa |
+| `unaInstalacionSinIngresosApareceEnCero` | Una instalación sin ingresos aparece en cero | Pasa |
+| `lasMembresiasNoCuentanEnLosIngresosPorInstalacion` | Las membresías no cuentan en los ingresos por instalación | Pasa |
+| `cadaTipoDeSocioAportaPorReservasYPorMembresias` | Cada tipo de socio aporta por reservas y por membresías | Pasa |
+| `elDineroPerdidoSonLosCreditosQueVencieronEnElPeriodoSinUsarse` | El dinero perdido son los creditos que vencieron en el periodo sin usarse | Pasa |
+| `elDineroEnCreditosVigentesEsElQueTodaviaSePuedeReprogramar` | El dinero en creditos vigentes es el que todavía se puede reprogramar | Pasa |
+| `cp29_unCreditoEnPausaNoSeCuentaComoPerdido` | Cp 29 un crédito en pausa no se cuenta como perdido | Pasa |
+| `unaReservaCanceladaSinPagoConfirmadoNoGeneraDineroEnJuego` | Una reserva cancelada sin pago confirmado no genera dinero en juego | Pasa |
+| `loPendienteDeValidarSumaComprobantesDeReservasYDeMembresias` | Lo pendiente de validar suma comprobantes de reservas y de membresías | Pasa |
+| `laProyeccionCuentaLasQueVencenEnLosProximos30DiasConSuCuota` | La proyeccion cuenta las que vencen en los próximos 30 días con su cuota | Pasa |
+| `laOcupacionEsTurnosReservadosSobreTurnosDisponibles` | La ocupacion es turnos reservados sobre turnos disponibles | Pasa |
+| `lasCanceladasYRechazadasNoOcupanTurno` | Las canceladas y rechazadas no ocupan turno | Pasa |
+| `laOcupacionNoPasaDe100` | La ocupacion no pasa de 100 | Pasa |
+| `sinTurnosLaOcupacionEsCero` | Sin turnos la ocupacion es cero | Pasa |
+| `losDiasDeMantenimientoSeDescuentanDeLosTurnosDisponibles` | Los días de mantenimiento se descuentan de los turnos disponibles | Pasa |
+| `elIngresoNoPercibidoEsLaTarifaPromedioPorLosTurnosSinOfrecer` | El ingreso no percibido es la tarifa promedio por los turnos sin ofrecer | Pasa |
+| `elIndicadorDeOcupacionSeComparaEnPuntosConElPeriodoAnterior` | El indicador de ocupacion se compara en puntos con el periodo anterior | Pasa |
+| `cadaInstalacionSePintaVerdeDesdeEl50AmbarDesdeEl30YRojoPorDebajo` | Cada instalación se pinta verde desde el 50 ambar desde el 30 y rojo por debajo | Pasa |
+| `unaInstalacionEnMantenimientoTodoElPeriodoNoTieneOcupacion` | Una instalación en mantenimiento todo el periodo no tiene ocupacion | Pasa |
+| `laFranjaPicoEsLaDeMayorOcupacion` | La franja pico es la de mayor ocupacion | Pasa |
+| `laFranjaVaciaEsLaDeMenorOcupacion` | La franja vacía es la de menor ocupacion | Pasa |
+| `elMapaDeCalorMuestraLaOcupacionPorHoraYDiaDeLaSemana` | El mapa de calor muestra la ocupacion por hora y día de la semana | Pasa |
+| `losTurnosSinReservasSonLosDeInstalacionesHabilitadasQueNadieReservo` | Los turnos sin reservas son los de instalaciones habilitadas que nadie reservo | Pasa |
+| `elMantenimientoMuestraLosDiasYElIngresoNoPercibidoEstimado` | El mantenimiento muestra los días y el ingreso no percibido estimado | Pasa |
+| `cuentaLasSuscripcionesPorEstadoConLaMayorAl100` | Cuenta las suscripciones por estado con la mayor al 100 | Pasa |
+| `losVencimientosSeAgrupanPorSemanasDeLosProximos28Dias` | Los vencimientos se agrupan por semanas de los próximos 28 días | Pasa |
+| `unaRenovacionHastaQuinceDiasTardeTodaviaCuentaComoRenovacion` | Una renovación hasta quince días tarde todavía cuenta como renovación | Pasa |
+| `siRenovaronTodasLaTasaEsDel100SinAlerta` | Si renovaron todas la tasa es del 100 sin alerta | Pasa |
+| `sinMembresiasTerminadasLaTasaNoSeCalcula` | Sin membresías terminadas la tasa no se calcula | Pasa |
+| `loCobradoPorMembresiasSeAgrupaPorTipoDeSocio` | Lo cobrado por membresías se agrupa por tipo de socio | Pasa |
+| `laValidacionEsElTiempoMedioEntreQueElSocioPagaYElAdministradorValida` | La validación es el tiempo medio entre que el socio paga y el administrador valida | Pasa |
+| `laDuracionSeEscribeEnMinutosHorasODias` | La duracion se escribe en minutos horas o días | Pasa (9 casos) |
+| `elResumenCuentaLasConfirmadasYElPorcentajeDeCancelaciones` | El resumen cuenta las confirmadas y el porcentaje de cancelaciones | Pasa |
+| `laValoracionPromedioDelResumenSoloCuentaLasDelPeriodo` | La valoración promedio del resumen solo cuenta las del periodo | Pasa |
+| `unaValoracionPromedioPorDebajoDe3Coma5SeMarcaComoAlerta` | Una valoración promedio por debajo de 3 coma 5 se marca como alerta | Pasa |
+| `sinNadaQueAtenderUnaSolaAlertaDiceQueEstaTodoEnOrden` | Sin nada que atender una sola alerta dice que está todo en orden | Pasa |
+| `avisaLasMembresiasQueVencenEnLosProximos7DiasYNoLasDe8` | Avisa las membresías que vencen en los próximos 7 días y no las de 8 | Pasa |
+| `avisaLosComprobantesQueEsperanValidacion` | Avisa los comprobantes que esperan validación | Pasa |
+| `avisaLasInstalacionesConValoracionPromedioPorDebajoDe3Coma5` | Avisa las instalaciones con valoración promedio por debajo de 3 coma 5 | Pasa |
+| `avisaLasFranjasSinNingunaReservaEnElPeriodo` | Avisa las franjas sin ninguna reserva en el periodo | Pasa |
+| `avisaLosCreditosQueVencenEnLosProximos7DiasYNoLosDe8` | Avisa los creditos que vencen en los próximos 7 días y no los de 8 | Pasa |
+| `avisaLasInstalacionesEnMantenimientoConSuFechaDeReactivacion` | Avisa las instalaciones en mantenimiento con su fecha de reactivacion | Pasa |
+
+### `servicio.ReservaServicioFiltrosTest` (17 pruebas, 17 casos)
+
+| Prueba | Qué verifica | Resultado |
+|---|---|---|
+| `unaTandaTraeLoQueLaBaseDevuelveYElTotalDeLaConsulta` | Una tanda trae lo que la base devuelve y el total de la consulta | Pasa |
+| `sinMasFilasQueLasMostradasNoHayMas` | Sin más filas que las mostradas no hay más | Pasa |
+| `losTiposDeInstalacionParaElFiltroSonLosQueSeReservanSinRepetir` | Los tipos de instalación para el filtro son los que se reservan sin repetir | Pasa |
+| `lasProximasConfirmadasSeListanConSuEstadoYSinTerminar` | Las proximas confirmadas se listan con su estado y sin terminar | Pasa |
+| `elResumenSaleDeLasConsultasDeAgregacionYNoDeCargarTodasLasReservas` | El resumen sale de las consultas de agregacion y no de cargar todas las reservas | Pasa |
+| `lasHorasSeAgrupanPorHoraAunqueLosTurnosEmpiecenALasYMedia` | Las horas se agrupan por hora aunque los turnos empiecen a las y media | Pasa |
+| `laRecaudacionDeLosUltimosSieteDiasSumaLoCobradoPorDiaDeConfirmacion` | La recaudacion de los ultimos siete días suma lo cobrado por día de confirmacion | Pasa |
+| `cp43_elInformeDeUnDiaTraeEseDiaConPeriodoYEmision` | Cp 43 el informe de un día trae ese día con periodo y emision | Pasa |
+| `cp43_unPeriodoDeVariosDiasDiceDesdeYHasta` | Cp 43 un periodo de varios días dice desde y hasta | Pasa |
+| `cp43_elInformeDiceLosFiltrosAplicados` | Cp 43 el informe dice los filtros aplicados | Pasa |
+| `cp52_elegirUnaInstalacionEsFiltrar` | Cp 52 elegir una instalación es filtrar | Pasa |
+| `cp52_elFiltroOfreceCadaInstalacionQueSeReservaPorNombre` | Cp 52 el filtro ofrece cada instalación que se reserva por nombre | Pasa |
+| `cp44_unPeriodoSinReservasAvisaYNoArmaDocumento` | Cp 44 un periodo sin reservas avisa y no arma documento | Pasa |
+| `cp45_siSuperaElMaximoPideAcotarSinCargarLasFilas` | Cp 45 si supera el máximo pide acotar sin cargar las filas | Pasa |
+| `cp45_exactamenteElMaximoEntra` | Cp 45 exactamente el máximo entra | Pasa |
+| `cp43_sinPeriodoPideElegirlo` | Cp 43 sin periodo pide elegirlo | Pasa |
+| `cp43_unPeriodoAlReves` | Cp 43 un periodo al reves | Pasa |
+
+### `servicio.ReservaServicioListadosTest` (19 pruebas, 19 casos)
+
+| Prueba | Qué verifica | Resultado |
+|---|---|---|
+| `unaConfirmadaSeMuestraConfirmadaYCobradaElDiaDeLaConfirmacion` | Una confirmada se muestra confirmada y cobrada el día de la confirmacion | Pasa |
+| `unaCanceladaConCreditoVigenteLoDiceEnElTexto` | Una cancelada con crédito vigente lo dice en el texto | Pasa |
+| `cp29_unaCanceladaConCreditoEnPausaSigueConCredito` | Cp 29 una cancelada con crédito en pausa sigue con crédito | Pasa |
+| `unaCanceladaConCreditoVencidoAyerNoDiceConCredito` | Una cancelada con crédito vencido ayer no dice con crédito | Pasa |
+| `unaPendienteConComprobanteEstaPorConfirmar` | Una pendiente con comprobante está por confirmar | Pasa |
+| `unaPendienteSinComprobanteEstaEsperandoElPago` | Una pendiente sin comprobante está esperando el pago | Pasa |
+| `unaRechazadaNoOcupaElTurno` | Una rechazada no ocupa el turno | Pasa |
+| `unaReservaTerminadaSeMarcaFinalizada` | Una reserva terminada se marca finalizada | Pasa |
+| `unaReservaDeHoyQueTerminaJustoAhoraYaEstaFinalizada` | Una reserva de hoy que termina justo ahora ya está finalizada | Pasa |
+| `unaReservaDeHoyQueTodaviaNoTerminoNoEstaFinalizada` | Una reserva de hoy que todavía no terminó no está finalizada | Pasa |
+| `sinPagoNiTarifaElMontoEsNulo` | Sin pago ni tarifa el monto es nulo | Pasa |
+| `elBuscadorUsaTextoSinTildesNiMayusculas` | El buscador usa texto sin tildes ni mayúsculas | Pasa |
+| `laSolicitudMuestraLaEsperaDesdeQueElSocioPago` | La solicitud muestra la espera desde que el socio pago | Pasa |
+| `siElPagoEsPosteriorAAhoraLaEsperaEsCero` | Si el pago es posterior a ahora la espera es cero | Pasa |
+| `unaSolicitudParaHoyOMananaEsUrgenteYParaPasadoMananaNo` | Una solicitud para hoy o mañana es urgente y para pasado mañana no | Pasa |
+| `unaSolicitudDeUnTurnoQueYaPasoEstaVencida` | Una solicitud de un turno que ya paso está vencida | Pasa |
+| `unaSolicitudDeHoyEstaVencidaSoloSiElTurnoYaTermino` | Una solicitud de hoy está vencida solo si el turno ya terminó | Pasa |
+| `laSolicitudMuestraCuandoDiceElSocioQueHizoLaTransferencia` | La solicitud muestra cuando dice el socio que hizo la transferencia | Pasa |
+| `sinComprobanteGuardadoNoHayFechaDeOperacion` | Sin comprobante guardado no hay fecha de operación | Pasa |
+
+### `servicio.ReservaServicioTest` (14 pruebas, 20 casos, 1 deshabilitada)
+
+| Prueba | Qué verifica | Resultado |
+|---|---|---|
+| `confirmarDejaLaReservaYElPagoConfirmadosConQuienLosValido` | Confirmar deja la reserva y el pago confirmados con quién los válido | Pasa |
+| `rechazarLiberaElTurnoYDejaElPagoRechazado` | Rechazar libera el turno y deja el pago rechazado | Pasa |
+| `rechazarGuardaElMotivoSinEspaciosSobrantes` | Rechazar guarda el motivo sin espacios sobrantes | Pasa |
+| `rechazarRecortaElMotivoA255Caracteres` | Rechazar recorta el motivo a 255 caracteres | Pasa |
+| `rechazarConMotivoEnBlancoNoGuardaMotivo` | Rechazar con motivo en blanco no guarda motivo | Pasa |
+| `rechazarSinMotivoNoSePermiteYLaSolicitudSigueEsperando` | Rechazar sin motivo no se permite y la solicitud sigue esperando | Deshabilitada (posible defecto D-5) |
+| `noResuelveUnaSolicitudQueYaEstabaConfirmada` | No resuelve una solicitud que ya estaba confirmada | Pasa |
+| `noResuelveUnaReservaSinComprobante` | No resuelve una reserva sin comprobante | Pasa |
+| `noResuelveUnaSolicitudConElPagoYaValidado` | No resuelve una solicitud con el pago ya validado | Pasa |
+| `noResuelveUnaReservaInexistente` | No resuelve una reserva inexistente | Pasa |
+| `textoEsperaUsaMinutosHorasYDias` | Texto espera usa minutos horas y días | Pasa (7 casos) |
+| `cuandoDiceHoyYMananaParaLosDosPrimerosDias` | Cuando dice hoy y mañana para los dos primeros días | Pasa |
+| `cuandoMuestraElDiaDeLaSemanaYLaFechaParaElResto` | Cuando muestra el día de la semana y la fecha para el resto | Pasa |
+| `normalizarQuitaTildesYMayusculasParaBuscar` | Normalizar quita tildes y mayúsculas para buscar | Pasa |
+
+### `servicio.SociosServicioTest` (35 pruebas, 42 casos)
+
+| Prueba | Qué verifica | Resultado |
+|---|---|---|
+| `marcaPorVencerALosVigentesQueVencenDentroDelPlazo` | Marca por vencer a los vigentes que vencen dentro del plazo | Pasa |
+| `noMarcaPorVencerSiVenceUnDiaDespuesDelPlazo` | No marca por vencer si vence un día después del plazo | Pasa |
+| `unSocioSinMembresiaVigenteNoEstaPorVencer` | Un socio sin membresía vigente no está por vencer | Pasa |
+| `unSocioQueNuncaTuvoMembresiaNoTieneFechaDeVencimiento` | Un socio que nunca tuvo membresía no tiene fecha de vencimiento | Pasa |
+| `laFichaDeUnSocioVigenteMuestraCuantosDiasFaltan` | La ficha de un socio vigente muestra cuantos días faltan | Pasa |
+| `laFichaDescribeElVencimientoCercano` | La ficha describe el vencimiento cercano | Pasa (4 casos) |
+| `laFichaDeUnSocioSinSuscripcionesDiceSinMembresia` | La ficha de un socio sin suscripciones dice sin membresía | Pasa |
+| `laFichaDeUnSocioConMembresiaVencidaDiceExpirada` | La ficha de un socio con membresía vencida dice expirada | Pasa |
+| `cuentaSoloLasCuotasConPagoConfirmadoYValidado` | Cuenta solo las cuotas con pago confirmado y validado | Pasa |
+| `elCarnetCongeladoSeMuestraComoCongelado` | El carnet congelado se muestra como congelado | Pasa |
+| `noHayFichaDeUnSocioInexistenteNiDadoDeBaja` | No hay ficha de un socio inexistente ni dado de baja | Pasa |
+| `elNumeroDeSocioLlevaCincoDigitos` | El número de socio lleva cinco dígitos | Pasa |
+| `lasInicialesSonLasDelNombreYElApellido` | Las iniciales son las del nombre y el apellido | Pasa |
+| `sinNombreNiApellidoLaInicialEsLaDelCorreo` | Sin nombre ni apellido la inicial es la del correo | Pasa |
+| `paraEditarDevuelveLosDatosActualesDelSocio` | Para editar devuelve los datos actuales del socio | Pasa |
+| `noSePuedeEditarUnSocioDadoDeBaja` | No se puede editar un socio dado de baja | Pasa |
+| `guardaLosCambiosDelSocioYDeSuCuenta` | Guarda los cambios del socio y de su cuenta | Pasa |
+| `exigeUnTelefono` | Exige un teléfono | Pasa (3 casos) |
+| `exigeUnNombre` | Exige un nombre | Pasa |
+| `exigeUnApellido` | Exige un apellido | Pasa |
+| `rechazaUnCorreoInvalido` | Rechaza un correo inválido | Pasa |
+| `rechazaUnDniQueNoTieneEntre6Y15Digitos` | Rechaza un DNI que no tiene entre 6 y 15 dígitos | Pasa (3 casos) |
+| `rechazaUnaFechaDeNacimientoMalEscrita` | Rechaza una fecha de nacimiento mal escrita | Pasa |
+| `rechazaUnaFechaDeNacimientoDeHoy` | Rechaza una fecha de nacimiento de hoy | Pasa |
+| `aceptaUnaFechaDeNacimientoDeAyer` | Acepta una fecha de nacimiento de ayer | Pasa |
+| `rechazaUnTipoDeSocioInexistente` | Rechaza un tipo de socio inexistente | Pasa |
+| `exigeLegajoSiLaCategoriaLoRequiere` | Exige legajo si la categoria lo requiere | Pasa |
+| `noGuardaLegajoSiLaCategoriaNoLoRequiere` | No guarda legajo si la categoria no lo requiere | Pasa |
+| `rechazaUnCorreoQueYaUsaOtraCuenta` | Rechaza un correo que ya usa otra cuenta | Pasa |
+| `permiteConservarElPropioCorreo` | Permite conservar el propio correo | Pasa |
+| `rechazaUnDniQueYaTieneOtroSocio` | Rechaza un DNI que ya tiene otro socio | Pasa |
+| `permiteConservarElPropioDni` | Permite conservar el propio DNI | Pasa |
+| `darDeBajaDejaLaBajaLogicaYDeshabilitaLaCuenta` | Dar de baja deja la baja logica y deshabilita la cuenta | Pasa |
+| `noDaDeBajaUnSocioQueYaEstabaDadoDeBaja` | No da de baja un socio que ya estaba dado de baja | Pasa |
+| `noDaDeBajaUnSocioInexistente` | No da de baja un socio inexistente | Pasa |
+
+### `servicio.TarifasServicioTest` (45 pruebas, 50 casos)
+
+| Prueba | Qué verifica | Resultado |
+|---|---|---|
+| `ordenValidoCuandoElAlumnoPagaMenosYElExternoMas` | Orden válido cuando el alumno paga menos y el externo más | Pasa |
+| `ordenInvalidoCuandoElAlumnoPagaLoMismoQueElExterno` | Orden inválido cuando el alumno paga lo mismo que el externo | Pasa |
+| `ordenInvalidoCuandoElAlumnoPagaMasQueUnDocente` | Orden inválido cuando el alumno paga más que un docente | Pasa |
+| `ordenInvalidoCuandoElAlumnoPagaLoMismoQueUnNoDocente` | Orden inválido cuando el alumno paga lo mismo que un no docente | Pasa |
+| `ordenInvalidoCuandoElExternoPagaMenosQueUnNoDocente` | Orden inválido cuando el externo paga menos que un no docente | Pasa |
+| `ordenInvalidoCuandoElExternoPagaLoMismoQueUnDocente` | Orden inválido cuando el externo paga lo mismo que un docente | Pasa |
+| `ordenValidoSiTodaviaFaltaCargarUnPrecio` | Orden válido si todavía falta cargar un precio | Pasa |
+| `agregaUnPrecioNuevoPorTipoDeSocioConLaFechaDesdeLaQueRige` | Agrega un precio nuevo por tipo de socio con la fecha desde la que rige | Pasa |
+| `cierraElPrecioAnteriorElDiaPrevioALaNuevaVigencia` | Cierra el precio anterior el día previo a la nueva vigencia | Pasa |
+| `nuncaEditaElPrecioDelRegistroAnterior` | Nunca edita el precio del registro anterior | Pasa |
+| `agregaSoloLaFilaDeLosTiposDeSocioQueCambiaron` | Agrega solo la fila de los tipos de socio que cambiaron | Pasa |
+| `aceptaQueElCambioRijaDesdeHoyYCierraElAnteriorAyer` | Acepta que el cambio rija desde hoy y cierra el anterior ayer | Pasa |
+| `rechazaUnaFechaAnteriorAHoy` | Rechaza una fecha anterior a hoy | Pasa |
+| `rechazaElCambioSinFecha` | Rechaza el cambio sin fecha | Pasa |
+| `rechazaUnPrecioQueNoEsUnNumeroMayorACeroConHastaDosDecimales` | Rechaza un precio que no es un número mayor a cero con hasta dos decimales | Pasa (6 casos) |
+| `aceptaElPrecioMaximoQueEntraEnLaColumnaDeLaBase` | Acepta el precio máximo que entra en la columna de la base | Pasa |
+| `aceptaLaComaComoSeparadorDecimal` | Acepta la coma como separador decimal | Pasa |
+| `rechazaCuandoNingunPrecioCambia` | Rechaza cuando ningún precio cambia | Pasa |
+| `rechazaUnOrdenEnElQueElAlumnoPagaMasQueElExterno` | Rechaza un orden en el que el alumno paga más que el externo | Pasa |
+| `rechazaUnaFechaIgualALaDeUnPrecioYaProgramado` | Rechaza una fecha igual a la de un precio ya programado | Pasa |
+| `rechazaUnaFechaAnteriorALaDeUnPrecioYaProgramado` | Rechaza una fecha anterior a la de un precio ya programado | Pasa |
+| `rechazaCambiarPreciosDeUnaInstalacionQueNoExiste` | Rechaza cambiar precios de una instalación que no existe | Pasa |
+| `rechazaCambiarPreciosSinIndicarLaInstalacion` | Rechaza cambiar precios sin indicar la instalación | Pasa |
+| `rechazaCambiarPreciosDeUnaInstalacionDeAccesoLibre` | Rechaza cambiar precios de una instalación de acceso libre | Pasa |
+| `cambiaLaCuotaDeMembresiaCerrandoLaAnteriorYAgregandoLaNueva` | Cambia la cuota de membresía cerrando la anterior y agregando la nueva | Pasa |
+| `exigeCargarLosCuatroTiposDeSocioJuntos` | Exige cargar los cuatro tipos de socio juntos | Pasa |
+| `muestraLoQueRigeHoyYNoElPrecioProgramado` | Muestra lo que rige hoy y no el precio programado | Pasa |
+| `dejaVacioElTipoDeSocioQueTodaviaNoTienePrecio` | Deja vacío el tipo de socio que todavía no tiene precio | Pasa |
+| `elHistorialMarcaComoProgramadoElCambioFuturo` | El historial marca como programado el cambio futuro | Pasa |
+| `cargaLosPrimerosPreciosDeUnaInstalacionSinHistorial` | Carga los primeros precios de una instalación sin historial | Pasa |
+| `alCambiarSoloCierraElUltimoPrecioDelTipoDeSocioYNoLosAnteriores` | Al cambiar solo cierra el último precio del tipo de socio y no los anteriores | Pasa |
+| `noAcortaNiReabreUnPrecioQueYaEstabaCerradoAntesDeLaNuevaFecha` | No acorta ni reabre un precio que ya estaba cerrado antes de la nueva fecha | Pasa |
+| `siHayDosPreciosAbiertosRigeElDeFechaDesdeMasReciente` | Si hay dos precios abiertos rige el de fecha desde más reciente | Pasa |
+| `ordenValidoSiLaListaNoTieneAlumnoNiExterno` | Orden válido si la lista no tiene alumno ni externo | Pasa |
+| `ordenValidoSiLaListaTieneAlumnoPeroNoExterno` | Orden válido si la lista tiene alumno pero no externo | Pasa |
+| `alCambiarCierraElPrecioMasRecienteAunqueElHistorialVengaEnOrdenAscendente` | Al cambiar cierra el precio más reciente aunque el historial venga en orden ascendente | Pasa |
+| `elPrecioVigenteEsElMasRecienteAunqueElHistorialVengaEnOrdenAscendente` | El precio vigente es el más reciente aunque el historial venga en orden ascendente | Pasa |
+| `acortaUnPrecioCuyaFechaDeFinEraPosteriorALaNuevaVigencia` | Acorta un precio cuya fecha de fin era posterior a la nueva vigencia | Pasa |
+| `elPrecioVigenteEsElMasRecienteAunqueElHistorialVengaEnOrdenDescendente` | El precio vigente es el más reciente aunque el historial venga en orden descendente | Pasa |
+| `ordenInvalidoCuandoSoloHayAlumnoYExternoConElMismoPrecio` | Orden inválido cuando solo hay alumno y externo con el mismo precio | Pasa |
+| `ordenValidoCuandoSoloHayAlumnoYExternoYElExternoPagaMas` | Orden válido cuando solo hay alumno y externo y el externo paga más | Pasa |
+| `cp36_laVigenciaDiceDesdeCuandoRigeElPrecio` | Cp 36 la vigencia dice desde cuando rige el precio | Pasa |
+| `cp36_sinPrecioVigenteNoHayVigencia` | Cp 36 sin precio vigente no hay vigencia | Pasa |
+| `cp36_elProximoCambioDiceElPrecioYLaFecha` | Cp 36 el proximo cambio dice el precio y la fecha | Pasa |
+| `cp36_sinCambioProgramadoLoDice` | Cp 36 sin cambio programado lo dice | Pasa |
+
+### `servicio.UsuarioServicioTest` (8 pruebas, 8 casos)
+
+| Prueba | Qué verifica | Resultado |
+|---|---|---|
+| `autenticaConElCorreoYLaContrasenaCorrectos` | Autentica con el correo y la contraseña correctos | Pasa |
+| `unaCuentaHabilitadaIngresaSinConsultarNingunaMembresia` | Una cuenta habilitada ingresa sin consultar ninguna membresía | Pasa |
+| `ignoraLosEspaciosAlrededorDelCorreo` | Ignora los espacios alrededor del correo | Pasa |
+| `rechazaUnaContrasenaIncorrecta` | Rechaza una contraseña incorrecta | Pasa |
+| `rechazaUnaCuentaDeshabilitadaAunConLaContrasenaCorrecta` | Rechaza una cuenta deshabilitada aún con la contraseña correcta | Pasa |
+| `rechazaUnCorreoQueNoExiste` | Rechaza un correo que no existe | Pasa |
+| `rechazaUnCorreoNuloSinConsultarLaBase` | Rechaza un correo nulo sin consultar la base | Pasa |
+| `rechazaUnaContrasenaNulaSinConsultarLaBase` | Rechaza una contraseña nula sin consultar la base | Pasa |
+
+### `servicio.ValoracionesServicioTest` (15 pruebas, 15 casos)
+
+| Prueba | Qué verifica | Resultado |
+|---|---|---|
+| `armaLaFilaConSocioInstalacionTurnoPuntajeYFecha` | Arma la fila con socio instalación turno puntaje y fecha | Pasa |
+| `unComentarioNuloQuedaVacioYSinMarcaDeComentario` | Un comentario nulo queda vacío y sin marca de comentario | Pasa |
+| `quitaLosEspaciosDelComentario` | Quita los espacios del comentario | Pasa |
+| `unaInstalacionSinValoracionesNoTienePromedioNiTendencia` | Una instalación sin valoraciones no tiene promedio ni tendencia | Pasa |
+| `calculaElPromedioConUnDecimalYComa` | Calcula el promedio con un decimal y coma | Pasa |
+| `ignoraLasValoracionesDeOtraInstalacion` | Ignora las valoraciones de otra instalación | Pasa |
+| `laTendenciaEsPositivaSiMejoraronLosUltimos30Dias` | La tendencia es positiva si mejoraron los ultimos 30 días | Pasa |
+| `laTendenciaEsNegativaSiEmpeoraronLosUltimos30Dias` | La tendencia es negativa si empeoraron los ultimos 30 días | Pasa |
+| `sinCambiosSiLosDosPeriodosTienenElMismoPromedio` | Sin cambios si los dos periodos tienen el mismo promedio | Pasa |
+| `noHayTendenciaSiSoloHayValoracionesRecientes` | No hay tendencia si solo hay valoraciones recientes | Pasa |
+| `unaValoracionDeExactamente30DiasCuentaComoRecienteYLaDe31ComoPrevia` | Una valoración de exactamente 30 días cuenta como reciente y la de 31 como previa | Pasa |
+| `unaValoracionDeExactamente60DiasCuentaComoPrevia` | Una valoración de exactamente 60 días cuenta como previa | Pasa |
+| `unaValoracionDeMasDe60DiasNoEntraEnLaTendencia` | Una valoración de más de 60 días no entra en la tendencia | Pasa |
+| `ordenaLasPeorValoradasPrimeroConLasDeMismoPromedioPorNombreYLasSinDatosAlFinal` | Ordena las peor valoradas primero con las de mismo promedio por nombre y las sin datos al final | Pasa |
+| `elPromedioSeMuestraConUnDecimal` | El promedio se muestra con un decimal | Pasa |
+
+
+## 4. Cobertura
+
+La cobertura la mide JaCoCo sobre el código de producción mientras corren las pruebas. "Líneas" es el porcentaje de líneas ejecutadas por alguna prueba; "ramas" es el porcentaje de caminos de cada `if`/`&&`/`||` ejecutados. Una cobertura alta no prueba que las verificaciones sean buenas; sirve sobre todo para encontrar código que **ninguna** prueba toca.
+
+### 4.1 Por paquete
+
+| Paquete | Líneas | Ramas | Métodos |
+|---|---|---|---|
+| **`servicio`** | 88.9 % (2408/2708) | 81.0 % (1796/2218) | 81.5 % |
+| **`util`** | 95.1 % (39/41) | 100.0 % (44/44) | 100.0 % |
+| `repositorio` | 70.0 % (420/600) | 9.4 % (19/202) | 74.5 % |
+| `dto` | 69.0 % (739/1071) | 61.1 % (44/72) | 59.5 % |
+| `dao` | 1.0 % (4/412) | 0.0 % (0/58) | 0.9 % |
+| `bean` | 1.6 % (22/1366) | 0.2 % (1/545) | 0.6 % |
+| `seguridad` | 0.0 % (0/40) | 0.0 % (0/18) | 0.0 % |
+| `resources` | 0.0 % (0/4) | n/a (0/0) | 0.0 % |
+| `(raíz)` | 0.0 % (0/1) | n/a (0/0) | 0.0 % |
+| **Total** | 58.2 % (3632/6243) | 60.3 % (1904/3157) | 46.0 % |
+
+Cómo leer esta tabla: `servicio` y `util` son el alcance de este conjunto de pruebas. El total incluye paquetes que no se probaron a propósito (`bean`, con las pantallas JSF; `dao`, con las consultas a la base; y `seguridad`), que figuran en 0 %, por lo que el total solo no es un indicador de calidad. El porcentaje de `repositorio` y `dto` es incidental: son clases de datos que las pruebas construyen o recorren pero no verifican por sí mismas.
+
+### 4.2 Capa de servicio y util, por clase
+
+| Clase | Líneas | Ramas |
+|---|---|---|
+| `util.ComprobanteArchivos` | 100.0 % (20/20) | 100.0 % (38/38) |
+| `util.PasswordUtil` | 90.5 % (19/21) | 100.0 % (6/6) |
+| `servicio.MembresiasServicio` | 100.0 % (151/151) | 93.3 % (97/104) |
+| `servicio.ReglaReservaException` | 100.0 % (2/2) | n/a (0/0) |
+| `servicio.RegistroServicio` | 100.0 % (86/86) | 100.0 % (76/76) |
+| `servicio.UsuarioServicio` | 100.0 % (9/9) | 100.0 % (10/10) |
+| `servicio.ValoracionesServicio` | 100.0 % (58/58) | 100.0 % (32/32) |
+| `servicio.ReportesServicio` | 99.3 % (572/576) | 84.9 % (438/516) |
+| `servicio.HorarioServicio` | 99.2 % (128/129) | 98.1 % (104/106) |
+| `servicio.TarifasServicio` | 98.5 % (130/132) | 100.0 % (104/104) |
+| `servicio.CambiosReservaServicio` | 97.9 % (191/195) | 90.9 % (140/154) |
+| `servicio.PanelSocioServicio` | 97.9 % (410/419) | 89.3 % (333/373) |
+| `servicio.ReservaServicio` | 96.0 % (242/252) | 86.9 % (153/176) |
+| `servicio.SociosServicio` | 91.9 % (171/186) | 75.3 % (137/182) |
+| `servicio.InstalacionesServicio` | 81.2 % (199/245) | 71.4 % (142/199) |
+| `servicio.DashboardServicio` | 19.0 % (26/137) | 16.2 % (18/111) |
+| `servicio.MembresiaJob` | 0.0 % (0/24) | 0.0 % (0/8) |
+| `servicio.CalendarioServicio` | 0.0 % (0/74) | 0.0 % (0/51) |
+
+### 4.3 Núcleo de reglas
+
+El porcentaje de la capa `servicio` completa mezcla las reglas con métodos que solo arman textos para las pantallas (listados, avisos, reportes). Para ver cuánto de lo **que importa** está probado, se calculó la cobertura de los métodos que implementan las reglas pedidas (anticipación de 48 h, crédito, reservas, comprobantes, membresías, tarifas, valoraciones, seguridad). La lista de métodos incluidos está a continuación para que se pueda auditar:
+
+| Clase | Líneas | Ramas |
+|---|---|---|
+| `PanelSocioServicio` | 98.5 % (128/130) | 100.0 % (106/106) |
+| `CambiosReservaServicio` | 100.0 % (107/107) | 97.8 % (88/90) |
+| `MembresiasServicio` | 100.0 % (50/50) | 100.0 % (30/30) |
+| `TarifasServicio` | 100.0 % (85/85) | 100.0 % (90/90) |
+| `ReservaServicio` | 100.0 % (20/20) | 100.0 % (22/22) |
+| `RegistroServicio` | 100.0 % (85/85) | 100.0 % (76/76) |
+| `UsuarioServicio` | 100.0 % (8/8) | 100.0 % (10/10) |
+| `PasswordUtil` | 90.5 % (19/21) | 100.0 % (6/6) |
+| `ComprobanteArchivos` | 100.0 % (20/20) | 100.0 % (38/38) |
+| **Núcleo de reglas** | **99.2 % (522/526)** | **99.6 % (466/468)** |
+
+Métodos incluidos: `PanelSocioServicio`: reservar, subirComprobante, valorar, liberar, liberarVencidas, propiaPendiente, sinValorar, debeValorarse, primerDiaReservable, sha256; `CambiosReservaServicio`: fueraDePlazo, solicitar, aprobar, rechazar, cancelarPorElPredio, validarDestino, cancelar, mover, registrar, recortar; `MembresiasServicio`: aceptar, denegar, cancelar, vencerVencidas, congelarSiCorresponde, estaPorValidar, validarPago; `TarifasServicio`: ordenValido, cambiarAlquiler, cambiarMembresia, aplicar, enVigencia, parsear; `ReservaServicio`: confirmar, rechazar, resolver; `RegistroServicio`: validarPasoUno, registrar, resolverCategoria, bajaDe, liberar, archivado; `UsuarioServicio`: autenticar; `PasswordUtil`: generarHash, verificar, hashear; `ComprobanteArchivos`: guardar, borrar, ruta, extension, tipoMime, carpeta.
+
+### 4.4 Lo que falta cubrir (críticos con menor cobertura)
+
+| # | Clase y métodos | Líneas | Ramas | Qué hace / por qué es crítico | Qué pruebas faltan |
+|---|---|---|---|---|---|
+| 1 | `DashboardServicio` (calendario, plano, resumenDelDia, aFilas, estadoInstalaciones, porcentajeOcupacion, cuando, textoEstado, claseEstado, etiquetaDia, icono) | 10.5 % (12/114) | 12.6 % (13/103) | Tablero principal del administrador: resumen del día, plano del predio y calendario. | Resumen con y sin reservas, porcentaje de ocupación, íconos por disciplina y etiquetas del calendario. |
+| 2 | `CalendarioServicio` (reservasDelMes, reservasDelDia, calendario, proximas, anteriores, inicioGrilla, aDto, cuando, textoEstado, claseEstado, nota, etiquetaDia) | 0.0 % (0/69) | 0.0 % (0/51) | Calendario de reservas del administrador (mes, próximas y anteriores). | Grilla de un mes que empieza a mitad de semana, próximas y anteriores y la nota de cada reserva. |
+| 3 | `MembresiaJob` (iniciar, detener, liberarReservas, vencerMembresias) | 0.0 % (0/22) | 0.0 % (0/8) | Tarea programada: vence membresías cada 60 minutos y libera reservas sin comprobante cada 5. | No se puede sin el contenedor (ver 6.1). Haría falta una prueba de integración. |
+
+Lo que queda sin cubrir dentro del núcleo de reglas (cuatro líneas y una rama) **no se puede ejercer desde una prueba unitaria**:
+
+- `PanelSocioServicio.sha256` y `PasswordUtil.hashear`: el `catch (NoSuchAlgorithmException…)`. SHA-256 y PBKDF2WithHmacSHA256 los trae toda JVM; solo se alcanzarían alterando la JVM.
+- `CambiosReservaServicio.mover` (`if (r.getEstado() == CANCELADA)`): la rama "la reserva no estaba cancelada" no es alcanzable desde la API pública, porque una reprogramación solo se aprueba si la reserva está cancelada con crédito. Es una condición defensiva.
+
+Las clases que antes estaban en 0 % (`InstalacionesServicio`, `SociosServicio`, `ValoracionesServicio`, `HorarioServicio`, los reportes, los listados del administrador y los avisos y estados del panel del socio) ahora tienen pruebas. Lo que queda sin cobertura es el tablero y el calendario del administrador, que arman textos y grillas para pantalla, y `MembresiaJob`, que no se puede probar sin el contenedor (sección 6.1).
+
+### 4.5 ¿Las pruebas detectan errores? (mutación manual)
+
+Una cobertura alta solo dice que el código se ejecutó, no que alguna verificación lo controle. Para comprobarlo se tomó una **copia temporal** del proyecto, se rompió a propósito una regla por vez en esa copia (el código de producción del repositorio no se tocó) y se corrió toda la suite. Si algún test falla, la rotura fue detectada.
+
+| # | Qué se rompió | Resultado | Primera prueba que lo detectó |
+|---|---|---|---|
+| M01 | Anticipación de 48 h pasa a 47 h | Detectada (12 fallan) | `CambiosReservaServicioTest.rechazaPedirLaCancelacionConMenosDe48Horas` |
+| M02 | Se acepta un turno que empieza en 47 h 59 min | Detectada (3) | `CambiosReservaServicioTest.rechazaReprogramarAUnTurnoQueEmpiezaEn47Horas59Minutos` |
+| M03 | El crédito pasa de 30 a 31 días | Detectada (3) | `CambiosReservaServicioTest.alAprobarUnaCancelacionLaReservaQuedaCanceladaConCreditoDe30Dias` |
+| M04 | El tope de reservas sin comprobante pasa de 3 a 4 | Detectada (1) | `PanelSocioServicioReservaTest.rechazaReservarConTresReservasEsperandoElComprobante` |
+| M05 | El límite de archivo pasa de 5 MB a 6 MB | Detectada (1) | `PanelSocioServicioComprobanteTest.rechazaUnArchivoDeUnByteMasQue5MB` |
+| M06 | El plazo para pagar pasa de 60 a 90 minutos | Detectada (7) | `PanelSocioServicioAvisosTest.sinComprobanteAvisaHastaQueHoraTieneParaSubirlo` |
+| M07 | Se reserva hasta 31 días adelante en vez de 30 | Detectada (3) | `PanelSocioServicioConsultasTest.losDiasReservablesVanDelTercerDiaHastaDentroDe30Dias` |
+| M08 | El puntaje máximo pasa de 5 a 6 | Detectada (1) | `PanelSocioServicioValoracionTest.rechazaLosPuntajesFueraDeRango` |
+| M09 | El comentario admite 501 caracteres | Detectada (1) | `PanelSocioServicioValoracionTest.recortaA500CaracteresUnComentarioMasLargo` |
+| M10 | La transferencia puede tener 8 días en vez de 7 | Detectada (1) | `PanelSocioServicioComprobanteTest.rechazaUnaTransferenciaDeUnMinutoMasDe7Dias` |
+| M11 | Alumno y externo pueden pagar lo mismo | **Sobrevivió la primera vez**; detectada después | `TarifasServicioTest.ordenInvalidoCuandoSoloHayAlumnoYExternoConElMismoPrecio` |
+| M12 | Un PDF se reconoce con solo 4 bytes | Detectada (1) | `ComprobanteArchivosTest.noReconoceUnPdfDeSoloCuatroBytes` |
+| M13 | La membresía dura 2 meses | Detectada (4) | `MembresiasServicioTest.laMembresiaEmpiezaElDiaDeLaValidacionYVenceUnMesDespues` |
+| M14 | `verificar()` de contraseñas devuelve siempre `true` | Detectada (4) | `UsuarioServicioTest.rechazaUnaContrasenaIncorrecta` |
+| M15 | El login ignora la cuenta deshabilitada | Detectada (1) | `UsuarioServicioTest.rechazaUnaCuentaDeshabilitadaAunConLaContrasenaCorrecta` |
+| M16 | La capacidad 0 se acepta | Detectada (1) | `InstalacionesServicioTest.rechazaUnaCapacidadQueNoEsMayorACero` |
+| M17 | Se acepta nacimiento de hoy al editar un socio | Detectada (1) | `SociosServicioTest.rechazaUnaFechaDeNacimientoDeHoy` |
+| M18 | La ventana de tendencia pasa de 30 a 31 días | Detectada (6) | `ValoracionesServicioTest.laTendenciaEsNegativaSiEmpeoraronLosUltimos30Dias` |
+| M19 | La ocupación "verde" empieza en más de 50 % en vez de 50 % | Detectada (1) | `ReportesServicioTest.cadaInstalacionSePintaVerdeDesdeEl50AmbarDesdeEl30YRojoPorDebajo` |
+| M20 | También se liberan reservas con comprobante cargado | Detectada (1) | `PanelSocioServicioReservaTest.noLiberaLaReservaCuyoComprobanteSeSubioJustoAntes` |
+
+Resultado: **19 de 20 detectadas en la primera pasada**. La que sobrevivió (M11) mostró un hueco real: con solo alumno y externo y el mismo precio, la comparación directa no estaba aislada porque la regla de "los otros tipos" también lo rechazaba. Se agregaron dos pruebas y la mutación quedó detectada, o sea 20 de 20.
+
+Alcance de esta comprobación: son 20 roturas elegidas a mano sobre constantes y comparaciones de las reglas pedidas. No reemplaza una herramienta de mutación (por ejemplo PIT), que genera cientos de variantes automáticamente.
+
+La tabla se midió sobre la rama `calidad/pruebas-junit`, antes de CC-01, CC-02, CC-03, CC-04, CC-05 y CC-06 (sección 10). Las pruebas que cita siguen existiendo; no se volvió a medir.
+
+## 5. Discrepancias y defectos
+
+Los identificadores `D-n` fueron defectos o discrepancias con una prueba deshabilitada. Cada una se ejecutó activada para comprobar que fallaba por el motivo declarado, y el 13/10/2026 el responsable del proyecto decidió: **corregir el código en D-1, D-2, D-3 y D-4, y dejar D-5 como está por ahora**. Las correcciones están en la rama `correccion/defectos-d1-a-d4` (sale de la de CC-02). Los `O-n` son observaciones que no tienen prueba deshabilitada.
+
+### 5.1 Estado de los defectos
+
+| Código | Caso | Estado | Qué se hizo |
+|---|---|---|---|
+| D-1 | CP-07 | Corregido | `PasswordUtil.verificar` devuelve `false` con un hash de tres partes mal formado (antes lanzaba `NumberFormatException` o `IllegalArgumentException` y rompía el login de esa cuenta) |
+| D-2 | CP-15 | Corregido | `PanelSocioServicio.subirComprobante` tolera 25 minutos de adelanto (antes 5) |
+| D-3 | CP-32 | Corregido | `MembresiasServicio.aceptar`: la renovación por adelantado empieza el mismo día en que vence la vigente (antes, un día después) |
+| D-4 | CP-02 | Corregido | `RegistroServicio.validarPasoUno`: la contraseña exige letras, números y al menos un símbolo (un espacio no cuenta), además de los 6 caracteres |
+| D-5 | CP-20 | Diferido | El motivo del rechazo sigue siendo opcional; la prueba queda deshabilitada |
+| D-6 | CP-16 | Corregido | `PanelSocioServicio.subirComprobante` manda el INSERT del comprobante en el momento: con dos cargas del mismo archivo a la vez, la segunda recibe "Ese comprobante ya fue usado en otra operación." en lugar de un error técnico (sección 11) |
+| D-7 a D-13 | CP-46 a CP-51 | Abiertos | Encontrados en las pruebas de sistema sobre la aplicación desplegada (sección 12) |
+
+Todos los defectos están registrados con la plantilla del Apéndice G en [incidencias.md](incidencias.md) (D-n es INC-nn).
+
+**D-1. `PasswordUtil.verificar` lanzaba excepción con un hash mal formado** (corregido)
+
+- Dónde: `util/PasswordUtil.verificar`.
+- Antes: con `null`, con `""` o con un hash de menos de tres partes devolvía `false`, pero con un hash de **tres partes mal formado** lanzaba excepción (`verificar("abc", "abc:xyz:123")`: `NumberFormatException`; `verificar("abc", "120000:!!!:!!!")`: `IllegalArgumentException`). `UsuarioServicio.autenticar` llama a este método, así que un dato corrupto en `usuario.password_hash` convertía el intento de login en un error del servidor.
+- Ahora: un hash que no se puede interpretar es una contraseña incorrecta (`false`).
+- Prueba: `PasswordUtilTest.rechazaUnHashMalFormadoSinLanzarExcepcion` (habilitada).
+
+**D-2. Tolerancia de la fecha futura del comprobante** (corregido)
+
+- Dónde: `servicio/PanelSocioServicio.subirComprobante`.
+- Regla confirmada por el responsable: se tolera hasta 25 minutos (diferencia de reloj entre el banco y el servidor). El código toleraba 5.
+- Pruebas: `aceptaUnaTransferenciaAdelantadaHasta25Minutos` (habilitada) y las que ya pasaban: `rechazaUnaTransferenciaAdelantadaMasDe25Minutos` (26 minutos se rechaza) y `aceptaUnaTransferenciaHechaJustoAhora`.
+
+**D-3. La renovación por adelantado empezaba el día siguiente al vencimiento** (corregido)
+
+- Dónde: `servicio/MembresiasServicio.aceptar`.
+- Regla confirmada por el responsable: la membresía vence el mismo día del mes siguiente (empezó el 23/09, vence el 23/10); si se renueva antes de vencer, la nueva empieza el mismo día en que vence la vigente (23/10) y vence el 23/11; si se paga después del vencimiento, la fecha de inicio pasa a ser el día del pago.
+- Antes la nueva empezaba el 24/10 y cada renovación corría el ciclo un día más.
+- Pruebas: `laRenovacionPorAdelantadoMantieneElMismoDiaDelMes` y `siSePagaElMismoDiaDelVencimientoLaNuevaEmpiezaEseDia` (habilitadas), más las que ya pasaban: sin vigente la membresía empieza el día de la validación (incluso si se paga después del vencimiento) y una renovación nunca empieza antes de que termine la vigente.
+- Efecto en los datos: las renovaciones ya aceptadas no se tocan; la corrección rige para las próximas.
+
+**D-4. La contraseña no exigía letras, números y un símbolo** (corregido)
+
+- Dónde: `servicio/RegistroServicio.validarPasoUno`.
+- Regla del plan (RNF-03 y CP-02): contraseñas con letras, números y al menos un símbolo especial. Ahora el registro exige al menos una letra, un número y un símbolo (algo que no sea letra, número ni espacio), además de los 6 caracteres. El mensaje dice "La contraseña tiene que tener letras, números y al menos un símbolo (por ejemplo ! # $ %)."
+- Pruebas: `rechazaUnaContrasenaSinLetrasNumerosOSimbolo` (5 valores: `Clave2026`, `Clave#abcd`, `123#456`, `Clave 2026` y `123456`), `aceptaUnaContrasenaDeSeisCaracteresConLetrasNumerosYSimbolo` y `aceptaUnaContrasenaConLetrasConTilde`. Cambió a propósito `aceptaUnaContrasenaDeSeisCaracteres`, que fijaba el comportamiento anterior (aceptaba `123456`).
+- Efecto: solo valida registros nuevos; las cuentas existentes siguen entrando con su contraseña.
+
+**D-5. El rechazo de una solicitud no exige motivo** (diferido por decisión del equipo)
+
+- Dónde: `servicio/ReservaServicio.rechazar` (el motivo es opcional) y la pantalla del administrador ("Motivo (opcional)").
+- Qué dice el plan: RF-05 y CP-20 piden que rechazar sin motivo no se permita.
+- Decisión (13/10/2026): por ahora el motivo sigue siendo opcional; se exigirá más adelante. CP-20 figura como "Falló" en el reporte de V&V hasta que se implemente o se corrija el plan.
+- Prueba (deshabilitada): `ReservaServicioTest.rechazarSinMotivoNoSePermiteYLaSolicitudSigueEsperando`. Al implementarlo hay que quitarle el `@Disabled` y actualizar `rechazarLiberaElTurnoYDejaElPagoRechazado` y `rechazarConMotivoEnBlancoNoGuardaMotivo`, que hoy fijan lo contrario.
+
+### 5.2 Reglas confirmadas que el código ya cumple
+
+**O-1. Comentario de valoración de más de 500 caracteres.** El código lo **recorta** a 500 en lugar de rechazarlo (`PanelSocioServicio.valorar`). El responsable del proyecto confirmó que el límite es 500. Pruebas: `guardaCompletoUnComentarioDeExactamente500Caracteres` y `recortaA500CaracteresUnComentarioMasLargo`. Si se prefiriera avisar al socio en lugar de recortar en silencio, habría que cambiar el código y esa prueba.
+
+**O-2. Reservar con membresía vencida.** El código decide por `socio.estado == ACTIVO` y no mira las fechas de la suscripción (`PanelSocioServicio.reservar`). El responsable del proyecto confirmó que ese es el diseño: si el socio está activo es porque su membresía está vigente, y el vencimiento (regla de D-3) se encarga de dejarlo `NO_ACTIVO`. Pruebas: `rechazaReservarSiLaMembresiaNoEstaVigente`, `rechazaReservarSiElSocioFueDadoDeBaja`, `alVencerLaUnicaVigenteElSocioQuedaNoActivoYElCarnetInactivo`. Riesgo residual que las pruebas no pueden verificar: el paso a `NO_ACTIVO` lo hace `MembresiaJob` cada 60 minutos (y `MembresiasServicio.vencerVencidas` al abrir el panel del administrador). Entre el vencimiento y la siguiente corrida un socio vencido todavía figura activo. Solo una prueba de integración con el contenedor puede comprobar la agenda.
+
+### 5.3 Observaciones
+
+- **O-3. `PasswordUtil.generarHash(null)` lanza `NullPointerException`.** No hay una regla escrita sobre qué debe pasar. Desde la interfaz no se llega a ese caso (el registro exige al menos 6 caracteres), pero la contraseña vacía `""` sí se hashea y verifica sin error. La prueba `generarHashConContrasenaNulaLanzaNullPointerException` solo registra el comportamiento actual; si se define una regla, hay que ajustarla.
+- **O-4. Reloj interno.** El diseño pasa "ahora" como parámetro a casi todos los servicios, pero hay excepciones que usan el reloj del sistema: `ReservaServicio.resolver` (confirmar/rechazar), `MembresiasServicio.validarPago` y la comprobación "la fecha de nacimiento tiene que ser anterior a hoy" de `RegistroServicio.registrar`. En esos tres casos las pruebas verifican contra un rango "antes/después" o contra la fecha actual real, no contra una fecha fija.
+- **O-5. La firma PNG se verifica de forma parcial.** `ComprobanteArchivos.extension` compara solo cuatro bytes (`0x89 P N G`) y exige más de 8 bytes; no valida la firma completa de 8 bytes. Un archivo que empieza con esos cuatro bytes pero no es un PNG válido se acepta como imagen.
+- **O-6. El límite de 5 MB no está donde dice la documentación.** Se controla en `PanelSocioServicio.subirComprobante` y no en `ComprobanteArchivos`. Un archivo de exactamente 5 MB (5 242 880 bytes) se acepta; 5 MB más un byte se rechaza.
+- **O-7. Las reglas de valoración viven en `PanelSocioServicio.valorar`.** `ValoracionesServicio` es de solo lectura (listados y promedios). Conviene corregir la documentación.
+- **O-8. La regla de 48 horas está duplicada.** `CambiosReservaServicio.fueraDePlazo` se usa al reservar, al pedir cancelaciones y al validar un turno nuevo; pero `PanelSocioServicio.armar` repite la comparación (`inicio.isBefore(ahora.plusHours(HORAS_ANTICIPACION))`) para decidir si se ofrece el botón de cancelar. Hoy dan el mismo resultado; si alguien cambia una y no la otra, la pantalla ofrecería una acción que el servicio rechaza. `armar` tiene pruebas de su resultado (`PanelSocioServicioMisReservasTest`), pero ninguna obliga a que las dos comparaciones coincidan.
+
+## 6. Clases no testeables sin refactor y clases no probadas
+
+### 6.1 No testeables sin refactor (o sin integración)
+
+| Clase / grupo | Por qué no se puede probar así |
+|---|---|
+| `servicio/MembresiaJob` | Obtiene su ejecutor con `@Resource ManagedScheduledExecutorService` y arranca con un evento CDI (`@Observes @Initialized`); sus métodos son privados. Sin contenedor no se puede construir ni disparar. Lo que ejecuta (`vencerVencidas`, `liberarVencidas`) sí está probado en los servicios. Haría falta una prueba de integración o dejar de usar `@Resource` en el campo. |
+| `dao/*` (18 clases) | Son consultas JPQL sobre un `EntityManager`; probarlas exige una base de datos. Con Mockito se simulan, **no se verifican**. |
+| Reglas que viven en la base o en las consultas | (a) El corte de los 60 minutos de la liberación (`fechaReserva < :limite`), (b) el corte de membresías vencidas (`fechaVencimiento < :hoy`) y vigentes (`>= :hoy`), (c) la restricción `UNIQUE turno_activo_key` contra la doble reserva, el hash único del comprobante y `uq_valoracion_reserva`, (d) el `CHECK` de puntaje 1 a 5 y los conteos `contarSinComprobanteDe` / `hayPendienteDe`. Las pruebas confirman que el servicio entrega el valor correcto a la consulta (por ejemplo, `ahora - 60 minutos`) y reacciona bien al resultado, no que la consulta lo calcule bien. |
+| `bean/*` (19 clases JSF) | Dependen de `FacesContext`, de la sesión y de los ámbitos CDI. La lógica está en los servicios, que sí se prueban. |
+
+### 6.2 Se pueden probar, pero quedaron fuera de este alcance
+
+- `seguridad/AdminFilter`, `SocioFilter`, `CodificacionFilter` y `ComprobanteServlet`: usan la API de servlets (son interfaces, se podrían simular con Mockito). Son de seguridad (control de acceso por rol): conviene probarlos en una segunda etapa.
+- `servicio/DashboardServicio` y `CalendarioServicio`: tablero y calendario del administrador; arman textos y grillas para las pantallas (ver 4.4).
+
+## 7. Limitaciones de este conjunto de pruebas
+
+1. **Mockito simula los DAO.** En las pruebas unitarias no se ejecuta SQL ni JPQL, no hay transacciones (`@Transactional` no actúa) ni concurrencia. La carrera por el mismo turno, el registro repetido, el comprobante repetido, la ocupación y el filtro del listado se comprueban aparte contra MySQL (sección 11); el bloqueo pesimista (`buscarParaResolver`) sigue sin ejercerse.
+2. **Las pruebas de interfaz no son parte de `mvn test`.** Las páginas JSF, los filtros de seguridad y el despliegue se prueban aparte, sobre la aplicación desplegada (sección 12). Las de integración (sección 11) usan los servicios y los DAO reales sin GlassFish: las transacciones las abre la prueba, no `@Transactional`. La tarea programada (`MembresiaJob`) no tiene una prueba propia.
+3. **La cobertura global (56 %) queda por debajo de la de las reglas por alcance, no por descuido.** El núcleo de reglas está en el 99 % de líneas y de ramas; la capa de servicio completa, en el 88 %. Una cobertura alta no garantiza que cada verificación sea fuerte: por eso se hizo la mutación manual de 4.5, que cubre 20 reglas y no reemplaza a una herramienta automática.
+4. **Las pruebas fijan los mensajes de error actuales.** Cambiar el texto de un mensaje rompe la prueba correspondiente, aunque la regla siga igual.
+5. **Una prueba está deshabilitada** (D-5): expresa la regla del plan, no el comportamiento actual, y el equipo decidió diferirla. Cuando se implemente hay que quitarle el `@Disabled`.
+6. **Datos de prueba ficticios y fechas fijas** (12/10/2026 10:00 como "ahora"), salvo los casos del punto O-4.
+7. **Solo se ejecutó en JDK 21.0.10 y Windows.** No se probó en el JDK 11 de destino de compilación ni en otros sistemas.
+8. **Dependen del contenido de `src/main`:** si se renombra un método o se cambia una firma, las pruebas dejan de compilar (a propósito: avisan del cambio).
+
+## 8. Reproducir los números de este documento
+
+```bash
+cd SIGRID
+JAVA_HOME="/c/Program Files/Java/jdk-21.0.10" mvn test
+# resultados en target/surefire-reports y target/site/jacoco/index.html
+```
+
+Las tablas de las secciones 3 y 4 se generaron a partir de `target/surefire-reports/TEST-*.xml` y `target/site/jacoco/jacoco.csv`/`jacoco.xml` de esa corrida.
+
+La relación con los casos de prueba del plan (CP-01 a CP-53, tablas 41 y 42 del Apéndice F) está en [reporte-vv.md](reporte-vv.md). El código del caso va en el `@DisplayName` de cada prueba (convención de la sección 4.2.3.6 del plan) y el `pom.xml` configura Surefire para que ese nombre salga en el XML de resultados.
+
+## 9. Ejecución automática en GitHub (opcional)
+
+El archivo `.github/workflows/pruebas.yml` hace que GitHub corra las pruebas solo, en cada push y en cada pull request:
+
+| Paso | Qué hace |
+|---|---|
+| Disparador | `push` y `pull_request` (cualquier rama) |
+| Entorno | `ubuntu-latest`, JDK 21 (Temurin), caché de Maven |
+| Comando | `mvn -B clean test`, dentro de la carpeta `SIGRID` (donde está el `pom.xml`) |
+| Resultado | Si alguna prueba falla, el trabajo queda en rojo. El informe de cobertura se sube como artefacto `informe-jacoco` (se descarga desde la pestaña *Actions* de cada corrida) |
+
+Detalles que conviene saber:
+
+- **Está en la rama pero no activado.** GitHub solo lo ejecuta cuando la rama se sube (`push`). Mientras no se suba, no hace nada.
+- **Usa `clean` a propósito.** La carpeta `SIGRID/target/` está versionada y trae clases compiladas viejas; sin limpiarla, Maven podría probar clases que no corresponden al código fuente actual.
+- **No se pudo comprobar en GitHub desde esta máquina.** Lo que sí se verificó es la receta: en una copia limpia del proyecto (sin `target/`), `mvn clean test` con JDK 21 corrió 650 casos, 0 fallas, 6 deshabilitadas y generó `target/site/jacoco/index.html`. La primera corrida real en GitHub puede necesitar algún ajuste de entorno. En principio no debería depender de la zona horaria ni del idioma del servidor: las pruebas usan fechas fijas (salvo los casos de O-4) y el código fija el idioma `es-AR` de forma explícita.
+- **No falla por cobertura baja:** no hay un umbral configurado, igual que en la corrida local.
+
+## 10. Cambios de la cátedra verificados con esta suite
+
+### CC-01. Cancelación automática (rama `cambio/cc-01-cancelacion-automatica`)
+
+Lo que pide el plan (Tabla 12): si se cumple la regla de anticipación, el sistema cancela en el acto, genera el crédito de 30 días y registra el historial, sin intervención del administrador. El administrador solo aprueba o rechaza reprogramaciones.
+
+- **Código:** `CambiosReservaServicio.solicitar` con tipo `CANCELACION` ya no crea un pedido: reutiliza `cancelar()` (reserva `CANCELADA`, crédito de 30 días, fila en `historial_reserva`) dentro de la misma transacción. El resto de las reglas no cambia (reserva propia, motivo obligatorio, solo `CONFIRMADA`, 48 horas). En la vista del socio el botón pasa a "Cancelar reserva" y el mensaje avisa del crédito.
+- **Pruebas escritas primero (fallaban):** `cp22_cancelaAutomaticamenteConCredito`, `cp22_noCreaPedidoNiInvolucraAlAdministrador`, `cp24_cancelaExactamenteA48Horas` y `cp25_conElCreditoDeLaCancelacionAutomaticaSeReprogramaConAprobacion`. Ya pasaban como regresión: `cp21_noCancelaLaReservaDeOtroSocio`, `cp22_noCancelaDosVeces` y `cp23_noCancelaA47Horas59Minutos`.
+- **Pruebas que cambiaron a propósito** (fijaban el comportamiento anterior, un pedido pendiente): `aceptaPedirLaCancelacionConExactamente48Horas` y `aceptaPedirLaCancelacionConMasDe48Horas` se eliminan (las reemplazan `cp24_` y `cp22_`), y `recortaElMotivoA255Caracteres` se reparte en `elMotivoDeLaCancelacionSeRecortaA255CaracteresEnElHistorial` y `elMotivoDeLaReprogramacionSeRecortaA255Caracteres`.
+- **Lo que no se tocó:** los pedidos de cancelación que ya estuvieran `PENDIENTE` en la base siguen pudiendo aprobarse o rechazarse (`aprobar`/`rechazar` conservan esa rama), igual que los avisos del socio sobre ellos. La reprogramación sigue con aprobación del administrador (CP-25 y CP-26).
+- **Pendiente de la vista:** el campo `puedePedirCancelacion` de `MiReserva` conserva su nombre (solo cambió el texto visible). La pantalla no se probó en el navegador: no hay pruebas de interfaz (sección 7).
+
+### CC-03. Vigencia de las tarifas (rama `cambio/cc-03-vigencia-de-tarifas`, sale de la de CC-01)
+
+Lo que pide el plan (Tabla 12): cada pantalla de tarifas muestra, por instalación y tipo de socio, el precio vigente, desde cuándo rige y el próximo cambio programado; igual para la cuota de membresía. Se verifica con CP-36 (nivel S, revisión manual).
+
+- **Código:** `TarifasServicio.vigencia` ("Rige desde el 01/10/2026") y `TarifasServicio.proximo` ("Desde el 01/11/2026: $ 22.000" o "Sin cambios programados"). Los usan `InstalacionesServicio.precios` (tabla del administrador), `MembresiasServicio.tarifas` (cuota del administrador) y `PanelSocioServicio.instalaciones` y `cuota` (tarjeta de tarifas del socio). Los DAO ganan `buscarProxima` (alquiler y membresía) y `listarProgramadas` (alquiler). El esquema de la base no cambia.
+- **Datos que cambian de tipo:** `PrecioFila.getPrecios()` pasa de `List<String>` a `List<PrecioVigente>`; `TarifaFila` e `InstalacionReservable` ganan `vigencia` y `proximo`; `PanelSocioServicio.cuota` devuelve una `TarifaFila` en lugar de un `String`.
+- **Pruebas escritas primero (fallaban 9):** `cp36_laVigenciaDiceDesdeCuandoRigeElPrecio`, `cp36_elProximoCambioDiceElPrecioYLaFecha`, `cp36_sinCambioProgramadoLoDice`, `cp36_cadaPrecioMuestraDesdeCuandoRigeYElProximoCambio`, `cp36_unPrecioQueTodaviaNoRigeSeVeComoProximoCambio`, `cp36_laTarifaDelSocioMuestraDesdeCuandoRigeYElProximoCambio`, `cp36_laTarifaDelSocioSinCambioProgramadoLoDice`, `cp36_laCuotaDelSocioMuestraDesdeCuandoRigeYElProximoCambio` y `cp36_cadaCuotaMuestraDesdeCuandoRigeYElProximoCambio`.
+- **Pruebas que cambiaron:** las dos de la cuota y la de precios del administrador se ajustaron al tipo nuevo; a las de la cuota se les agregó la fecha `vigenteDesde`, que la columna exige (`NOT NULL`).
+- **Lo que no se pudo comprobar:** las consultas JPQL nuevas y las tres pantallas (inicio del socio, precios de instalaciones y cuota de membresías) no se ejercitaron contra la base ni en el navegador; solo se comprobó que las vistas son XML bien formado. Antes de dar CP-36 por aprobado hay que desplegar y mirarlas.
+
+### CC-04. "Grado de satisfacción" en lugar de "Valoraciones" (rama `cambio/cc-04-grado-de-satisfaccion`, sale de la de CC-03)
+
+Lo que pide el plan (Tabla 12): el nombre nuevo aparece en el menú, los títulos, los reportes y los PDF. El propio plan deja abierto si también se renombra en el panel del socio. Se verifica con CP-41 (nivel S, revisión manual).
+
+- **Alcance aplicado:** el panel del administrador. Menú lateral (`AdminNavBean`), título de la pestaña y encabezado de la página (`valoraciones-dashboard-admin.xhtml`; el PDF sale de esa misma página por impresión, así que toma el título nuevo) y el resumen y las alertas de reportes (`ReportesServicio`: el indicador "Valoración promedio" pasa a "Grado de satisfacción" y la alerta "Baja valoración de los socios" pasa a "Grado de satisfacción bajo").
+- **Lo que no se renombró:** el panel del socio ("Valorá tu turno", "Valoración pendiente", los avisos y el bloqueo para reservar), a la espera de la decisión del equipo. Tampoco cambian la dirección de la página (`/admin/valoraciones-dashboard-admin`), los nombres de clases, la tabla `valoracion_reserva` ni la regla de negocio.
+- **Vocabulario:** el nombre de la sección es "Grado de satisfacción"; cada respuesta individual pasa a llamarse "calificación" (como en CP-37 a CP-40 del plan), para que la palabra "Valoraciones" no quede en ninguna pantalla del administrador.
+- **Pruebas escritas primero (fallaban 6):** `AdminNavBeanTest.cp41_elMenuDiceGradoDeSatisfaccionYNoValoraciones` y `laSeccionRenombradaSigueEnLaMismaDireccion` (nuevas) y cuatro de `ReportesServicioTest` que fijaban los textos viejos.
+- **Lo que no se pudo comprobar:** la página renombrada no se abrió en el navegador (solo se comprobó que es XML bien formado).
+
+### CC-05. Colores y contrastes (rama `cambio/cc-05-colores-y-contrastes`, sale de la de CC-04)
+
+Lo que pide el plan (Tabla 12): cumplir WCAG 2.1 AA (RNF-08) en las vistas del socio y del administrador, con foco visible y estados que no dependan solo del color. La cátedra señaló el gráfico de barras de ingresos, donde las reservas (gris oscuro) y las membresías (bordó oscuro) casi no se distinguían, y en general los elementos chicos sin contraste.
+
+- **Qué se midió:** los pares de color declarados en las hojas de estilo (resolviendo las variables). Dio que el color de texto secundario (`--text-3`), usado en cientos de etiquetas, subtítulos y encabezados de tabla, estaba en 2,9:1 a 3,6:1 y debe llegar a 4,5:1; que las dos series del gráfico daban 1,95:1 entre sí; que el dorado de las estrellas y de los indicadores de atención daba 2,3:1; que el foco del teclado (amarillo al 55 %) daba 1,3:1; y que los números del mapa de calor en celdas medias daban entre 2,0:1 y 3,9:1.
+- **Qué cambió** (solo hojas de estilo, ningún texto ni lógica):
+
+| Elemento | Antes | Ahora |
+|---|---|---|
+| Texto secundario `--text-3` (panel del socio y del administrador) | `#8B8582` (2,9:1 a 3,6:1) | `#6B6561` (4,6:1 o más) |
+| Texto de la landing `--ink-500` | `#7D6B64` (4,0:1 a 4,4:1) | `#6E5C55` (5,5:1 o más) |
+| Dorado de texto `--gold-700` | `#B8811F` (2,7:1 a 3,3:1) | `#7E5C00` (5,4:1 o más) |
+| Verde de estado `--adm-ok` y `--so-ok` | `#2C7554` (4,4:1 sobre gris) | `#267050` (4,7:1 o más) |
+| Indicador de atención `--adm-warn-dot` | `#D4A000` (2,3:1) | `#B38900` (3,2:1) |
+| Barras de reservas | gris oscuro `#686363` | gris medio `#8F857E` (3,5:1 sobre blanco y 4,2:1 contra el bordó) |
+| Barras de membresías | bordó `#6D1732` | bordó oscuro `#4A0F1F` con **rayas claras** y una línea que la separa de reservas |
+| Estrellas de las valoraciones | llena y vacía solo se distinguían por el tono | llena = relleno dorado oscuro, vacía = contorno gris (cambia la forma) |
+| Dona de la distribución | verde claro, amarillo y naranja de 1,6:1 a 2,4:1 | tramos de 3,2:1 o más |
+| Números del mapa de calor | blanco o verde sobre celdas medias (2,0:1 a 3,9:1) | texto oscuro en las celdas medias (4,8:1 o más) |
+| Foco del teclado | línea amarilla translúcida (1,3:1) | línea bordó oscura de 3 px con un aro blanco por dentro (se ve sobre fondos claros y sobre bordó) |
+
+- **Pruebas escritas primero (fallaban 9):** `ContrasteCssTest` (`SIGRID/src/test/java/com/sigrid/sigrid/estilos/`) lee los CSS reales, resuelve las variables y exige 4,5:1 al texto y 3:1 a series, indicadores, estrellas y foco; cada mensaje de error dice qué par falló y cuánto da. Así queda como regresión si alguien vuelve a tocar un color.
+- **Antes y después del gráfico** (maqueta estática con datos de ejemplo y las hojas de estilo reales, generada con Edge sin ventana; no es una captura del sistema desplegado): [antes](capturas/cc05-barras-antes.png) y [después](capturas/cc05-barras-despues.png).
+- **Lo que no cubre:** (1) es una medición estática de los pares declarados: no ve el color final que resulta de la cascada en cada pantalla ni las imágenes; (2) los bordes de campos y botones (`--border`, `#DDD9D5`, 1,4:1) siguen igual porque cambiarlos modifica toda la estética: el texto de cada campo sí cumple, pero el contorno del campo no llega a 3:1; (3) el tema oscuro (`--d-*`) no se midió; (4) los CP-47 y CP-48 piden medir con un verificador (WCAG 2.1 AA, por ejemplo axe o Lighthouse) sobre las pantallas desplegadas, que sigue pendiente.
+
+### CC-06. PDF prolijos y con filtros de período (rama `cambio/cc-06-pdf-con-filtros`, sale de la de CC-05)
+
+Lo que pide el plan (Tabla 12): antes de exportar se elige el período y los filtros; la consulta los aplica en SQL; el PDF lleva encabezado, período, fecha de emisión y numeración de páginas; se prueba con 500.000 reservas. Se verifica con CP-43 a CP-46 (CP-45 es de rendimiento) y RNF-07.
+
+- **Reservas del administrador (SQL):** el listado, los filtros (estado, instalación, período y buscador) y el tope los aplica la base: la página pide una tanda de 25 filas y su total; los indicadores y rankings salen de consultas de agregación (cuentas por estado, reservas activas por franja, recaudación de 7 días). Antes se leían **todas** las reservas con sus socios, pagos y tarifas y se filtraba en memoria (`ReservaDAO.listarTodasParaAdmin`, que se elimina junto con `ReservaServicio.listarTodas`). La pestaña Predio de Cancelaciones lee solo las próximas confirmadas (acotadas por la regla de 30 días).
+- **Exportar PDF de reservas:** usa los filtros de la barra y **exige** elegir el período (desde y hasta). Si no hay período, está al revés, no hay reservas o son más de 2.000, no se imprime nada y un aviso dice por qué (CP-44: nunca un documento vacío; CP-45: pide acotar sin cargar las filas). Si hay datos, se imprime solo el informe: encabezado con período, filtros aplicados, cantidad y fecha de emisión; tabla en orden cronológico con el encabezado repetido en cada hoja; pie de cada hoja con "Emitido el ..." y "Página N de M". Ejemplo: [cc06-informe-ejemplo.pdf](capturas/cc06-informe-ejemplo.pdf).
+- **Los demás "Exportar PDF"** (socios, membresías, reportes, valoraciones): `print.css` agrega a todos el pie con la fecha de emisión y la numeración de páginas; el encabezado de tabla ya se repetía.
+- **Reportes:** `ReportesServicio.cargar(hoy, rango)` lee solo las reservas del período elegido y del período previo con el que se compara (más los pagos validados del período, los créditos que vencen desde ahí y los comprobantes por validar). Al cambiar de período se vuelve a leer; el agrupado de los gráficos se sigue resolviendo en memoria.
+- **Pruebas escritas primero (fallaban 16):** `ReservaServicioFiltrosTest` (tanda y total, tipos de instalación, indicadores y rankings, recaudación y CP-43 a CP-45 del informe) y `ReportesServicioCargaTest.cp45_laCargaPideSoloElPeriodoYElPrevio`. Las que fijaban la carga total (`unica` de los listados, `ReportesServicioCargaTest`) pasaron a las consultas nuevas.
+- **Las consultas SQL no las ejercitan las pruebas unitarias.** Se validaron con el medidor de `docs/calidad/cp45/`: ejecuta las consultas y los servicios reales (EclipseLink de GlassFish contra una base MySQL de prueba) y comprobó que los filtros en SQL dan el mismo número que clasificar las 500.403 reservas en memoria (16 combinaciones).
+- **Medición (CP-45), 500.403 reservas:** listado de 25 filas 150 ms; por estado, período o disciplina entre 26 y 450 ms; buscador en todo el historial 1,8 a 2,6 s; indicadores 1,2 s; PDF de un día 36 ms y de una semana 140 ms; reportes de 30 días 2,3 s (270 MB). La versión anterior no termina: `OutOfMemoryError` con 512 MB y con 1 GB. Detalle y cómo repetirla en [cp45/README.md](cp45/README.md).
+- **Cambios de comportamiento que conviene saber:** (1) el listado ordena por fecha del turno y número de reserva (más reciente primero); dentro de un mismo día ya no va por hora, para que la base use el índice de la fecha y corte al llegar a 25 filas (el PDF sí sale en orden cronológico); (2) el buscador reconoce fechas completas (`dd/mm/aaaa`) y el número exacto de reserva, y ya no coincide con fechas parciales como `15/10`.
+- **Lo que no se pudo comprobar:** las pantallas en GlassFish (EL y AJAX de la página de reservas y de reportes); el PDF se verificó con una maqueta estática impresa con Edge sin ventana y el `print.css` real (3 páginas, encabezado de tabla repetido, "Página 1 de 3" a "3 de 3"). La numeración usa los cuadros de margen de `@page`, que soportan Chrome y Edge recientes (131 o más); Firefox no los dibuja y el PDF sale sin el "Página N de M".
+- **Pendiente:** los reportes de 12 meses con este volumen siguen leyendo unas 110.000 reservas (6,7 s, más de 500 MB): para esa escala hay que pasar los cálculos a consultas de agregación. El esquema no cambió (el índice de `reserva.fecha_turno` ya existía); un índice sobre `pago.fecha_validacion` aceleraría los reportes y queda para decidir.
+
+### CC-02. Crédito y mantenimiento (rama `cambio/cc-02-credito-y-mantenimiento`, sale de la de CC-06)
+
+Lo que pide el plan (Tabla 12, opción A): el plazo de 30 días del crédito se suspende mientras la instalación está en mantenimiento y se reanuda al reactivarla; el socio no pierde el crédito. Se verifica con CP-29 y CP-30. Las dos dudas abiertas del plan las resolvió el equipo el 13/10/2026:
+
+- **Días conservados, no 30 completos:** si al empezar el mantenimiento le quedaban 25 días, quedan congelados y al reactivar vuelven a contar desde 25 (contados desde la reactivación real).
+- **Baja definitiva:** recién ahí el crédito se puede usar en otra instalación equivalente; con un mantenimiento (temporal) no.
+
+- **Código:** `CambiosReservaServicio.limiteDelCredito(reserva, hoy)` es el único lugar que dice hasta cuándo vale un crédito: si la instalación está en mantenimiento, a la fecha guardada le suma los días que lleva el mantenimiento, así que al crédito le quedan siempre los mismos días. `InstalacionesServicio.reactivar(id, hoy)` (ahora recibe el día de la reactivación real) guarda ese corrimiento en los créditos que seguían vigentes cuando empezó el mantenimiento (`ReservaDAO.listarConCreditoDesde`); lo mismo hace `retirar` si el mantenimiento termina en baja definitiva. Una cancelación hecha durante el mantenimiento deja el crédito en pausa desde el primer día. Un crédito que ya había vencido antes de empezar el mantenimiento no revive. **El esquema de la base no cambia:** se usa `instalacion.fecha_inicio_baja`, que ya existía.
+- **Equivalente:** `CambiosReservaServicio.equivalente`: la instalación original está dada de baja definitiva y la otra es de reserva y de la misma disciplina (por ejemplo, los tres quinchos). `validarDestino` la acepta; el socio ve las franjas de las equivalentes (con el nombre de cada una) y el administrador aprueba como siempre.
+- **Dónde se ve la pausa:** mis reservas y avisos del socio ("Tu crédito está en pausa mientras ... esté en mantenimiento: te quedan N días desde que se reactive"), pestaña "Con crédito" del administrador ("En pausa (mantenimiento)"), listado de reservas ("Cancelada · con crédito") y reportes (el dinero en un crédito en pausa cuenta como retenido, no como perdido, y no entra en el aviso de "vencen en 7 días").
+- **Pruebas escritas primero (fallaban 10 y 3 por stubs sin usar):** `cp29_elCreditoNoVenceMientrasDuraElMantenimiento`, `cp29_losDiasQueLeQuedanNoCambianDuranteElMantenimiento`, `cp29_unaCancelacionDuranteElMantenimientoNoEmpiezaACorrerHastaReactivar` y las de listados, reportes y panel del socio; `cp30_alReactivarElCreditoRetomaLosDiasQueLeQuedaban` y `laBajaDefinitivaDesdeMantenimientoRetomaElPlazoDeLosCreditos`; y las de la instalación equivalente. Se agregan como protección: un crédito vencido antes del mantenimiento no revive, reactivar el mismo día no cambia el plazo y en mantenimiento no hay equivalentes.
+- **Las consultas SQL no las ejercitan las pruebas unitarias.** Se probó de punta a punta contra una base MySQL temporal con los datos de demostración (servicios y DAO reales, ya borrada): a un crédito con 20 días lo siguen mostrando con 20 días hoy y 60 días después, reactivar 50 días más tarde lo deja en la fecha de ese día + 20 (22/12/2026), el reporte trae los créditos en pausa y la baja definitiva del Quincho 1 ofrece las franjas del Quincho 2 y del 3.
+- **Lo que no se pudo comprobar:** las pantallas en GlassFish (el texto de "Mis reservas" y la pestaña "Con crédito" del administrador).
+- **A decidir:** (1) si la instalación se da de baja y no tiene ninguna equivalente (rugby, SUM), el crédito queda sin uso hasta que venza (el plan habla de "reintegro", que el sistema no maneja: no hay devoluciones de dinero); (2) al dar de baja desde un mantenimiento el plazo vuelve a correr ese día, con los días que le quedaban; (3) en el plan hay que actualizar el texto de CP-30 y de la sección de reglas de CC-02 ([A CONFIRMAR] resueltos).
+
+## 11. Pruebas de integración (rama `calidad/pruebas-integracion`, sale de la de D-1 a D-4)
+
+Los cinco casos de nivel I del plan (CP-04, CP-12, CP-16, CP-42 y CP-52) necesitan la base de datos. Se ejecutan con `docs/calidad/integracion/PruebasIntegracion.java`: los servicios y los DAO reales, con el EclipseLink y el driver de MySQL que trae GlassFish, contra una base MySQL de prueba cargada con `sigrid_schema.sql`. No se agregó ninguna dependencia al proyecto y `mvn test` sigue corriendo sin base. Cómo repetirlas: [integracion/README.md](integracion/README.md). El resultado queda en `integracion/resultados.txt` y el generador del reporte de V&V lo lee.
+
+| Caso | Resultado | Qué se comprobó |
+|---|---|---|
+| CP-04 | Aprobado | Un correo que ya existe (también en mayúsculas y con espacios) y un DNI que ya existe se rechazan con su mensaje y no se crea ninguna fila. Si algo se saltea el servicio, la base rechaza el `INSERT` (`uq_usuario_email`, `uq_socio_dni`). Con datos nuevos la misma alta se crea |
+| CP-12 | Aprobado | Dos socios, dos conexiones, el mismo turno y día. Paso a paso: el segundo pasa la consulta previa, queda esperando en el `INSERT` y cuando el primero confirma recibe "Ese turno acaba de ser reservado por otra persona". Saliendo a la vez, 20 rondas: siempre una sola reserva viva y el otro recibe ese mensaje |
+| CP-16 | Aprobado | El mismo archivo en otra reserva (del mismo socio y de otro) se rechaza con "Ese comprobante ya fue usado en otra operación"; no se crean pago ni comprobante. En dos cargas a la vez queda una sola (`uq_comprobante_hash`) |
+| CP-42 | Aprobado | 84 comparaciones (7 instalaciones, los 6 períodos de la pantalla y 6 días sueltos): los turnos reservados y disponibles de cada instalación y el total coinciden con lo contado por SQL |
+| CP-52 | Aprobado | 468 combinaciones de estado, período e instalación sobre las 403 reservas de la demo: el listado trae exactamente las mismas reservas que una consulta SQL directa, sin repetidas, y el total informado coincide |
+
+**¿Detectan el problema?** En la base de prueba se quitaron los `UNIQUE` de correo, de turno y día y de hash y se volvió a correr: CP-04, CP-12 y CP-16 fallaron (la base aceptó el duplicado), como corresponde. Se corrió dos veces seguidas sobre la misma base y deja los datos como estaban.
+
+**D-6 (abierto, severidad propuesta: baja).** Si el mismo archivo se sube en dos cargas a la vez, la consulta previa (`existePorHash`) no ve la otra y las dos siguen; la base deja pasar una sola, pero el `INSERT` del comprobante sale recién al cerrar la transacción, así que la segunda termina con una excepción técnica (`RollbackException`) que `SocioReservasBean.subir` no atrapa: el socio vería la página de error en vez de "ya fue usado". Los datos quedan bien. `PanelSocioServicio.reservar` resuelve el mismo problema mandando el `INSERT` en el momento (`ReservaDAO.insertar`) y traduciendo el error; el arreglo sería hacer lo mismo con el comprobante. No se corrigió: cambia código de producción y queda a decisión del equipo. El alta de socios tiene la misma forma (dos registros a la vez con el mismo correo): no se midió.
+
+**Diferencias con el texto del plan.** CP-42 habla del reporte "de un día para una instalación" y la pantalla de reportes no tiene período de un día (el menor es 7 días) ni selector de instalación (las muestra todas). CP-52 habla de filtrar "por instalación" y la pantalla filtra por disciplina o por el nombre escrito en el buscador. Se probó lo que la pantalla ofrece y, además, el día suelto llamando al servicio.
+
+**Lo que no cubren.** No pasan por GlassFish: no prueban `@Transactional`, los beans ni las páginas. Los casos de nivel S y A siguen pendientes.
+
+## 12. Pruebas de sistema y de accesibilidad (rama `calidad/pruebas-de-sistema`, sale de la de integración)
+
+Los casos de nivel S y A del plan se ejecutaron el 14/10/2026 sobre **SIGRID desplegado en GlassFish 7**, en un dominio aparte (`sigridcalidad`) y con una base MySQL aparte (`sigrid_pruebas`, cargada con `sigrid_schema.sql`). No se tocaron el dominio de trabajo ni la base `sigrid`, y los dos se borraron al terminar. `docs/calidad/sistema/recorrido.mjs` maneja Edge sin ventana: inicia sesión con las cuentas de prueba, hace lo que haría una persona, compara con la base y guarda capturas y PDF en `docs/calidad/sistema/evidencia/`. No se agregó ninguna dependencia: usa Node y el Edge de Windows. Cómo repetirlo: [sistema/README.md](sistema/README.md).
+
+| Caso | Resultado | Resumen |
+|---|---|---|
+| CP-05 | Aprobado | Cada rol llega a su panel; sin sesión o como socio, las 10 pantallas de `/admin` (y el archivo de un comprobante) vuelven al login |
+| CP-36 | Aprobado | Con un cambio de precios y de cuotas programado desde las pantallas, administrador y socio ven precio vigente, desde cuándo rige y el próximo cambio, igual que la base (40 precios comparados) |
+| CP-41 | Aprobado | El panel del administrador y sus PDF dicen "Grado de satisfacción" en todos lados |
+| CP-43 | Aprobado | El PDF de un día trae exactamente las reservas de ese día, con encabezado, período y emisión |
+| CP-44 | Aprobado | Sin reservas, sin período o con el período al revés: aviso y nada para imprimir |
+| CP-45 | Aprobado | Con 500.403 reservas y GlassFish con 512 MB: listado 1,7 s, filtro 0,3 s, PDF 0,5 s, buscador 2,1 s; sin errores de memoria |
+| CP-46 | Aprobado | 12 páginas numeradas, con el encabezado de la tabla repetido. Observación D-12 |
+| CP-47 | **Falló** | Contraste del socio: el carnet digital (3,85:1 y 4,20:1) y el contorno de un campo (D-10) |
+| CP-48 | **Falló** | Contraste del administrador: contorno de los filtros (1,2:1 a 1,4:1) y días de otros meses del calendario (2,0:1 a 3,0:1) (D-11) |
+| CP-49 | **Falló** | La grilla del calendario distingue los estados solo por el color (D-7); las listas los dicen con texto |
+| CP-50 | **Falló** | A 360 px el panel del administrador se desborda 27 px y "Mis reservas" también (D-8); a 1280 px tres tablas esconden columnas (D-9) |
+| CP-51 | Aprobado | Próximas, Historial y Todas coinciden con las reservas del socio en la base. Observación D-13 |
+| CP-53 | No ejecutado | Lo aprueban la cátedra y el equipo en la RTF-03: informe preparado en [rtf-03-diseno-visual.md](rtf-03-diseno-visual.md) |
+
+- **Cómo se midió el contraste:** con una medición propia sobre la página real. Para cada texto visible se toman los colores que calcula el navegador, se compone el fondo y se aplica la fórmula de WCAG 2.1. El plan nombra axe o Lighthouse: en el README están los pasos para confirmarlo con Lighthouse. Los íconos que acompañan a un texto que dice lo mismo no se exigen.
+- **Cómo se midió la adaptación:** desbordes de la página, controles fuera de la pantalla o tapados, textos cortados o estrujados, importes partidos y tablas con desplazamiento propio. Las 57 capturas se revisaron además a ojo. El carrusel de fotos y el panel deslizante del registro son así a propósito y no se cuentan.
+- **¿Detectan el problema?** Las primeras corridas dieron falsos positivos y se corrigieron antes de dar el resultado: el menú plegado del administrador, los formularios dentro de desplegables cerrados, la flecha de los desplegables tomada como imagen de fondo y una captura de página entera que en modo teléfono corría los elementos. Cada hallazgo que quedó se confirmó en las capturas, por ejemplo la grilla del calendario en escala de grises o el panel a 360 px.
+- **Observaciones que no son incidencias:** el panel del socio sigue diciendo "valoración" (CC-04 se aplicó al administrador). GlassFish agrega `;jsessionid=` a la dirección en la primera visita sin cookies. Los Reportes de 12 meses con 500.000 reservas tardan 10,3 s (pendiente ya conocido de RNF-07).
+- **No se corrigió nada del código de producción:** los defectos D-7 a D-13 quedan para que el equipo decida.
+
+## 13. D-6 corregido y CP-42 y CP-52 alineados con el plan (rama `correccion/d6-y-casos-cp42-cp52`, sale de la de sistema)
+
+Pedido del responsable del proyecto (14/10/2026): corregir D-6 y que CP-42 y CP-52 coincidan con el plan. Se hizo con pruebas primero (commit en rojo: 1 falla de D-6, 6 de CP-42 y 3 de CP-52), después el código.
+
+- **D-6:** `subirComprobante` manda el INSERT del comprobante en el momento (`comprobanteDAO.flush()`). Si la base lo rechaza porque otro subió el mismo archivo a la vez, responde "Ese comprobante ya fue usado en otra operación." y no guarda el archivo. Prueba: `siLaBaseRechazaElArchivoRepetidoAvisaQueYaFueUsado`. En la integración contra MySQL, las dos cargas a la vez ahora terminan con ese aviso.
+- **CP-42 ("reporte de ocupación de un día para una instalación"):** Reportes suma el período **"Un día"**, con su fecha, que se compara con el mismo día de la semana anterior. En la pestaña Ocupación aparece la tarjeta **"Ocupación de una instalación"**: al elegir una instalación, muestra cada turno del período. En un día dice si quedó libre o quién lo reservó y en qué estado; en varios días, en cuántos estuvo reservado. Código: `ReportesServicio.rango(periodo, hoy, dia)` y `ocupacionPorTurno`. Pruebas: `cp42_unDiaEsUnPeriodoDeUnSoloDia`, `cp42_laOcupacionDeUnDiaDeUnaInstalacionVaTurnoPorTurno` y cinco más.
+- **CP-52 ("filtra por fecha, instalación y estado"):** Reservas suma el desplegable **"Todas las instalaciones"** (por nombre). El que existía pasa a llamarse "Todas las disciplinas". La consulta lo aplica en SQL y el PDF lo nombra en sus filtros ("Instalación: Cancha de Fútbol 11"). Pruebas: `cp52_elegirUnaInstalacionEsFiltrar`, `cp52_elFiltroOfreceCadaInstalacionQueSeReservaPorNombre` y `cp43_elInformeDiceLosFiltrosAplicados`, que cambió a propósito porque el PDF decía "Instalación: Fútbol" para una disciplina.
+- **Verificación:** las pruebas de integración (`docs/calidad/integracion`) usan esos mismos caminos contra MySQL: 174 turnos comparados uno por uno y 468 combinaciones de filtros. El recorrido de `docs/calidad/sistema` los comprobó además en la aplicación desplegada, con capturas `cp42-*` y `cp52-*`.
+- **De paso:** "Turnos que nunca se reservan" decía "en 1 días" con el período de un día; ahora dice "en 1 día".

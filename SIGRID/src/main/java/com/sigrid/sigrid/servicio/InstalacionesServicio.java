@@ -10,6 +10,7 @@ import com.sigrid.sigrid.dto.Demanda;
 import com.sigrid.sigrid.dto.EspacioPlano;
 import com.sigrid.sigrid.dto.FichaInstalacion;
 import com.sigrid.sigrid.dto.PrecioFila;
+import com.sigrid.sigrid.dto.PrecioVigente;
 import com.sigrid.sigrid.dto.RankingItem;
 import com.sigrid.sigrid.dto.ReservaFila;
 import com.sigrid.sigrid.repositorio.CategoriaSocio;
@@ -169,10 +170,13 @@ public class InstalacionesServicio implements Serializable {
      * ponytail: un solo SELECT de todas las tarifas vigentes; si el catálogo creciera a miles de filas, filtrar por instalación.
      */
     public List<PrecioFila> precios(List<Instalacion> instalaciones, List<CategoriaSocio> categorias, LocalDate hoy) {
-        Map<String, BigDecimal> vigentes = new HashMap<>(); // "instalación-categoría" -> precio; la más reciente pisa a la anterior
+        Map<String, TarifaAlquiler> vigentes = new HashMap<>(); // "instalación-categoría" -> tarifa; la más reciente pisa a la anterior
         for (TarifaAlquiler t : tarifaDAO.listarVigentes(hoy)) {
-            vigentes.put(t.getIdInstalacion().getIdInstalacion() + "-" + t.getIdCategoriaSocio().getIdCategoriaSocio(),
-                    t.getPrecio());
+            vigentes.put(t.getIdInstalacion().getIdInstalacion() + "-" + t.getIdCategoriaSocio().getIdCategoriaSocio(), t);
+        }
+        Map<String, TarifaAlquiler> proximas = new HashMap<>(); // el próximo cambio programado: vienen del más cercano al más lejano
+        for (TarifaAlquiler t : tarifaDAO.listarProgramadas(hoy)) {
+            proximas.putIfAbsent(t.getIdInstalacion().getIdInstalacion() + "-" + t.getIdCategoriaSocio().getIdCategoriaSocio(), t);
         }
         List<PrecioFila> filas = new ArrayList<>();
         for (Instalacion i : instalaciones) {
@@ -182,11 +186,14 @@ public class InstalacionesServicio implements Serializable {
                 continue;
             }
             List<BigDecimal> importes = new ArrayList<>();
-            List<String> textos = new ArrayList<>();
+            List<PrecioVigente> textos = new ArrayList<>();
             for (CategoriaSocio c : categorias) {
-                BigDecimal precio = vigentes.get(i.getIdInstalacion() + "-" + c.getIdCategoriaSocio());
+                String clave = i.getIdInstalacion() + "-" + c.getIdCategoriaSocio();
+                TarifaAlquiler vigente = vigentes.get(clave);
+                BigDecimal precio = vigente == null ? null : vigente.getPrecio();
                 importes.add(precio);
-                textos.add(precio == null ? null : DashboardServicio.monto(precio));
+                textos.add(new PrecioVigente(precio == null ? null : DashboardServicio.monto(precio),
+                        TarifasServicio.vigencia(vigente), TarifasServicio.proximo(proximas.get(clave))));
             }
             filas.add(new PrecioFila(i.getIdInstalacion(), i.getNombre(), icono, false, textos,
                     TarifasServicio.ordenValido(categorias, importes)));
@@ -410,6 +417,7 @@ public class InstalacionesServicio implements Serializable {
             }
         }
 
+        retomarCreditos(i, hoy); // si estaba en mantenimiento y pasa a baja definitiva, el plazo vuelve a correr hoy
         i.setEstado(nuevo);
         i.setMotivoBaja(motivo.trim().length() > 255 ? motivo.trim().substring(0, 255) : motivo.trim());
         i.setFechaInicioBaja(hoy);
@@ -417,9 +425,24 @@ public class InstalacionesServicio implements Serializable {
         return null;
     }
 
-    /** Vuelve a habilitar una instalación en mantenimiento. La baja definitiva no se revierte desde acá. */
+    /**
+     * CC-02: al terminar el mantenimiento (reactivación o baja definitiva) los créditos que seguían vigentes cuando empezó
+     * retoman su plazo con los días que les quedaban, contados desde hoy. Va antes de cambiar el estado.
+     */
+    private void retomarCreditos(Instalacion i, LocalDate hoy) {
+        if (i.getEstado() == Instalacion.Estado.DESHABILITADA_MANTENIMIENTO && i.getFechaInicioBaja() != null) {
+            for (Reserva r : reservaDAO.listarConCreditoDesde(i.getIdInstalacion(), i.getFechaInicioBaja())) {
+                r.setFechaLimiteReprogramacion(CambiosReservaServicio.limiteDelCredito(r, hoy));
+            }
+        }
+    }
+
+    /**
+     * Vuelve a habilitar una instalación en mantenimiento ("hoy" es la reactivación real: los créditos retoman ahí sus
+     * días). La baja definitiva no se revierte desde acá.
+     */
     @Transactional
-    public String reactivar(Integer idInstalacion) {
+    public String reactivar(Integer idInstalacion, LocalDate hoy) {
         Instalacion i = instalacionDAO.buscarPorId(idInstalacion);
         if (i == null) {
             return "La instalación no existe.";
@@ -428,6 +451,7 @@ public class InstalacionesServicio implements Serializable {
             return i.getEstado() == Instalacion.Estado.DESHABILITADA ? "La baja definitiva no se revierte."
                     : "Esta instalación ya está habilitada.";
         }
+        retomarCreditos(i, hoy);
         i.setEstado(Instalacion.Estado.HABILITADA);
         i.setMotivoBaja(null);
         i.setFechaInicioBaja(null);

@@ -1,0 +1,42 @@
+name: Pruebas
+
+# Corre las pruebas automatizadas de SIGRID en cada push y en cada pull request.
+# No hace falta MySQL ni GlassFish: las pruebas unitarias simulan la base con Mockito.
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  pruebas:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        # el proyecto Maven (donde está el pom.xml) es la carpeta SIGRID
+        working-directory: SIGRID
+    steps:
+      - name: Descargar el código
+        uses: actions/checkout@v4
+
+      - name: Instalar JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: maven
+          cache-dependency-path: SIGRID/pom.xml
+
+      # "clean" a propósito: la carpeta target/ está versionada en el repositorio y trae clases viejas;
+      # sin limpiarla, Maven podría probar clases que no corresponden al código fuente actual.
+      - name: Correr las pruebas (mvn test)
+        run: mvn -B clean test
+
+      - name: Subir el informe de cobertura (JaCoCo)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: informe-jacoco
+          path: SIGRID/target/site/jacoco
+          if-no-files-found: warn

@@ -43,7 +43,7 @@ public class AdminNavBean {
                     new GrupoMenu("Gestión del predio", List.of(
                             item("Instalaciones", "stadium", "instalaciones", 0))),
                     new GrupoMenu("Seguimiento", List.of(
-                            item("Valoraciones", "star", "valoraciones", 0),
+                            item("Grado de satisfacción", "star", "valoraciones", 0),
                             item("Reportes", "bar_chart", "reportes", 0))));
         }
         return grupos;

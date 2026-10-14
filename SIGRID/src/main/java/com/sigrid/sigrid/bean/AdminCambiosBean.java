@@ -64,13 +64,7 @@ public class AdminCambiosBean implements Serializable {
         pedidos = servicio.listarPedidos(ahora);
         creditos = servicio.listarCreditos(hoy);
         reprogramadas = servicio.listarReprogramadas();
-        cancelables = new ArrayList<>();
-        for (ReservaListado r : reservaServicio.listarTodas(hoy, ahora.toLocalTime())) {
-            if ("CONFIRMADA".equals(r.getEstado()) && !r.isFinalizada()) {
-                cancelables.add(r);
-            }
-        }
-        cancelables.sort(Comparator.comparing(ReservaListado::getFecha).thenComparing(ReservaListado::getHorario));
+        cancelables = reservaServicio.listarProximasConfirmadas(ahora);
     }
 
     // ---------- acciones ----------

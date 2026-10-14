@@ -136,7 +136,8 @@ public class MembresiasServicio implements Serializable {
         List<TarifaFila> tarifas = new ArrayList<>();
         for (CategoriaSocio c : categoriaDAO.listarTodos()) {
             TarifaMembresia t = tarifaDAO.buscarVigente(c.getIdCategoriaSocio(), hoy);
-            tarifas.add(new TarifaFila(c.getNombreCategoria(), t == null ? null : monto(t.getPrecio())));
+            tarifas.add(new TarifaFila(c.getNombreCategoria(), t == null ? null : monto(t.getPrecio()),
+                    TarifasServicio.vigencia(t), TarifasServicio.proximo(tarifaDAO.buscarProxima(c.getIdCategoriaSocio(), hoy))));
         }
         return tarifas;
     }
@@ -167,7 +168,7 @@ public class MembresiasServicio implements Serializable {
         }
         Socio socio = s.getIdSocio();
         List<SuscripcionSocio> vigentes = suscripcionDAO.listarVigentesDelSocio(socio.getIdSocio(), hoy);
-        LocalDate inicio = vigentes.isEmpty() ? hoy : vigentes.get(0).getFechaVencimiento().plusDays(1);
+        LocalDate inicio = vigentes.isEmpty() ? hoy : vigentes.get(0).getFechaVencimiento();
 
         validarPago(s.getIdPago(), idAdmin, Pago.Estado.CONFIRMADO);
         s.setEstado(SuscripcionSocio.Estado.VIGENTE);

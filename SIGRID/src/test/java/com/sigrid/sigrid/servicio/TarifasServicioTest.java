@@ -1,0 +1,553 @@
+package com.sigrid.sigrid.servicio;
+
+import static com.sigrid.sigrid.servicio.DatosDePrueba.HOY;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.lenient;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+import com.sigrid.sigrid.dao.CategoriaSocioDAO;
+import com.sigrid.sigrid.dao.InstalacionDAO;
+import com.sigrid.sigrid.dao.TarifaAlquilerDAO;
+import com.sigrid.sigrid.dao.TarifaMembresiaDAO;
+import com.sigrid.sigrid.dto.HistorialTarifa;
+import com.sigrid.sigrid.repositorio.CategoriaSocio;
+import com.sigrid.sigrid.repositorio.Instalacion;
+import com.sigrid.sigrid.repositorio.TarifaAlquiler;
+import com.sigrid.sigrid.repositorio.TarifaMembresia;
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
+import org.mockito.ArgumentCaptor;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+
+/**
+ * Cambio de precios: el alumno es el más barato y el externo el más caro; un precio no se edita, se agrega uno nuevo
+ * y el anterior se cierra el día previo; no se repite una fecha de vigencia.
+ */
+@ExtendWith(MockitoExtension.class)
+class TarifasServicioTest {
+
+    private static final LocalDate INICIO_DEL_ANIO = LocalDate.of(2026, 1, 1);
+    private static final LocalDate PROXIMO_MES = LocalDate.of(2026, 11, 1);
+
+    private final CategoriaSocio alumno = DatosDePrueba.categoria(1, "Alumno UNSE", true);
+    private final CategoriaSocio docente = DatosDePrueba.categoria(2, "Docente UNSE", true);
+    private final CategoriaSocio noDocente = DatosDePrueba.categoria(3, "No Docente UNSE", true);
+    private final CategoriaSocio externo = DatosDePrueba.categoria(4, "Externo", false);
+
+    private final Instalacion cancha = DatosDePrueba.instalacion(1, "Cancha de Fútbol 11",
+            Instalacion.TipoAcceso.ARANCELADO, Instalacion.Estado.HABILITADA);
+
+    @Mock
+    private TarifaAlquilerDAO alquilerDAO;
+    @Mock
+    private TarifaMembresiaDAO membresiaDAO;
+    @Mock
+    private CategoriaSocioDAO categoriaDAO;
+    @Mock
+    private InstalacionDAO instalacionDAO;
+
+    @InjectMocks
+    private TarifasServicio servicio;
+
+    /** Lo que rige hoy en la cancha: alumno $10.000, docente y no docente $15.000, externo $25.000. */
+    private List<TarifaAlquiler> historial;
+
+    @BeforeEach
+    void cargarDatosBase() {
+        historial = new ArrayList<>();
+        historial.add(DatosDePrueba.tarifaAlquiler(1, cancha, alumno, "10000", INICIO_DEL_ANIO, null));
+        historial.add(DatosDePrueba.tarifaAlquiler(2, cancha, docente, "15000", INICIO_DEL_ANIO, null));
+        historial.add(DatosDePrueba.tarifaAlquiler(3, cancha, noDocente, "15000", INICIO_DEL_ANIO, null));
+        historial.add(DatosDePrueba.tarifaAlquiler(4, cancha, externo, "25000", INICIO_DEL_ANIO, null));
+
+        lenient().when(categoriaDAO.listarTodos()).thenReturn(List.of(externo, noDocente, alumno, docente));
+        lenient().when(instalacionDAO.buscarPorId(1)).thenReturn(cancha);
+        lenient().when(alquilerDAO.listarPorInstalacion(1)).thenReturn(historial);
+    }
+
+    private static Map<Integer, String> precios(String alumno, String docente, String noDocente, String externo) {
+        Map<Integer, String> precios = new LinkedHashMap<>();
+        precios.put(1, alumno);
+        precios.put(2, docente);
+        precios.put(3, noDocente);
+        precios.put(4, externo);
+        return precios;
+    }
+
+    private static List<BigDecimal> importes(String... valores) {
+        List<BigDecimal> importes = new ArrayList<>();
+        for (String v : valores) {
+            importes.add(v == null ? null : new BigDecimal(v));
+        }
+        return importes;
+    }
+
+    private List<CategoriaSocio> categoriasEnOrden() {
+        return List.of(alumno, docente, noDocente, externo);
+    }
+
+    private static void assertPrecio(String esperado, BigDecimal real) {
+        assertEquals(0, new BigDecimal(esperado).compareTo(real), "precio esperado " + esperado + " pero fue " + real);
+    }
+
+    // ---------- orden de precios: alumno el más barato, externo el más caro ----------
+
+    @Test
+    void ordenValidoCuandoElAlumnoPagaMenosYElExternoMas() {
+        assertTrue(TarifasServicio.ordenValido(categoriasEnOrden(), importes("10000", "15000", "15000", "25000")));
+    }
+
+    @DisplayName("CP-35: rechaza alumno igual a externo")
+    @Test
+    void ordenInvalidoCuandoElAlumnoPagaLoMismoQueElExterno() {
+        assertFalse(TarifasServicio.ordenValido(categoriasEnOrden(), importes("20000", "20000", "20000", "20000")));
+    }
+
+    @Test
+    void ordenInvalidoCuandoElAlumnoPagaMasQueUnDocente() {
+        assertFalse(TarifasServicio.ordenValido(categoriasEnOrden(), importes("18000", "15000", "20000", "25000")));
+    }
+
+    @Test
+    void ordenInvalidoCuandoElAlumnoPagaLoMismoQueUnNoDocente() {
+        assertFalse(TarifasServicio.ordenValido(categoriasEnOrden(), importes("15000", "18000", "15000", "25000")));
+    }
+
+    @Test
+    void ordenInvalidoCuandoElExternoPagaMenosQueUnNoDocente() {
+        assertFalse(TarifasServicio.ordenValido(categoriasEnOrden(), importes("10000", "15000", "30000", "25000")));
+    }
+
+    @Test
+    void ordenInvalidoCuandoElExternoPagaLoMismoQueUnDocente() {
+        assertFalse(TarifasServicio.ordenValido(categoriasEnOrden(), importes("10000", "25000", "20000", "25000")));
+    }
+
+    @Test
+    void ordenValidoSiTodaviaFaltaCargarUnPrecio() {
+        assertTrue(TarifasServicio.ordenValido(categoriasEnOrden(), importes("10000", null, "15000", "25000")));
+    }
+
+    // ---------- cambios de alquiler ----------
+
+    @DisplayName("CP-34: una tarifa nueva se agrega con su vigencia futura")
+    @Test
+    void agregaUnPrecioNuevoPorTipoDeSocioConLaFechaDesdeLaQueRige() {
+        ArgumentCaptor<TarifaAlquiler> nueva = ArgumentCaptor.forClass(TarifaAlquiler.class);
+
+        String error = servicio.cambiarAlquiler(1, precios("12000", "18000", "18000", "30000"), PROXIMO_MES, HOY);
+
+        assertNull(error);
+        verify(alquilerDAO, times(4)).crear(nueva.capture());
+        for (TarifaAlquiler t : nueva.getAllValues()) {
+            assertEquals(PROXIMO_MES, t.getVigenteDesde());
+            assertNull(t.getVigenteHasta());
+            assertEquals(cancha, t.getIdInstalacion());
+        }
+        assertPrecio("12000", nueva.getAllValues().get(0).getPrecio());
+        assertEquals(alumno, nueva.getAllValues().get(0).getIdCategoriaSocio());
+        assertPrecio("30000", nueva.getAllValues().get(3).getPrecio());
+        assertEquals(externo, nueva.getAllValues().get(3).getIdCategoriaSocio());
+    }
+
+    @DisplayName("CP-34: la tarifa anterior rige hasta el día previo")
+    @Test
+    void cierraElPrecioAnteriorElDiaPrevioALaNuevaVigencia() {
+        servicio.cambiarAlquiler(1, precios("12000", "18000", "18000", "30000"), PROXIMO_MES, HOY);
+
+        for (TarifaAlquiler anterior : historial) {
+            assertEquals(LocalDate.of(2026, 10, 31), anterior.getVigenteHasta());
+        }
+    }
+
+    @DisplayName("CP-34: nunca se edita la tarifa anterior")
+    @Test
+    void nuncaEditaElPrecioDelRegistroAnterior() {
+        servicio.cambiarAlquiler(1, precios("12000", "18000", "18000", "30000"), PROXIMO_MES, HOY);
+
+        assertPrecio("10000", historial.get(0).getPrecio());
+        assertPrecio("15000", historial.get(1).getPrecio());
+        assertPrecio("15000", historial.get(2).getPrecio());
+        assertPrecio("25000", historial.get(3).getPrecio());
+    }
+
+    @Test
+    void agregaSoloLaFilaDeLosTiposDeSocioQueCambiaron() {
+        ArgumentCaptor<TarifaAlquiler> nueva = ArgumentCaptor.forClass(TarifaAlquiler.class);
+
+        String error = servicio.cambiarAlquiler(1, precios("11000", "15000", "15000", "25000"), PROXIMO_MES, HOY);
+
+        assertNull(error);
+        verify(alquilerDAO, times(1)).crear(nueva.capture());
+        assertEquals(alumno, nueva.getValue().getIdCategoriaSocio());
+        assertNull(historial.get(1).getVigenteHasta(), "el docente no cambió: su precio sigue abierto");
+    }
+
+    @Test
+    void aceptaQueElCambioRijaDesdeHoyYCierraElAnteriorAyer() {
+        String error = servicio.cambiarAlquiler(1, precios("12000", "18000", "18000", "30000"), HOY, HOY);
+
+        assertNull(error);
+        assertEquals(HOY.minusDays(1), historial.get(0).getVigenteHasta());
+    }
+
+    @Test
+    void rechazaUnaFechaAnteriorAHoy() {
+        String error = servicio.cambiarAlquiler(1, precios("12000", "18000", "18000", "30000"), HOY.minusDays(1), HOY);
+
+        assertEquals("La fecha no puede ser anterior a hoy: los precios no se cambian hacia atrás.", error);
+        verify(alquilerDAO, never()).crear(any());
+    }
+
+    @Test
+    void rechazaElCambioSinFecha() {
+        String error = servicio.cambiarAlquiler(1, precios("12000", "18000", "18000", "30000"), null, HOY);
+
+        assertEquals("Elegí desde qué día rige el precio nuevo.", error);
+        verify(alquilerDAO, never()).crear(any());
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"0", "-100", "12500.555", "doce mil", "   ", "100000000"})
+    void rechazaUnPrecioQueNoEsUnNumeroMayorACeroConHastaDosDecimales(String precioInvalido) {
+        String error = servicio.cambiarAlquiler(1, precios(precioInvalido, "18000", "18000", "30000"), PROXIMO_MES, HOY);
+
+        assertEquals("Completá el precio de Alumno UNSE con un número mayor a cero (hasta 2 decimales).", error);
+        verify(alquilerDAO, never()).crear(any());
+    }
+
+    @Test
+    void aceptaElPrecioMaximoQueEntraEnLaColumnaDeLaBase() {
+        ArgumentCaptor<TarifaAlquiler> nueva = ArgumentCaptor.forClass(TarifaAlquiler.class);
+
+        String error = servicio.cambiarAlquiler(1, precios("10000", "15000", "15000", "99999999.99"), PROXIMO_MES, HOY);
+
+        assertNull(error);
+        verify(alquilerDAO).crear(nueva.capture());
+        assertPrecio("99999999.99", nueva.getValue().getPrecio());
+    }
+
+    @Test
+    void aceptaLaComaComoSeparadorDecimal() {
+        ArgumentCaptor<TarifaAlquiler> nueva = ArgumentCaptor.forClass(TarifaAlquiler.class);
+
+        String error = servicio.cambiarAlquiler(1, precios("12000,50", "15000", "15000", "25000"), PROXIMO_MES, HOY);
+
+        assertNull(error);
+        verify(alquilerDAO).crear(nueva.capture());
+        assertPrecio("12000.50", nueva.getValue().getPrecio());
+    }
+
+    @Test
+    void rechazaCuandoNingunPrecioCambia() {
+        String error = servicio.cambiarAlquiler(1, precios("10000", "15000", "15000", "25000"), PROXIMO_MES, HOY);
+
+        assertEquals("No cambiaste ningún precio.", error);
+        verify(alquilerDAO, never()).crear(any());
+    }
+
+    @DisplayName("CP-35: rechaza tarifas fuera de orden (alumno más que externo)")
+    @Test
+    void rechazaUnOrdenEnElQueElAlumnoPagaMasQueElExterno() {
+        String error = servicio.cambiarAlquiler(1, precios("30000", "18000", "18000", "25000"), PROXIMO_MES, HOY);
+
+        assertEquals("El alumno tiene que pagar menos que los demás y el externo más que los demás.", error);
+        verify(alquilerDAO, never()).crear(any());
+        assertNull(historial.get(0).getVigenteHasta(), "no se cierra nada si el cambio se rechaza");
+    }
+
+    @DisplayName("CP-35: rechaza una tarifa repetida para la misma fecha")
+    @Test
+    void rechazaUnaFechaIgualALaDeUnPrecioYaProgramado() {
+        historial.add(DatosDePrueba.tarifaAlquiler(5, cancha, alumno, "10500", PROXIMO_MES, null));
+        historial.get(0).setVigenteHasta(LocalDate.of(2026, 10, 31));
+
+        String error = servicio.cambiarAlquiler(1, precios("12000", "15000", "15000", "25000"), PROXIMO_MES, HOY);
+
+        assertEquals("Ya hay un precio de Alumno UNSE desde el 01/11/2026: elegí una fecha posterior.", error);
+        verify(alquilerDAO, never()).crear(any());
+    }
+
+    @Test
+    void rechazaUnaFechaAnteriorALaDeUnPrecioYaProgramado() {
+        historial.add(DatosDePrueba.tarifaAlquiler(5, cancha, alumno, "10500", PROXIMO_MES, null));
+        historial.get(0).setVigenteHasta(LocalDate.of(2026, 10, 31));
+
+        String error = servicio.cambiarAlquiler(1, precios("12000", "15000", "15000", "25000"),
+                LocalDate.of(2026, 10, 20), HOY);
+
+        assertEquals("Ya hay un precio de Alumno UNSE desde el 01/11/2026: elegí una fecha posterior.", error);
+        verify(alquilerDAO, never()).crear(any());
+    }
+
+    @Test
+    void rechazaCambiarPreciosDeUnaInstalacionQueNoExiste() {
+        when(instalacionDAO.buscarPorId(99)).thenReturn(null);
+
+        String error = servicio.cambiarAlquiler(99, precios("12000", "18000", "18000", "30000"), PROXIMO_MES, HOY);
+
+        assertEquals("La instalación no existe.", error);
+    }
+
+    @Test
+    void rechazaCambiarPreciosSinIndicarLaInstalacion() {
+        String error = servicio.cambiarAlquiler(null, precios("12000", "18000", "18000", "30000"), PROXIMO_MES, HOY);
+
+        assertEquals("La instalación no existe.", error);
+    }
+
+    @Test
+    void rechazaCambiarPreciosDeUnaInstalacionDeAccesoLibre() {
+        Instalacion pileta = DatosDePrueba.instalacion(7, "Pileta", Instalacion.TipoAcceso.LIBRE,
+                Instalacion.Estado.HABILITADA);
+        when(instalacionDAO.buscarPorId(7)).thenReturn(pileta);
+
+        String error = servicio.cambiarAlquiler(7, precios("12000", "18000", "18000", "30000"), PROXIMO_MES, HOY);
+
+        assertEquals("Esta instalación no se reserva: no tiene precios.", error);
+        verify(alquilerDAO, never()).crear(any());
+    }
+
+    // ---------- cuota de membresía ----------
+
+    @Test
+    void cambiaLaCuotaDeMembresiaCerrandoLaAnteriorYAgregandoLaNueva() {
+        List<TarifaMembresia> cuotas = new ArrayList<>();
+        cuotas.add(cuota(1, alumno, "5000"));
+        cuotas.add(cuota(2, docente, "8000"));
+        cuotas.add(cuota(3, noDocente, "8000"));
+        cuotas.add(cuota(4, externo, "12000"));
+        when(membresiaDAO.listarHistorial()).thenReturn(cuotas);
+        ArgumentCaptor<TarifaMembresia> nueva = ArgumentCaptor.forClass(TarifaMembresia.class);
+
+        String error = servicio.cambiarMembresia(precios("6000", "9000", "9000", "14000"), PROXIMO_MES, HOY);
+
+        assertNull(error);
+        verify(membresiaDAO, times(4)).crear(nueva.capture());
+        assertPrecio("6000", nueva.getAllValues().get(0).getPrecio());
+        assertEquals(PROXIMO_MES, nueva.getAllValues().get(0).getVigenteDesde());
+        assertEquals(LocalDate.of(2026, 10, 31), cuotas.get(0).getVigenteHasta());
+        assertPrecio("5000", cuotas.get(0).getPrecio());
+    }
+
+    @Test
+    void exigeCargarLosCuatroTiposDeSocioJuntos() {
+        when(membresiaDAO.listarHistorial()).thenReturn(new ArrayList<>());
+
+        String error = servicio.cambiarMembresia(precios("6000", "9000", "9000", null), PROXIMO_MES, HOY);
+
+        assertEquals("Completá el precio de Externo con un número mayor a cero (hasta 2 decimales).", error);
+        verify(membresiaDAO, never()).crear(any());
+    }
+
+    private TarifaMembresia cuota(int id, CategoriaSocio categoria, String precio) {
+        TarifaMembresia t = new TarifaMembresia(id);
+        t.setIdCategoriaSocio(categoria);
+        t.setPrecio(new BigDecimal(precio));
+        t.setVigenteDesde(INICIO_DEL_ANIO);
+        return t;
+    }
+
+    // ---------- lectura ----------
+
+    @DisplayName("CP-34: hasta la fecha futura sigue rigiendo la tarifa anterior")
+    @Test
+    void muestraLoQueRigeHoyYNoElPrecioProgramado() {
+        historial.get(0).setVigenteHasta(LocalDate.of(2026, 10, 31));
+        historial.add(DatosDePrueba.tarifaAlquiler(5, cancha, alumno, "12000", PROXIMO_MES, null));
+
+        Map<Integer, String> vigentes = servicio.vigentesAlquiler(1, HOY);
+
+        assertEquals("10000", vigentes.get(1));
+        assertEquals("15000", vigentes.get(2));
+        assertEquals("25000", vigentes.get(4));
+    }
+
+    @Test
+    void dejaVacioElTipoDeSocioQueTodaviaNoTienePrecio() {
+        historial.remove(3); // sin precio para el externo
+
+        Map<Integer, String> vigentes = servicio.vigentesAlquiler(1, HOY);
+
+        assertEquals("", vigentes.get(4));
+    }
+
+    @DisplayName("CP-36: el historial marca el cambio futuro como programado")
+    @Test
+    void elHistorialMarcaComoProgramadoElCambioFuturo() {
+        historial.get(0).setVigenteHasta(LocalDate.of(2026, 10, 31));
+        historial.add(DatosDePrueba.tarifaAlquiler(5, cancha, alumno, "12000", PROXIMO_MES, null));
+
+        List<HistorialTarifa> lista = servicio.historialAlquiler(1, HOY);
+
+        assertEquals(2, lista.size());
+        assertEquals("Desde el 01/11/2026", lista.get(0).getCuando(), "el más reciente va primero");
+        assertTrue(lista.get(0).isProgramado());
+        assertFalse(lista.get(1).isProgramado());
+    }
+
+    // ---------- huecos: primera carga, varios precios por tipo, orden sin alumno ----------
+
+    @Test
+    void cargaLosPrimerosPreciosDeUnaInstalacionSinHistorial() {
+        historial.clear();
+        ArgumentCaptor<TarifaAlquiler> nueva = ArgumentCaptor.forClass(TarifaAlquiler.class);
+
+        String error = servicio.cambiarAlquiler(1, precios("10000", "15000", "15000", "25000"), HOY, HOY);
+
+        assertNull(error);
+        verify(alquilerDAO, times(4)).crear(nueva.capture());
+        assertEquals(HOY, nueva.getAllValues().get(0).getVigenteDesde());
+    }
+
+    @Test
+    void alCambiarSoloCierraElUltimoPrecioDelTipoDeSocioYNoLosAnteriores() {
+        TarifaAlquiler muyViejo = DatosDePrueba.tarifaAlquiler(9, cancha, alumno, "9000", INICIO_DEL_ANIO,
+                LocalDate.of(2026, 6, 30));
+        historial.add(muyViejo);
+        historial.get(0).setVigenteDesde(LocalDate.of(2026, 7, 1));
+
+        String error = servicio.cambiarAlquiler(1, precios("12000", "15000", "15000", "25000"), PROXIMO_MES, HOY);
+
+        assertNull(error);
+        assertEquals(LocalDate.of(2026, 10, 31), historial.get(0).getVigenteHasta());
+        assertEquals(LocalDate.of(2026, 6, 30), muyViejo.getVigenteHasta());
+    }
+
+    @Test
+    void noAcortaNiReabreUnPrecioQueYaEstabaCerradoAntesDeLaNuevaFecha() {
+        historial.get(0).setVigenteHasta(LocalDate.of(2026, 9, 30));
+
+        String error = servicio.cambiarAlquiler(1, precios("12000", "15000", "15000", "25000"), PROXIMO_MES, HOY);
+
+        assertNull(error);
+        assertEquals(LocalDate.of(2026, 9, 30), historial.get(0).getVigenteHasta());
+        verify(alquilerDAO, times(1)).crear(any());
+    }
+
+    @Test
+    void siHayDosPreciosAbiertosRigeElDeFechaDesdeMasReciente() {
+        historial.add(DatosDePrueba.tarifaAlquiler(9, cancha, alumno, "11000", LocalDate.of(2026, 7, 1), null));
+
+        Map<Integer, String> vigentes = servicio.vigentesAlquiler(1, HOY);
+
+        assertEquals("11000", vigentes.get(1));
+    }
+
+    @Test
+    void ordenValidoSiLaListaNoTieneAlumnoNiExterno() {
+        List<CategoriaSocio> sinExtremos = List.of(docente, noDocente);
+
+        assertTrue(TarifasServicio.ordenValido(sinExtremos, importes("15000", "15000")));
+    }
+
+    @Test
+    void ordenValidoSiLaListaTieneAlumnoPeroNoExterno() {
+        List<CategoriaSocio> sinExterno = List.of(alumno, docente);
+
+        assertTrue(TarifasServicio.ordenValido(sinExterno, importes("10000", "15000")));
+    }
+
+    @Test
+    void alCambiarCierraElPrecioMasRecienteAunqueElHistorialVengaEnOrdenAscendente() {
+        TarifaAlquiler muyViejo = DatosDePrueba.tarifaAlquiler(9, cancha, alumno, "9000", INICIO_DEL_ANIO,
+                LocalDate.of(2026, 6, 30));
+        historial.add(0, muyViejo); // el precio más antiguo primero
+        historial.get(1).setVigenteDesde(LocalDate.of(2026, 7, 1));
+
+        String error = servicio.cambiarAlquiler(1, precios("12000", "15000", "15000", "25000"), PROXIMO_MES, HOY);
+
+        assertNull(error);
+        assertEquals(LocalDate.of(2026, 10, 31), historial.get(1).getVigenteHasta());
+        assertEquals(LocalDate.of(2026, 6, 30), muyViejo.getVigenteHasta());
+    }
+
+    @Test
+    void elPrecioVigenteEsElMasRecienteAunqueElHistorialVengaEnOrdenAscendente() {
+        historial.add(0, DatosDePrueba.tarifaAlquiler(9, cancha, alumno, "9000", INICIO_DEL_ANIO, null));
+        historial.get(1).setVigenteDesde(LocalDate.of(2026, 7, 1));
+
+        Map<Integer, String> vigentes = servicio.vigentesAlquiler(1, HOY);
+
+        assertEquals("10000", vigentes.get(1));
+    }
+
+    @Test
+    void acortaUnPrecioCuyaFechaDeFinEraPosteriorALaNuevaVigencia() {
+        historial.get(0).setVigenteHasta(LocalDate.of(2026, 12, 31));
+
+        String error = servicio.cambiarAlquiler(1, precios("12000", "15000", "15000", "25000"), PROXIMO_MES, HOY);
+
+        assertNull(error);
+        assertEquals(LocalDate.of(2026, 10, 31), historial.get(0).getVigenteHasta());
+    }
+
+    @Test
+    void elPrecioVigenteEsElMasRecienteAunqueElHistorialVengaEnOrdenDescendente() {
+        historial.get(0).setVigenteDesde(LocalDate.of(2026, 7, 1));
+        historial.add(DatosDePrueba.tarifaAlquiler(9, cancha, alumno, "9000", INICIO_DEL_ANIO, null)); // el más viejo al final
+
+        Map<Integer, String> vigentes = servicio.vigentesAlquiler(1, HOY);
+
+        assertEquals("10000", vigentes.get(1));
+    }
+
+    @Test
+    void ordenInvalidoCuandoSoloHayAlumnoYExternoConElMismoPrecio() {
+        assertFalse(TarifasServicio.ordenValido(List.of(alumno, externo), importes("20000", "20000")));
+    }
+
+    @Test
+    void ordenValidoCuandoSoloHayAlumnoYExternoYElExternoPagaMas() {
+        assertTrue(TarifasServicio.ordenValido(List.of(alumno, externo), importes("20000", "20001")));
+    }
+
+    // ---------- vigencia visible en las pantallas (CC-03) ----------
+
+    @DisplayName("CP-36: el precio vigente dice desde cuándo rige")
+    @Test
+    void cp36_laVigenciaDiceDesdeCuandoRigeElPrecio() {
+        TarifaAlquiler vigente = DatosDePrueba.tarifaAlquiler(1, cancha, alumno, "20000", LocalDate.of(2026, 10, 1), null);
+
+        assertEquals("Rige desde el 01/10/2026", TarifasServicio.vigencia(vigente));
+    }
+
+    @DisplayName("CP-36: sin precio vigente no hay desde cuándo")
+    @Test
+    void cp36_sinPrecioVigenteNoHayVigencia() {
+        assertNull(TarifasServicio.vigencia(null));
+    }
+
+    @DisplayName("CP-36: el próximo cambio dice el precio y desde cuándo")
+    @Test
+    void cp36_elProximoCambioDiceElPrecioYLaFecha() {
+        TarifaAlquiler siguiente = DatosDePrueba.tarifaAlquiler(2, cancha, alumno, "22000", PROXIMO_MES, null);
+
+        assertEquals("Desde el 01/11/2026: $ 22.000", TarifasServicio.proximo(siguiente));
+    }
+
+    @DisplayName("CP-36: sin cambio programado lo dice")
+    @Test
+    void cp36_sinCambioProgramadoLoDice() {
+        assertEquals("Sin cambios programados", TarifasServicio.proximo(null));
+    }
+}

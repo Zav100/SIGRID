@@ -15,6 +15,7 @@ import java.io.Serializable;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Bean de admin/reportes-dashboard-admin.xhtml (solo lectura). Lee la base una vez al abrir la página; al cambiar el
@@ -32,11 +33,14 @@ public class AdminReportesBean implements Serializable {
 
     private LocalDate hoy;
     private ReportesServicio.Datos datos;
+    private String periodoCargado;      // el período con el que se leyó la base: al cambiarlo se vuelve a leer
     private ReportesServicio.Rango rango;
 
     // lo que el administrador eligió
     private String pestana = "RESUMEN"; // RESUMEN, INGRESOS, OCUPACION o MEMBRESIAS
-    private String periodo = "30D";     // 7D, 30D, MES, MES_ANT, 90D o 12M
+    private String periodo = "30D";     // DIA, 7D, 30D, MES, MES_ANT, 90D o 12M
+    private String dia = "";            // aaaa-mm-dd, para el período "Un día" (vacío: hoy)
+    private Integer instalacion;        // la instalación que se ve turno por turno en Ocupación (null: ninguna)
     private String agrupado = "";       // "" (automático), DIA, SEMANA o MES
 
     // resumen
@@ -57,6 +61,9 @@ public class AdminReportesBean implements Serializable {
     private List<ReporteItem> vacias;
     private List<ReporteItem> sinReservas;
     private List<ReporteItem> mantenimiento;
+    private Map<String, Integer> instalaciones;
+    private List<ReporteItem> ocupacionTurnos;
+    private String resumenInstalacion;
     // membresías
     private List<ReporteKpi> membresiasKpis;
     private List<ReporteItem> estados;
@@ -67,13 +74,20 @@ public class AdminReportesBean implements Serializable {
     @PostConstruct
     public void init() {
         hoy = LocalDate.now();
-        datos = servicio.cargar(hoy);
         recalcular();
     }
 
-    /** Vuelve a calcular todos los reportes para el período y el agrupado elegidos. */
+    /**
+     * Vuelve a calcular todos los reportes para el período y el agrupado elegidos. La base se lee de nuevo solo si
+     * cambió el período (la consulta trae únicamente ese período y el anterior); el agrupado se resuelve en memoria.
+     */
     public void recalcular() {
-        rango = servicio.rango(periodo, hoy);
+        rango = servicio.rango(periodo, hoy, diaElegido());
+        String clave = periodo + "|" + rango.getDesde();
+        if (datos == null || !clave.equals(periodoCargado)) {
+            datos = servicio.cargar(hoy, rango);
+            periodoCargado = clave;
+        }
         resumen = servicio.resumen(datos, rango);
         alertas = servicio.alertas(datos, rango);
 
@@ -93,12 +107,33 @@ public class AdminReportesBean implements Serializable {
         vacias = servicio.franjas(datos, rango, false);
         sinReservas = servicio.turnosSinReservas(datos, rango);
         mantenimiento = servicio.mantenimiento(datos, rango);
+        instalaciones = servicio.instalaciones(datos);
+        ocupacionTurnos = servicio.ocupacionPorTurno(datos, rango, instalacion);
+        resumenInstalacion = null;
+        for (Map.Entry<String, Integer> e : instalaciones.entrySet()) {
+            if (e.getValue().equals(instalacion)) {
+                for (ReporteItem i : ocupacionPorInstalacion) {
+                    if (i.getEtiqueta().equals(e.getKey())) {
+                        resumenInstalacion = e.getKey() + ", " + rango.getTexto() + ": " + i.getDetalle() + " reservados ("
+                                + i.getValor() + ")";
+                    }
+                }
+            }
+        }
 
         membresiasKpis = servicio.membresiasKpis(datos, rango);
         estados = servicio.estadoSuscripciones(datos);
         vencimientos = servicio.vencimientosSemanales(datos);
         membresiasPorCategoria = servicio.membresiasPorCategoria(datos, rango);
         validacion = servicio.validacion(datos, rango);
+    }
+
+    private LocalDate diaElegido() {
+        try {
+            return dia == null || dia.isBlank() ? hoy : LocalDate.parse(dia.trim());
+        } catch (java.time.format.DateTimeParseException e) {
+            return hoy;
+        }
     }
 
     public void elegir(String pestana) {
@@ -117,6 +152,34 @@ public class AdminReportesBean implements Serializable {
 
     public void setPeriodo(String periodo) {
         this.periodo = periodo == null ? "30D" : periodo;
+    }
+
+    public String getDia() {
+        return dia.isEmpty() ? hoy.toString() : dia;
+    }
+
+    public void setDia(String dia) {
+        this.dia = dia == null ? "" : dia;
+    }
+
+    public Integer getInstalacion() {
+        return instalacion;
+    }
+
+    public void setInstalacion(Integer instalacion) {
+        this.instalacion = instalacion;
+    }
+
+    public Map<String, Integer> getInstalaciones() {
+        return instalaciones;
+    }
+
+    public List<ReporteItem> getOcupacionTurnos() {
+        return ocupacionTurnos;
+    }
+
+    public String getResumenInstalacion() {
+        return resumenInstalacion;
     }
 
     public String getAgrupado() {

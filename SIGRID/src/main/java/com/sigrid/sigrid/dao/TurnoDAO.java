@@ -36,6 +36,12 @@ public class TurnoDAO extends BaseDAO<Turno> {
         return cantidades;
     }
 
+    /** Todas las franjas con su instalación (pocas decenas): para sumar las reservas por instalación y por hora. */
+    public List<Turno> listarConInstalacion() {
+        return em.createQuery("SELECT t FROM Turno t JOIN FETCH t.idInstalacion ORDER BY t.idTurno", Turno.class)
+                .getResultList();
+    }
+
     /** Las franjas de una instalación, en orden horario. */
     public List<Turno> listarPorInstalacion(Integer idInstalacion) {
         return em.createQuery(

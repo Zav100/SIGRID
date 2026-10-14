@@ -193,14 +193,24 @@
                         <ui:fragment rendered="#{socioBean.cuota ne null}">
                             <li class="so-tarifa-cuota">
                                 <span class="so-ico"><span class="icon" aria-hidden="true">card_membership</span></span>
-                                <div class="so-hist-text"><span class="so-hist-main">Membresía</span><span class="so-hist-sub">Cuota mensual</span></div>
-                                <strong>#{socioBean.cuota}</strong>
+                                <div class="so-hist-text">
+                                    <span class="so-hist-main">Membresía</span>
+                                    <span class="so-hist-sub">Cuota mensual</span>
+                                    <ui:fragment rendered="#{not empty socioBean.cuota.vigencia}"><span class="so-hist-sub">#{socioBean.cuota.vigencia}</span></ui:fragment>
+                                    <span class="so-hist-sub">#{socioBean.cuota.proximo}</span>
+                                </div>
+                                <strong>#{empty socioBean.cuota.precio ? '—' : socioBean.cuota.precio}</strong>
                             </li>
                         </ui:fragment>
                         <ui:repeat var="t" value="#{socioBean.tarifas}">
                             <li>
                                 <span class="so-ico so-ico-soft"><span class="icon" aria-hidden="true">#{t.icono}</span></span>
-                                <div class="so-hist-text"><span class="so-hist-main">#{t.nombre}</span><span class="so-hist-sub">Por turno</span></div>
+                                <div class="so-hist-text">
+                                    <span class="so-hist-main">#{t.nombre}</span>
+                                    <span class="so-hist-sub">Por turno</span>
+                                    <ui:fragment rendered="#{not empty t.vigencia}"><span class="so-hist-sub">#{t.vigencia}</span></ui:fragment>
+                                    <span class="so-hist-sub">#{t.proximo}</span>
+                                </div>
                                 <strong>#{empty t.precio ? '—' : t.precio}</strong>
                             </li>
                         </ui:repeat>
@@ -215,7 +225,7 @@
                         <li><span class="icon" aria-hidden="true">payments</span>Pagás por transferencia y tenés 60 minutos para subir el comprobante.</li>
                         <li><span class="icon" aria-hidden="true">hourglass_top</span>La reserva no es automática: el administrador la confirma en hasta 24 h.</li>
                         <li><span class="icon" aria-hidden="true">block</span>No hay devoluciones de dinero: si cancelás, te queda un crédito para reprogramar.</li>
-                        <li><span class="icon" aria-hidden="true">event_repeat</span>Podés pedir cancelar una reserva confirmada hasta 48 h antes.</li>
+                        <li><span class="icon" aria-hidden="true">event_repeat</span>Podés cancelar una reserva confirmada hasta 48 h antes: queda un crédito de 30 días para reprogramar.</li>
                         <li><span class="icon" aria-hidden="true">cleaning_services</span>Dejá las instalaciones limpias y en orden al terminar.</li>
                         <li><span class="icon" aria-hidden="true">luggage</span>El Polideportivo UNSE no se hace cargo de objetos perdidos.</li>
                         <li><span class="icon" aria-hidden="true">verified</span>Llevá tu carnet digital cada vez que vengas.</li>

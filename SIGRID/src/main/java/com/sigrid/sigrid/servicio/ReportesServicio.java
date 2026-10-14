@@ -155,12 +155,29 @@ public class ReportesServicio implements Serializable {
             return nombre;
         }
 
+        public LocalDate getDesde() {
+            return desde;
+        }
+
+        public LocalDate getHasta() {
+            return hasta;
+        }
+
+        public LocalDate getPrevioDesde() {
+            return previoDesde;
+        }
+
+        public LocalDate getPrevioHasta() {
+            return previoHasta;
+        }
+
         public String getTexto() {
-            return desde.format(FECHA) + " al " + hasta.format(FECHA);
+            return desde.equals(hasta) ? desde.format(FECHA) : desde.format(FECHA) + " al " + hasta.format(FECHA);
         }
 
         public String getTextoPrevio() {
-            return previoDesde.format(FECHA) + " al " + previoHasta.format(FECHA);
+            return previoDesde.equals(previoHasta) ? previoDesde.format(FECHA)
+                    : previoDesde.format(FECHA) + " al " + previoHasta.format(FECHA);
         }
 
         public long getDias() {
@@ -176,10 +193,13 @@ public class ReportesServicio implements Serializable {
         }
     }
 
-    public Datos cargar(LocalDate hoy) {
+    /**
+     * Lee de la base lo que necesitan los reportes del período (y del período previo con el que se compara).
+     */
+    public Datos cargar(LocalDate hoy, Rango rango) {
         Datos d = new Datos();
         d.hoy = hoy;
-        d.reservas = reservaDAO.listarTodasParaAdmin();
+        d.reservas = reservaDAO.listarParaReportes(rango.previoDesde, rango.hasta);
         d.suscripciones = suscripcionDAO.listarTodasParaReportes();
         d.instalaciones = instalacionDAO.listarReservables();
         for (Instalacion i : d.instalaciones) {
@@ -253,6 +273,25 @@ public class ReportesServicio implements Serializable {
             default:
                 return ultimosDias("Últimos 30 días", 30, hoy);
         }
+    }
+
+    /**
+     * Igual que {@link #rango(String, LocalDate)}, más "DIA": el día elegido (hoy si no se eligió), comparado con el mismo
+     * día de la semana anterior (CP-42).
+     */
+    public Rango rango(String periodo, LocalDate hoy, LocalDate dia) {
+        if (!"DIA".equals(periodo)) {
+            return rango(periodo, hoy);
+        }
+        LocalDate d = dia == null ? hoy : dia;
+        return new Rango("Un día", d, d, d.minusDays(7), d.minusDays(7));
+    }
+
+    /** Las instalaciones que se reservan, nombre -> id, para elegir una en los reportes. */
+    public Map<String, Integer> instalaciones(Datos d) {
+        Map<String, Integer> m = new LinkedHashMap<>();
+        d.instalaciones.forEach(i -> m.put(i.getNombre(), i.getIdInstalacion()));
+        return m;
     }
 
     private static Rango ultimosDias(String nombre, int dias, LocalDate hoy) {
@@ -434,7 +473,7 @@ public class ReportesServicio implements Serializable {
         int perdidos = 0;
         int vigentes = 0;
         for (Reserva x : d.reservas) {
-            LocalDate limite = x.getFechaLimiteReprogramacion();
+            LocalDate limite = CambiosReservaServicio.limiteDelCredito(x, d.hoy); // en pausa no vence (CC-02)
             if (x.getEstado() != Reserva.Estado.CANCELADA || limite == null || !cobrado(x.getIdPago())) {
                 continue;
             }
@@ -582,6 +621,44 @@ public class ReportesServicio implements Serializable {
         return items;
     }
 
+    /**
+     * Ocupación de una instalación turno por turno en el período (CP-42): en un día, si cada turno quedó libre o quién lo
+     * reservó; en varios días, en cuántos estuvo reservado. Ocupan el turno las confirmadas y las que esperan
+     * confirmación, igual que en el resto de la ocupación; los días de mantenimiento no se pueden ofrecer.
+     */
+    public List<ReporteItem> ocupacionPorTurno(Datos d, Rango r, Integer idInstalacion) {
+        List<ReporteItem> items = new ArrayList<>();
+        Instalacion inst = d.instalaciones.stream().filter(i -> i.getIdInstalacion().equals(idInstalacion))
+                .findFirst().orElse(null);
+        if (inst == null) {
+            return items;
+        }
+        long dias = r.getDias() - diasMantenimiento(d, inst, r.desde, r.hasta);
+        String icono = DashboardServicio.icono(inst.getTipoDisciplina());
+        for (Turno t : d.turnos.getOrDefault(inst.getIdInstalacion(), new ArrayList<>())) {
+            String horario = t.getHoraInicio().format(HORA) + " – " + t.getHoraFin().format(HORA);
+            if (dias <= 0) {
+                items.add(new ReporteItem(horario, icono, "En mantenimiento", 0, "No se pudo ofrecer", 0, 0, ""));
+                continue;
+            }
+            List<Reserva> delTurno = d.reservas.stream().filter(x -> ocupa(x) && r.contiene(x.getFechaTurno())
+                    && x.getIdTurno().getIdTurno().equals(t.getIdTurno())).collect(Collectors.toList());
+            int n = delTurno.size();
+            int pct = (int) Math.round(n * 100.0 / dias);
+            if (r.getDias() == 1) {
+                Reserva x = n == 0 ? null : delTurno.get(0);
+                items.add(new ReporteItem(horario, icono, x == null ? "Libre" : "Reservado", n, x == null ? "Nadie lo reservó"
+                        : x.getIdSocio().getIdUsuario().getNombre() + " " + x.getIdSocio().getIdUsuario().getApellido() + " · "
+                        + (x.getEstado() == Reserva.Estado.CONFIRMADA ? "Confirmada" : "Pendiente de confirmación"),
+                        pct, 0, x == null ? "" : "ok"));
+            } else {
+                items.add(new ReporteItem(horario, icono, n + " de " + dias + " días", n, pct + " % de los días", pct, 0,
+                        pct >= 50 ? "ok" : pct >= 30 ? "warn" : "off"));
+            }
+        }
+        return items;
+    }
+
     /** [hora][día de la semana 0=lunes] = {reservados, disponibles} de todas las instalaciones. */
     private double[][][] matriz(Datos d, Rango r, List<LocalTime> horas) {
         double[][][] m = new double[horas.size()][7][2];
@@ -665,7 +742,7 @@ public class ReportesServicio implements Serializable {
                 if (!reservado) {
                     items.add(new ReporteItem(i.getNombre() + " · " + t.getHoraInicio().format(HORA) + " – "
                             + t.getHoraFin().format(HORA), DashboardServicio.icono(i.getTipoDisciplina()), "0 reservas", 0,
-                            "en " + r.getDias() + " días", 0, 0, "off"));
+                            "en " + r.getDias() + (r.getDias() == 1 ? " día" : " días"), 0, 0, "off"));
                 }
             }
         }
@@ -899,7 +976,7 @@ public class ReportesServicio implements Serializable {
         kpis.add(kpi("Renovación de membresías", "card_membership", ren[1] == 0 ? "—" : pct(tasa), Math.round(tasa),
                 ren[0] + " de " + ren[1] + " que terminaron",
                 ren[1] == 0 || renPrev[1] == 0 ? null : variacionPuntos(tasa, tasaPrevia, true), ren[1] > 0 && tasa < 60));
-        kpis.add(kpi("Valoración promedio", "star", valoracion == 0 ? "—" : ValoracionesServicio.decimal(valoracion),
+        kpis.add(kpi("Grado de satisfacción", "star", valoracion == 0 ? "—" : ValoracionesServicio.decimal(valoracion),
                 valoracion, "sobre 5 estrellas", valoracion == 0 || valoracionPrevia == 0 ? null
                 : variacion(valoracion, valoracionPrevia, true), valoracion > 0 && valoracion < VALORACION_BAJA));
         kpis.add(kpi("Cancelaciones", "event_busy", String.valueOf(canceladas), canceladas,
@@ -944,7 +1021,7 @@ public class ReportesServicio implements Serializable {
                 .sorted(Map.Entry.comparingByValue())
                 .map(e -> e.getKey() + " (" + ValoracionesServicio.decimal(e.getValue()) + ")").collect(Collectors.joining(", "));
         if (!bajas.isEmpty()) {
-            lista.add(new ReporteAlerta("star", "Baja valoración de los socios: " + bajas, "off"));
+            lista.add(new ReporteAlerta("star", "Grado de satisfacción bajo: " + bajas, "off"));
         }
 
         long vacios = turnosSinReservas(d, r).size();
@@ -958,7 +1035,8 @@ public class ReportesServicio implements Serializable {
         for (Reserva x : d.reservas) {
             LocalDate limite = x.getFechaLimiteReprogramacion();
             if (x.getEstado() == Reserva.Estado.CANCELADA && limite != null && cobrado(x.getIdPago())
-                    && !limite.isBefore(d.hoy) && !limite.isAfter(d.hoy.plusDays(DIAS_DE_AVISO))) {
+                    && !limite.isBefore(d.hoy) && !limite.isAfter(d.hoy.plusDays(DIAS_DE_AVISO))
+                    && !CambiosReservaServicio.enPausa(x)) {
                 creditos++;
                 porPerderse = porPerderse.add(x.getIdPago().getMonto());
             }

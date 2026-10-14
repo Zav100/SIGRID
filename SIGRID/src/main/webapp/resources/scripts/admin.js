@@ -90,6 +90,42 @@ document.addEventListener('DOMContentLoaded', () => {
 // "Exportar PDF" de las listas con "Ver más": después de mostrar todas las filas (AJAX) abre el cuadro de impresión
 function sigridImprimir(datos) {
   if (datos.status === 'success') {
-    setTimeout(function () { window.print(); }, 100);
+    setTimeout(function () { sigridMarcarEmision(); window.print(); }, 100);
   }
+}
+
+// PDF (CC-06): la hoja lleva "Emitido el ..." en el pie (print.css lo lee de la variable --emitido)
+function sigridMarcarEmision(texto) {
+  var d = new Date();
+  var dos = function (n) { return (n < 10 ? '0' : '') + n; };
+  var emitido = texto || (dos(d.getDate()) + '/' + dos(d.getMonth() + 1) + '/' + d.getFullYear() + ' ' +
+    dos(d.getHours()) + ':' + dos(d.getMinutes()));
+  document.body.setAttribute('data-emitido', emitido);
+  document.documentElement.style.setProperty('--emitido', '"Emitido el ' + emitido + '"');
+}
+
+// "Exportar PDF" de la pantalla tal cual se ve (socios, membresías, reportes)
+function sigridImprimirPagina() {
+  sigridMarcarEmision();
+  window.print();
+}
+
+// "Exportar PDF" de reservas: imprime solo el informe armado por el servidor; si no hay informe (sin período, sin
+// reservas o demasiadas) no imprime nada: el aviso ya quedó en pantalla
+function sigridImprimirInforme(datos) {
+  if (datos.status !== 'success') {
+    return;
+  }
+  var listo = document.getElementById('informeListo');
+  if (!listo) {
+    return;
+  }
+  document.body.classList.add('is-informe');
+  sigridMarcarEmision(listo.getAttribute('data-emitido'));
+  var limpiar = function () {
+    document.body.classList.remove('is-informe');
+    window.removeEventListener('afterprint', limpiar);
+  };
+  window.addEventListener('afterprint', limpiar);
+  setTimeout(function () { window.print(); }, 100);
 }

@@ -106,6 +106,17 @@ public class TarifasServicio implements Serializable {
         return historial;
     }
 
+    /** "Rige desde el 01/10/2026"; null si no hay precio vigente. */
+    public static String vigencia(Tarifa vigente) {
+        return vigente == null ? null : "Rige desde el " + vigente.getVigenteDesde().format(FECHA);
+    }
+
+    /** "Desde el 01/11/2026: $ 22.000" para el próximo cambio programado, o "Sin cambios programados" si no hay. */
+    public static String proximo(Tarifa siguiente) {
+        return siguiente == null ? "Sin cambios programados"
+                : "Desde el " + siguiente.getVigenteDesde().format(FECHA) + ": " + DashboardServicio.monto(siguiente.getPrecio());
+    }
+
     /** Regla del polideportivo: el alumno paga menos que todos y el externo más que todos. Con un precio sin cargar no hay qué comparar. */
     public static boolean ordenValido(List<CategoriaSocio> categorias, List<BigDecimal> importes) {
         BigDecimal alumno = null;

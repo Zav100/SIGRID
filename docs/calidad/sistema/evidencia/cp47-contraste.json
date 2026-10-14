@@ -1,0 +1,188 @@
+[
+ {
+  "vista": "/socio/inicio.xhtml",
+  "medidos": 137,
+  "iconosConTexto": 26,
+  "sobreImagen": [],
+  "minimo": 3.85,
+  "fallas": [
+   {
+    "tipo": "texto",
+    "razon": 3.85,
+    "umbral": 4.5,
+    "color": "#c69aa5",
+    "fondo": "#82203c",
+    "degradado": true,
+    "elemento": "span.id-label",
+    "ejemplo": "Nombre y apellido",
+    "veces": 2
+   },
+   {
+    "tipo": "texto",
+    "razon": 3.85,
+    "umbral": 4.5,
+    "color": "#c69aa5",
+    "fondo": "#82203c",
+    "degradado": true,
+    "elemento": "span.id-card-since",
+    "ejemplo": "Socio desde 08/2026",
+    "veces": 1
+   },
+   {
+    "tipo": "texto",
+    "razon": 4.2,
+    "umbral": 4.5,
+    "color": "#edc06a",
+    "fondo": "#913b53",
+    "degradado": true,
+    "elemento": "span.id-card-badge",
+    "ejemplo": "Socio",
+    "veces": 1
+   }
+  ]
+ },
+ {
+  "vista": "/socio/mis-reservas.xhtml",
+  "medidos": 57,
+  "iconosConTexto": 14,
+  "sobreImagen": [],
+  "minimo": 5.18,
+  "fallas": []
+ },
+ {
+  "vista": "/socio/avisos.xhtml",
+  "medidos": 43,
+  "iconosConTexto": 7,
+  "sobreImagen": [],
+  "minimo": 5.18,
+  "fallas": []
+ },
+ {
+  "vista": "/socio/nueva-reserva.xhtml",
+  "medidos": 58,
+  "iconosConTexto": 16,
+  "sobreImagen": [],
+  "minimo": 5.18,
+  "fallas": []
+ },
+ {
+  "vista": "/socio/mis-reservas.xhtml (Todas)",
+  "medidos": 92,
+  "iconosConTexto": 19,
+  "sobreImagen": [],
+  "minimo": 4.58,
+  "fallas": []
+ },
+ {
+  "vista": "/socio/inicio.xhtml (membresía vencida)",
+  "medidos": 125,
+  "iconosConTexto": 24,
+  "sobreImagen": [],
+  "minimo": 3.85,
+  "fallas": [
+   {
+    "tipo": "texto",
+    "razon": 3.85,
+    "umbral": 4.5,
+    "color": "#c69aa5",
+    "fondo": "#82203c",
+    "degradado": true,
+    "elemento": "span.id-label",
+    "ejemplo": "Nombre y apellido",
+    "veces": 2
+   },
+   {
+    "tipo": "texto",
+    "razon": 3.85,
+    "umbral": 4.5,
+    "color": "#c69aa5",
+    "fondo": "#82203c",
+    "degradado": true,
+    "elemento": "span.id-card-since",
+    "ejemplo": "Socio desde 08/2026",
+    "veces": 1
+   },
+   {
+    "tipo": "texto",
+    "razon": 4.2,
+    "umbral": 4.5,
+    "color": "#edc06a",
+    "fondo": "#913b53",
+    "degradado": true,
+    "elemento": "span.id-card-badge",
+    "ejemplo": "Congelado",
+    "veces": 1
+   }
+  ]
+ },
+ {
+  "vista": "/socio/mis-reservas.xhtml (membresía vencida)",
+  "medidos": 25,
+  "iconosConTexto": 9,
+  "sobreImagen": [],
+  "minimo": 5.18,
+  "fallas": []
+ },
+ {
+  "vista": "/socio/inicio.xhtml (calificación pendiente)",
+  "medidos": 136,
+  "iconosConTexto": 24,
+  "sobreImagen": [],
+  "minimo": 3.85,
+  "fallas": [
+   {
+    "tipo": "texto",
+    "razon": 3.85,
+    "umbral": 4.5,
+    "color": "#c69aa5",
+    "fondo": "#82203c",
+    "degradado": true,
+    "elemento": "span.id-label",
+    "ejemplo": "Nombre y apellido",
+    "veces": 2
+   },
+   {
+    "tipo": "texto",
+    "razon": 3.85,
+    "umbral": 4.5,
+    "color": "#c69aa5",
+    "fondo": "#82203c",
+    "degradado": true,
+    "elemento": "span.id-card-since",
+    "ejemplo": "Socio desde 08/2026",
+    "veces": 1
+   },
+   {
+    "tipo": "texto",
+    "razon": 4.2,
+    "umbral": 4.5,
+    "color": "#edc06a",
+    "fondo": "#913b53",
+    "degradado": true,
+    "elemento": "span.id-card-badge",
+    "ejemplo": "Socio",
+    "veces": 1
+   }
+  ]
+ },
+ {
+  "vista": "/socio/mis-reservas.xhtml (calificación pendiente)",
+  "medidos": 41,
+  "iconosConTexto": 10,
+  "sobreImagen": [],
+  "minimo": 4.53,
+  "fallas": [
+   {
+    "tipo": "contorno de campo",
+    "razon": 1.38,
+    "umbral": 3,
+    "color": "#ddd9d5",
+    "fondo": "#fffdf3",
+    "degradado": false,
+    "elemento": "textarea.so-input.so-textarea",
+    "ejemplo": "Contanos qué te gustó o qué podemos mejo",
+    "veces": 1
+   }
+  ]
+ }
+]

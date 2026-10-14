@@ -27,6 +27,25 @@ public class TarifaAlquilerDAO extends BaseDAO<TarifaAlquiler> {
                 .setParameter("fecha", fecha));
     }
 
+    /** El próximo cambio programado de una instalación y categoría (el que empieza después de la fecha); null si no hay. */
+    public TarifaAlquiler buscarProxima(Integer idInstalacion, Integer idCategoriaSocio, LocalDate fecha) {
+        return primero(em.createQuery(
+                "SELECT t FROM TarifaAlquiler t WHERE t.idInstalacion.idInstalacion = :instalacion "
+                + "AND t.idCategoriaSocio.idCategoriaSocio = :categoria AND t.vigenteDesde > :fecha "
+                + "ORDER BY t.vigenteDesde ASC", TarifaAlquiler.class)
+                .setParameter("instalacion", idInstalacion)
+                .setParameter("categoria", idCategoriaSocio)
+                .setParameter("fecha", fecha));
+    }
+
+    /** Todos los cambios programados (empiezan después de la fecha dada), el más próximo primero. */
+    public List<TarifaAlquiler> listarProgramadas(LocalDate fecha) {
+        return em.createQuery(
+                "SELECT t FROM TarifaAlquiler t WHERE t.vigenteDesde > :fecha ORDER BY t.vigenteDesde", TarifaAlquiler.class)
+                .setParameter("fecha", fecha)
+                .getResultList();
+    }
+
     /** Todas las tarifas vigentes en la fecha dada (una por instalación y categoría; si hay dos, la de vigencia más reciente va última). */
     public List<TarifaAlquiler> listarVigentes(LocalDate fecha) {
         return em.createQuery(
