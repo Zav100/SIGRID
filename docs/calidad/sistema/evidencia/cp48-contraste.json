@@ -1,0 +1,493 @@
+[
+ {
+  "vista": "/admin/inicio-dashboard-admin.xhtml",
+  "medidos": 251,
+  "iconosConTexto": 33,
+  "sobreImagen": [],
+  "minimo": 2.67,
+  "fallas": [
+   {
+    "tipo": "contorno de campo",
+    "razon": 1.19,
+    "umbral": 3,
+    "color": "#eae6e2",
+    "fondo": "#fbfaf8",
+    "degradado": false,
+    "elemento": "input",
+    "ejemplo": "Buscar en esta página",
+    "veces": 1
+   },
+   {
+    "tipo": "texto",
+    "razon": 2.67,
+    "umbral": 4.5,
+    "color": "#9e9d9c",
+    "fondo": "#fefdfb",
+    "degradado": false,
+    "elemento": "span.adm-day-num",
+    "ejemplo": "28",
+    "veces": 11
+   }
+  ]
+ },
+ {
+  "vista": "/admin/calendario-dashboard-admin.xhtml",
+  "medidos": 507,
+  "iconosConTexto": 71,
+  "sobreImagen": [],
+  "minimo": 2.02,
+  "fallas": [
+   {
+    "tipo": "contorno de campo",
+    "razon": 1.19,
+    "umbral": 3,
+    "color": "#eae6e2",
+    "fondo": "#fbfaf8",
+    "degradado": false,
+    "elemento": "input",
+    "ejemplo": "Buscar en esta página",
+    "veces": 1
+   },
+   {
+    "tipo": "texto",
+    "razon": 2.02,
+    "umbral": 4.5,
+    "color": "#afaba7",
+    "fondo": "#f3f0ed",
+    "degradado": false,
+    "elemento": "b",
+    "ejemplo": "12:00",
+    "veces": 6
+   },
+   {
+    "tipo": "texto",
+    "razon": 2.02,
+    "umbral": 4.5,
+    "color": "#afaba7",
+    "fondo": "#f3f0ed",
+    "degradado": false,
+    "elemento": "span.cal-ev.cal-ev-muted",
+    "ejemplo": "Salón SUM",
+    "veces": 6
+   },
+   {
+    "tipo": "texto",
+    "razon": 2.08,
+    "umbral": 4.5,
+    "color": "#b3b0ad",
+    "fondo": "#fbfaf8",
+    "degradado": false,
+    "elemento": "span.cal-day-num",
+    "ejemplo": "28",
+    "veces": 3
+   },
+   {
+    "tipo": "texto",
+    "razon": 2.08,
+    "umbral": 4.5,
+    "color": "#b3b0ad",
+    "fondo": "#fbfaf8",
+    "degradado": false,
+    "elemento": "span.cal-more",
+    "ejemplo": "+3 más",
+    "veces": 3
+   },
+   {
+    "tipo": "texto",
+    "razon": 3.03,
+    "umbral": 4.5,
+    "color": "#929190",
+    "fondo": "#fbfaf8",
+    "degradado": false,
+    "elemento": "span.cal-day-num",
+    "ejemplo": "1",
+    "veces": 8
+   }
+  ]
+ },
+ {
+  "vista": "/admin/socios-dashboard-admin.xhtml",
+  "medidos": 208,
+  "iconosConTexto": 11,
+  "sobreImagen": [],
+  "minimo": 5.06,
+  "fallas": [
+   {
+    "tipo": "contorno de campo",
+    "razon": 1.19,
+    "umbral": 3,
+    "color": "#eae6e2",
+    "fondo": "#fbfaf8",
+    "degradado": false,
+    "elemento": "input",
+    "ejemplo": "Buscar en esta página",
+    "veces": 1
+   },
+   {
+    "tipo": "contorno de campo",
+    "razon": 1.22,
+    "umbral": 3,
+    "color": "#eae6e2",
+    "fondo": "#fefdfb",
+    "degradado": false,
+    "elemento": "input",
+    "ejemplo": "Buscar socios",
+    "veces": 1
+   },
+   {
+    "tipo": "contorno de campo",
+    "razon": 1.22,
+    "umbral": 3,
+    "color": "#eae6e2",
+    "fondo": "#fefdfb",
+    "degradado": false,
+    "elemento": "select.soc-select",
+    "ejemplo": "Filtrar por estado de la membresía",
+    "veces": 2
+   }
+  ]
+ },
+ {
+  "vista": "/admin/membresias-dashboard-admin.xhtml",
+  "medidos": 423,
+  "iconosConTexto": 31,
+  "sobreImagen": [],
+  "minimo": 5.06,
+  "fallas": [
+   {
+    "tipo": "contorno de campo",
+    "razon": 1.19,
+    "umbral": 3,
+    "color": "#eae6e2",
+    "fondo": "#fbfaf8",
+    "degradado": false,
+    "elemento": "input",
+    "ejemplo": "Buscar en esta página",
+    "veces": 1
+   },
+   {
+    "tipo": "contorno de campo",
+    "razon": 1.22,
+    "umbral": 3,
+    "color": "#eae6e2",
+    "fondo": "#fefdfb",
+    "degradado": false,
+    "elemento": "input",
+    "ejemplo": "Buscar membresías",
+    "veces": 1
+   },
+   {
+    "tipo": "contorno de campo",
+    "razon": 1.22,
+    "umbral": 3,
+    "color": "#eae6e2",
+    "fondo": "#fefdfb",
+    "degradado": false,
+    "elemento": "select.mem-select",
+    "ejemplo": "Filtrar por tipo de socio",
+    "veces": 1
+   }
+  ]
+ },
+ {
+  "vista": "/admin/reservas-dashboard-admin.xhtml",
+  "medidos": 404,
+  "iconosConTexto": 22,
+  "sobreImagen": [],
+  "minimo": 5.06,
+  "fallas": [
+   {
+    "tipo": "contorno de campo",
+    "razon": 1.19,
+    "umbral": 3,
+    "color": "#eae6e2",
+    "fondo": "#fbfaf8",
+    "degradado": false,
+    "elemento": "input",
+    "ejemplo": "Buscar en esta página",
+    "veces": 1
+   },
+   {
+    "tipo": "contorno de campo",
+    "razon": 1.22,
+    "umbral": 3,
+    "color": "#eae6e2",
+    "fondo": "#fefdfb",
+    "degradado": false,
+    "elemento": "input",
+    "ejemplo": "Buscar reservas",
+    "veces": 1
+   },
+   {
+    "tipo": "contorno de campo",
+    "razon": 1.22,
+    "umbral": 3,
+    "color": "#eae6e2",
+    "fondo": "#fefdfb",
+    "degradado": false,
+    "elemento": "select.soc-select",
+    "ejemplo": "Filtrar por fecha del turno",
+    "veces": 3
+   },
+   {
+    "tipo": "contorno de campo",
+    "razon": 1.38,
+    "umbral": 3,
+    "color": "#ddd9d5",
+    "fondo": "#fefdfb",
+    "degradado": false,
+    "elemento": "input.rv-fecha-input",
+    "ejemplo": "Turnos desde el día",
+    "veces": 2
+   }
+  ]
+ },
+ {
+  "vista": "/admin/solicitudes-dashboard-admin.xhtml",
+  "medidos": 156,
+  "iconosConTexto": 24,
+  "sobreImagen": [],
+  "minimo": 5.06,
+  "fallas": [
+   {
+    "tipo": "contorno de campo",
+    "razon": 1.19,
+    "umbral": 3,
+    "color": "#eae6e2",
+    "fondo": "#fbfaf8",
+    "degradado": false,
+    "elemento": "input",
+    "ejemplo": "Buscar en esta página",
+    "veces": 1
+   },
+   {
+    "tipo": "contorno de campo",
+    "razon": 1.22,
+    "umbral": 3,
+    "color": "#eae6e2",
+    "fondo": "#fefdfb",
+    "degradado": false,
+    "elemento": "input",
+    "ejemplo": "Buscar solicitudes",
+    "veces": 1
+   },
+   {
+    "tipo": "contorno de campo",
+    "razon": 1.22,
+    "umbral": 3,
+    "color": "#eae6e2",
+    "fondo": "#fefdfb",
+    "degradado": false,
+    "elemento": "select.soc-select",
+    "ejemplo": "Filtrar por tipo de instalación",
+    "veces": 2
+   }
+  ]
+ },
+ {
+  "vista": "/admin/cancelaciones-dashboard-admin.xhtml",
+  "medidos": 136,
+  "iconosConTexto": 18,
+  "sobreImagen": [],
+  "minimo": 5.06,
+  "fallas": [
+   {
+    "tipo": "contorno de campo",
+    "razon": 1.19,
+    "umbral": 3,
+    "color": "#eae6e2",
+    "fondo": "#fbfaf8",
+    "degradado": false,
+    "elemento": "input",
+    "ejemplo": "Buscar en esta página",
+    "veces": 1
+   },
+   {
+    "tipo": "contorno de campo",
+    "razon": 1.22,
+    "umbral": 3,
+    "color": "#eae6e2",
+    "fondo": "#fefdfb",
+    "degradado": false,
+    "elemento": "input",
+    "ejemplo": "Buscar en esta pestaña",
+    "veces": 1
+   }
+  ]
+ },
+ {
+  "vista": "/admin/instalaciones-dashboard-admin.xhtml",
+  "medidos": 218,
+  "iconosConTexto": 39,
+  "sobreImagen": [],
+  "minimo": 4.5,
+  "fallas": [
+   {
+    "tipo": "contorno de campo",
+    "razon": 1.19,
+    "umbral": 3,
+    "color": "#eae6e2",
+    "fondo": "#fbfaf8",
+    "degradado": false,
+    "elemento": "input",
+    "ejemplo": "Buscar en esta página",
+    "veces": 1
+   }
+  ]
+ },
+ {
+  "vista": "/admin/valoraciones-dashboard-admin.xhtml",
+  "medidos": 383,
+  "iconosConTexto": 25,
+  "sobreImagen": [],
+  "minimo": 3.18,
+  "fallas": [
+   {
+    "tipo": "contorno de campo",
+    "razon": 1.19,
+    "umbral": 3,
+    "color": "#eae6e2",
+    "fondo": "#fbfaf8",
+    "degradado": false,
+    "elemento": "input",
+    "ejemplo": "Buscar en esta página",
+    "veces": 1
+   },
+   {
+    "tipo": "contorno de campo",
+    "razon": 1.22,
+    "umbral": 3,
+    "color": "#eae6e2",
+    "fondo": "#fefdfb",
+    "degradado": false,
+    "elemento": "select.soc-select",
+    "ejemplo": "Filtrar por instalación",
+    "veces": 3
+   }
+  ]
+ },
+ {
+  "vista": "/admin/reportes (space_dashboardResumen ejecutivo)",
+  "medidos": 102,
+  "iconosConTexto": 22,
+  "sobreImagen": [],
+  "minimo": 5.06,
+  "fallas": [
+   {
+    "tipo": "contorno de campo",
+    "razon": 1.19,
+    "umbral": 3,
+    "color": "#eae6e2",
+    "fondo": "#fbfaf8",
+    "degradado": false,
+    "elemento": "input",
+    "ejemplo": "Buscar en esta página",
+    "veces": 1
+   },
+   {
+    "tipo": "contorno de campo",
+    "razon": 1.22,
+    "umbral": 3,
+    "color": "#eae6e2",
+    "fondo": "#fefdfb",
+    "degradado": false,
+    "elemento": "select.soc-select",
+    "ejemplo": "Período del reporte",
+    "veces": 1
+   }
+  ]
+ },
+ {
+  "vista": "/admin/reportes (paymentsIngresos)",
+  "medidos": 141,
+  "iconosConTexto": 20,
+  "sobreImagen": [],
+  "minimo": 5.06,
+  "fallas": [
+   {
+    "tipo": "contorno de campo",
+    "razon": 1.19,
+    "umbral": 3,
+    "color": "#eae6e2",
+    "fondo": "#fbfaf8",
+    "degradado": false,
+    "elemento": "input",
+    "ejemplo": "Buscar en esta página",
+    "veces": 1
+   },
+   {
+    "tipo": "contorno de campo",
+    "razon": 1.22,
+    "umbral": 3,
+    "color": "#eae6e2",
+    "fondo": "#fefdfb",
+    "degradado": false,
+    "elemento": "select.soc-select",
+    "ejemplo": "Período del reporte",
+    "veces": 2
+   }
+  ]
+ },
+ {
+  "vista": "/admin/reportes (stadiumOcupación y uso)",
+  "medidos": 198,
+  "iconosConTexto": 18,
+  "sobreImagen": [],
+  "minimo": 5.06,
+  "fallas": [
+   {
+    "tipo": "contorno de campo",
+    "razon": 1.19,
+    "umbral": 3,
+    "color": "#eae6e2",
+    "fondo": "#fbfaf8",
+    "degradado": false,
+    "elemento": "input",
+    "ejemplo": "Buscar en esta página",
+    "veces": 1
+   },
+   {
+    "tipo": "contorno de campo",
+    "razon": 1.22,
+    "umbral": 3,
+    "color": "#eae6e2",
+    "fondo": "#fefdfb",
+    "degradado": false,
+    "elemento": "select.soc-select",
+    "ejemplo": "Período del reporte",
+    "veces": 1
+   }
+  ]
+ },
+ {
+  "vista": "/admin/reportes (card_membershipMembresías)",
+  "medidos": 112,
+  "iconosConTexto": 17,
+  "sobreImagen": [],
+  "minimo": 5.06,
+  "fallas": [
+   {
+    "tipo": "contorno de campo",
+    "razon": 1.19,
+    "umbral": 3,
+    "color": "#eae6e2",
+    "fondo": "#fbfaf8",
+    "degradado": false,
+    "elemento": "input",
+    "ejemplo": "Buscar en esta página",
+    "veces": 1
+   },
+   {
+    "tipo": "contorno de campo",
+    "razon": 1.22,
+    "umbral": 3,
+    "color": "#eae6e2",
+    "fondo": "#fefdfb",
+    "degradado": false,
+    "elemento": "select.soc-select",
+    "ejemplo": "Período del reporte",
+    "veces": 1
+   }
+  ]
+ }
+]

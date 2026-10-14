@@ -1,0 +1,872 @@
+[
+ {
+  "ruta": "/index.xhtml",
+  "ancho": 360,
+  "pagina": 0,
+  "conBarra": [],
+  "cortados": [],
+  "fuera": [],
+  "tapados": [],
+  "estrujados": [],
+  "importesPartidos": [],
+  "menuPlegado": 0
+ },
+ {
+  "ruta": "/instalaciones.xhtml",
+  "ancho": 360,
+  "pagina": 0,
+  "conBarra": [
+   {
+    "elemento": "div.table-wrap.reveal",
+    "sobra": 64,
+    "veces": 1
+   }
+  ],
+  "cortados": [],
+  "fuera": [],
+  "tapados": [],
+  "estrujados": [],
+  "importesPartidos": [],
+  "menuPlegado": 0
+ },
+ {
+  "ruta": "/faqpage.xhtml",
+  "ancho": 360,
+  "pagina": 0,
+  "conBarra": [],
+  "cortados": [],
+  "fuera": [],
+  "tapados": [],
+  "estrujados": [],
+  "importesPartidos": [],
+  "menuPlegado": 0
+ },
+ {
+  "ruta": "/login.xhtml",
+  "ancho": 360,
+  "pagina": 0,
+  "conBarra": [],
+  "cortados": [],
+  "fuera": [],
+  "tapados": [],
+  "estrujados": [],
+  "importesPartidos": [],
+  "menuPlegado": 0
+ },
+ {
+  "ruta": "/register.xhtml",
+  "ancho": 360,
+  "pagina": 0,
+  "conBarra": [],
+  "cortados": [],
+  "fuera": [],
+  "tapados": [],
+  "estrujados": [],
+  "importesPartidos": [],
+  "menuPlegado": 0
+ },
+ {
+  "ruta": "/index.xhtml",
+  "ancho": 768,
+  "pagina": 0,
+  "conBarra": [],
+  "cortados": [],
+  "fuera": [],
+  "tapados": [],
+  "estrujados": [],
+  "importesPartidos": [],
+  "menuPlegado": 0
+ },
+ {
+  "ruta": "/instalaciones.xhtml",
+  "ancho": 768,
+  "pagina": 0,
+  "conBarra": [],
+  "cortados": [],
+  "fuera": [],
+  "tapados": [],
+  "estrujados": [],
+  "importesPartidos": [],
+  "menuPlegado": 0
+ },
+ {
+  "ruta": "/faqpage.xhtml",
+  "ancho": 768,
+  "pagina": 0,
+  "conBarra": [],
+  "cortados": [],
+  "fuera": [],
+  "tapados": [],
+  "estrujados": [],
+  "importesPartidos": [],
+  "menuPlegado": 0
+ },
+ {
+  "ruta": "/login.xhtml",
+  "ancho": 768,
+  "pagina": 0,
+  "conBarra": [],
+  "cortados": [],
+  "fuera": [],
+  "tapados": [],
+  "estrujados": [],
+  "importesPartidos": [],
+  "menuPlegado": 0
+ },
+ {
+  "ruta": "/register.xhtml",
+  "ancho": 768,
+  "pagina": 0,
+  "conBarra": [],
+  "cortados": [],
+  "fuera": [],
+  "tapados": [],
+  "estrujados": [],
+  "importesPartidos": [],
+  "menuPlegado": 0
+ },
+ {
+  "ruta": "/index.xhtml",
+  "ancho": 1280,
+  "pagina": 0,
+  "conBarra": [],
+  "cortados": [],
+  "fuera": [],
+  "tapados": [],
+  "estrujados": [],
+  "importesPartidos": [],
+  "menuPlegado": 0
+ },
+ {
+  "ruta": "/instalaciones.xhtml",
+  "ancho": 1280,
+  "pagina": 0,
+  "conBarra": [],
+  "cortados": [],
+  "fuera": [],
+  "tapados": [],
+  "estrujados": [],
+  "importesPartidos": [],
+  "menuPlegado": 0
+ },
+ {
+  "ruta": "/faqpage.xhtml",
+  "ancho": 1280,
+  "pagina": 0,
+  "conBarra": [],
+  "cortados": [],
+  "fuera": [],
+  "tapados": [],
+  "estrujados": [],
+  "importesPartidos": [],
+  "menuPlegado": 0
+ },
+ {
+  "ruta": "/login.xhtml",
+  "ancho": 1280,
+  "pagina": 0,
+  "conBarra": [],
+  "cortados": [],
+  "fuera": [],
+  "tapados": [],
+  "estrujados": [],
+  "importesPartidos": [],
+  "menuPlegado": 0
+ },
+ {
+  "ruta": "/register.xhtml",
+  "ancho": 1280,
+  "pagina": 0,
+  "conBarra": [],
+  "cortados": [],
+  "fuera": [],
+  "tapados": [],
+  "estrujados": [],
+  "importesPartidos": [],
+  "menuPlegado": 0
+ },
+ {
+  "ruta": "/socio/inicio.xhtml",
+  "ancho": 360,
+  "pagina": 0,
+  "conBarra": [],
+  "cortados": [],
+  "fuera": [],
+  "tapados": [],
+  "estrujados": [],
+  "importesPartidos": [],
+  "menuPlegado": 0
+ },
+ {
+  "ruta": "/socio/mis-reservas.xhtml",
+  "ancho": 360,
+  "pagina": 13,
+  "conBarra": [],
+  "cortados": [],
+  "fuera": [
+   {
+    "elemento": "a#filtros:j_idt95.so-seg",
+    "texto": "Todas 9",
+    "izquierda": 266,
+    "derecha": 367,
+    "veces": 1
+   }
+  ],
+  "tapados": [],
+  "estrujados": [
+   {
+    "elemento": "p.so-pay-res-sub",
+    "ancho": 70,
+    "renglones": 8,
+    "texto": "Turno cancelado: 18/10/2026 · 17:00 – 18",
+    "veces": 1
+   }
+  ],
+  "importesPartidos": [
+   {
+    "elemento": "span.so-res-monto",
+    "texto": "$ 17.500",
+    "veces": 1
+   }
+  ],
+  "menuPlegado": 0
+ },
+ {
+  "ruta": "/socio/avisos.xhtml",
+  "ancho": 360,
+  "pagina": 0,
+  "conBarra": [],
+  "cortados": [],
+  "fuera": [],
+  "tapados": [],
+  "estrujados": [],
+  "importesPartidos": [],
+  "menuPlegado": 0
+ },
+ {
+  "ruta": "/socio/nueva-reserva.xhtml",
+  "ancho": 360,
+  "pagina": 0,
+  "conBarra": [],
+  "cortados": [],
+  "fuera": [],
+  "tapados": [],
+  "estrujados": [],
+  "importesPartidos": [],
+  "menuPlegado": 0
+ },
+ {
+  "ruta": "/socio/inicio.xhtml",
+  "ancho": 768,
+  "pagina": 0,
+  "conBarra": [],
+  "cortados": [],
+  "fuera": [],
+  "tapados": [],
+  "estrujados": [],
+  "importesPartidos": [],
+  "menuPlegado": 0
+ },
+ {
+  "ruta": "/socio/mis-reservas.xhtml",
+  "ancho": 768,
+  "pagina": 0,
+  "conBarra": [],
+  "cortados": [],
+  "fuera": [],
+  "tapados": [],
+  "estrujados": [],
+  "importesPartidos": [],
+  "menuPlegado": 0
+ },
+ {
+  "ruta": "/socio/avisos.xhtml",
+  "ancho": 768,
+  "pagina": 0,
+  "conBarra": [],
+  "cortados": [],
+  "fuera": [],
+  "tapados": [],
+  "estrujados": [],
+  "importesPartidos": [],
+  "menuPlegado": 0
+ },
+ {
+  "ruta": "/socio/nueva-reserva.xhtml",
+  "ancho": 768,
+  "pagina": 0,
+  "conBarra": [],
+  "cortados": [],
+  "fuera": [],
+  "tapados": [],
+  "estrujados": [],
+  "importesPartidos": [],
+  "menuPlegado": 0
+ },
+ {
+  "ruta": "/socio/inicio.xhtml",
+  "ancho": 1280,
+  "pagina": 0,
+  "conBarra": [],
+  "cortados": [],
+  "fuera": [],
+  "tapados": [],
+  "estrujados": [],
+  "importesPartidos": [],
+  "menuPlegado": 0
+ },
+ {
+  "ruta": "/socio/mis-reservas.xhtml",
+  "ancho": 1280,
+  "pagina": 0,
+  "conBarra": [],
+  "cortados": [],
+  "fuera": [],
+  "tapados": [],
+  "estrujados": [],
+  "importesPartidos": [],
+  "menuPlegado": 0
+ },
+ {
+  "ruta": "/socio/avisos.xhtml",
+  "ancho": 1280,
+  "pagina": 0,
+  "conBarra": [],
+  "cortados": [],
+  "fuera": [],
+  "tapados": [],
+  "estrujados": [],
+  "importesPartidos": [],
+  "menuPlegado": 0
+ },
+ {
+  "ruta": "/socio/nueva-reserva.xhtml",
+  "ancho": 1280,
+  "pagina": 0,
+  "conBarra": [],
+  "cortados": [],
+  "fuera": [],
+  "tapados": [],
+  "estrujados": [],
+  "importesPartidos": [],
+  "menuPlegado": 0
+ },
+ {
+  "ruta": "/admin/inicio-dashboard-admin.xhtml",
+  "ancho": 360,
+  "pagina": 27,
+  "conBarra": [
+   {
+    "elemento": "div.adm-table-wrap",
+    "sobra": 340,
+    "veces": 2
+   }
+  ],
+  "cortados": [],
+  "fuera": [
+   {
+    "elemento": "a.adm-icon-btn",
+    "texto": "logout",
+    "izquierda": 351,
+    "derecha": 387,
+    "veces": 1
+   }
+  ],
+  "tapados": [],
+  "estrujados": [],
+  "importesPartidos": [],
+  "menuPlegado": 11
+ },
+ {
+  "ruta": "/admin/calendario-dashboard-admin.xhtml",
+  "ancho": 360,
+  "pagina": 27,
+  "conBarra": [],
+  "cortados": [],
+  "fuera": [
+   {
+    "elemento": "a.adm-icon-btn",
+    "texto": "logout",
+    "izquierda": 351,
+    "derecha": 387,
+    "veces": 1
+   }
+  ],
+  "tapados": [],
+  "estrujados": [],
+  "importesPartidos": [],
+  "menuPlegado": 11
+ },
+ {
+  "ruta": "/admin/socios-dashboard-admin.xhtml",
+  "ancho": 360,
+  "pagina": 27,
+  "conBarra": [
+   {
+    "elemento": "div.adm-table-wrap",
+    "sobra": 503,
+    "veces": 1
+   }
+  ],
+  "cortados": [],
+  "fuera": [
+   {
+    "elemento": "a.adm-icon-btn",
+    "texto": "logout",
+    "izquierda": 351,
+    "derecha": 387,
+    "veces": 1
+   }
+  ],
+  "tapados": [],
+  "estrujados": [],
+  "importesPartidos": [],
+  "menuPlegado": 11
+ },
+ {
+  "ruta": "/admin/membresias-dashboard-admin.xhtml",
+  "ancho": 360,
+  "pagina": 27,
+  "conBarra": [
+   {
+    "elemento": "div.adm-table-wrap",
+    "sobra": 443,
+    "veces": 1
+   }
+  ],
+  "cortados": [],
+  "fuera": [
+   {
+    "elemento": "a.adm-icon-btn",
+    "texto": "logout",
+    "izquierda": 351,
+    "derecha": 387,
+    "veces": 1
+   }
+  ],
+  "tapados": [],
+  "estrujados": [],
+  "importesPartidos": [],
+  "menuPlegado": 11
+ },
+ {
+  "ruta": "/admin/reservas-dashboard-admin.xhtml",
+  "ancho": 360,
+  "pagina": 27,
+  "conBarra": [
+   {
+    "elemento": "div.adm-table-wrap",
+    "sobra": 784,
+    "veces": 1
+   }
+  ],
+  "cortados": [],
+  "fuera": [
+   {
+    "elemento": "a.adm-icon-btn",
+    "texto": "logout",
+    "izquierda": 351,
+    "derecha": 387,
+    "veces": 1
+   }
+  ],
+  "tapados": [],
+  "estrujados": [],
+  "importesPartidos": [],
+  "menuPlegado": 11
+ },
+ {
+  "ruta": "/admin/solicitudes-dashboard-admin.xhtml",
+  "ancho": 360,
+  "pagina": 27,
+  "conBarra": [],
+  "cortados": [],
+  "fuera": [
+   {
+    "elemento": "a.adm-icon-btn",
+    "texto": "logout",
+    "izquierda": 351,
+    "derecha": 387,
+    "veces": 1
+   }
+  ],
+  "tapados": [],
+  "estrujados": [],
+  "importesPartidos": [],
+  "menuPlegado": 11
+ },
+ {
+  "ruta": "/admin/cancelaciones-dashboard-admin.xhtml",
+  "ancho": 360,
+  "pagina": 27,
+  "conBarra": [],
+  "cortados": [],
+  "fuera": [
+   {
+    "elemento": "a.adm-icon-btn",
+    "texto": "logout",
+    "izquierda": 351,
+    "derecha": 387,
+    "veces": 1
+   }
+  ],
+  "tapados": [],
+  "estrujados": [],
+  "importesPartidos": [],
+  "menuPlegado": 11
+ },
+ {
+  "ruta": "/admin/instalaciones-dashboard-admin.xhtml",
+  "ancho": 360,
+  "pagina": 27,
+  "conBarra": [
+   {
+    "elemento": "div.adm-table-wrap",
+    "sobra": 258,
+    "veces": 1
+   }
+  ],
+  "cortados": [],
+  "fuera": [
+   {
+    "elemento": "a.adm-icon-btn",
+    "texto": "logout",
+    "izquierda": 351,
+    "derecha": 387,
+    "veces": 1
+   }
+  ],
+  "tapados": [],
+  "estrujados": [],
+  "importesPartidos": [],
+  "menuPlegado": 11
+ },
+ {
+  "ruta": "/admin/valoraciones-dashboard-admin.xhtml",
+  "ancho": 360,
+  "pagina": 235,
+  "conBarra": [
+   {
+    "elemento": "div.adm-table-wrap",
+    "sobra": 500,
+    "veces": 1
+   }
+  ],
+  "cortados": [],
+  "fuera": [
+   {
+    "elemento": "a.adm-icon-btn",
+    "texto": "logout",
+    "izquierda": 351,
+    "derecha": 387,
+    "veces": 1
+   }
+  ],
+  "tapados": [],
+  "estrujados": [],
+  "importesPartidos": [],
+  "menuPlegado": 11
+ },
+ {
+  "ruta": "/admin/reportes-dashboard-admin.xhtml",
+  "ancho": 360,
+  "pagina": 27,
+  "conBarra": [],
+  "cortados": [],
+  "fuera": [
+   {
+    "elemento": "a.adm-icon-btn",
+    "texto": "logout",
+    "izquierda": 351,
+    "derecha": 387,
+    "veces": 1
+   }
+  ],
+  "tapados": [],
+  "estrujados": [],
+  "importesPartidos": [],
+  "menuPlegado": 11
+ },
+ {
+  "ruta": "/admin/inicio-dashboard-admin.xhtml",
+  "ancho": 768,
+  "pagina": 0,
+  "conBarra": [],
+  "cortados": [],
+  "fuera": [],
+  "tapados": [],
+  "estrujados": [],
+  "importesPartidos": [],
+  "menuPlegado": 11
+ },
+ {
+  "ruta": "/admin/calendario-dashboard-admin.xhtml",
+  "ancho": 768,
+  "pagina": 0,
+  "conBarra": [],
+  "cortados": [],
+  "fuera": [],
+  "tapados": [],
+  "estrujados": [],
+  "importesPartidos": [],
+  "menuPlegado": 11
+ },
+ {
+  "ruta": "/admin/socios-dashboard-admin.xhtml",
+  "ancho": 768,
+  "pagina": 0,
+  "conBarra": [
+   {
+    "elemento": "div.adm-table-wrap",
+    "sobra": 103,
+    "veces": 1
+   }
+  ],
+  "cortados": [],
+  "fuera": [],
+  "tapados": [],
+  "estrujados": [],
+  "importesPartidos": [],
+  "menuPlegado": 11
+ },
+ {
+  "ruta": "/admin/membresias-dashboard-admin.xhtml",
+  "ancho": 768,
+  "pagina": 0,
+  "conBarra": [
+   {
+    "elemento": "div.adm-table-wrap",
+    "sobra": 43,
+    "veces": 1
+   }
+  ],
+  "cortados": [],
+  "fuera": [],
+  "tapados": [],
+  "estrujados": [],
+  "importesPartidos": [],
+  "menuPlegado": 11
+ },
+ {
+  "ruta": "/admin/reservas-dashboard-admin.xhtml",
+  "ancho": 768,
+  "pagina": 0,
+  "conBarra": [
+   {
+    "elemento": "div.adm-table-wrap",
+    "sobra": 384,
+    "veces": 1
+   }
+  ],
+  "cortados": [],
+  "fuera": [],
+  "tapados": [],
+  "estrujados": [],
+  "importesPartidos": [],
+  "menuPlegado": 11
+ },
+ {
+  "ruta": "/admin/solicitudes-dashboard-admin.xhtml",
+  "ancho": 768,
+  "pagina": 0,
+  "conBarra": [],
+  "cortados": [],
+  "fuera": [],
+  "tapados": [],
+  "estrujados": [],
+  "importesPartidos": [],
+  "menuPlegado": 11
+ },
+ {
+  "ruta": "/admin/cancelaciones-dashboard-admin.xhtml",
+  "ancho": 768,
+  "pagina": 0,
+  "conBarra": [],
+  "cortados": [],
+  "fuera": [],
+  "tapados": [],
+  "estrujados": [],
+  "importesPartidos": [],
+  "menuPlegado": 11
+ },
+ {
+  "ruta": "/admin/instalaciones-dashboard-admin.xhtml",
+  "ancho": 768,
+  "pagina": 0,
+  "conBarra": [],
+  "cortados": [],
+  "fuera": [],
+  "tapados": [],
+  "estrujados": [],
+  "importesPartidos": [],
+  "menuPlegado": 11
+ },
+ {
+  "ruta": "/admin/valoraciones-dashboard-admin.xhtml",
+  "ancho": 768,
+  "pagina": 0,
+  "conBarra": [
+   {
+    "elemento": "div.adm-table-wrap",
+    "sobra": 100,
+    "veces": 1
+   }
+  ],
+  "cortados": [],
+  "fuera": [],
+  "tapados": [],
+  "estrujados": [],
+  "importesPartidos": [],
+  "menuPlegado": 11
+ },
+ {
+  "ruta": "/admin/reportes-dashboard-admin.xhtml",
+  "ancho": 768,
+  "pagina": 0,
+  "conBarra": [],
+  "cortados": [],
+  "fuera": [],
+  "tapados": [],
+  "estrujados": [],
+  "importesPartidos": [],
+  "menuPlegado": 11
+ },
+ {
+  "ruta": "/admin/inicio-dashboard-admin.xhtml",
+  "ancho": 1280,
+  "pagina": 0,
+  "conBarra": [
+   {
+    "elemento": "div.adm-table-wrap",
+    "sobra": 96,
+    "veces": 1
+   }
+  ],
+  "cortados": [],
+  "fuera": [],
+  "tapados": [],
+  "estrujados": [],
+  "importesPartidos": [],
+  "menuPlegado": 0
+ },
+ {
+  "ruta": "/admin/calendario-dashboard-admin.xhtml",
+  "ancho": 1280,
+  "pagina": 0,
+  "conBarra": [],
+  "cortados": [],
+  "fuera": [],
+  "tapados": [],
+  "estrujados": [],
+  "importesPartidos": [],
+  "menuPlegado": 0
+ },
+ {
+  "ruta": "/admin/socios-dashboard-admin.xhtml",
+  "ancho": 1280,
+  "pagina": 0,
+  "conBarra": [],
+  "cortados": [],
+  "fuera": [],
+  "tapados": [],
+  "estrujados": [],
+  "importesPartidos": [],
+  "menuPlegado": 0
+ },
+ {
+  "ruta": "/admin/membresias-dashboard-admin.xhtml",
+  "ancho": 1280,
+  "pagina": 0,
+  "conBarra": [],
+  "cortados": [],
+  "fuera": [],
+  "tapados": [],
+  "estrujados": [],
+  "importesPartidos": [],
+  "menuPlegado": 0
+ },
+ {
+  "ruta": "/admin/reservas-dashboard-admin.xhtml",
+  "ancho": 1280,
+  "pagina": 0,
+  "conBarra": [
+   {
+    "elemento": "div.adm-table-wrap",
+    "sobra": 160,
+    "veces": 1
+   }
+  ],
+  "cortados": [],
+  "fuera": [],
+  "tapados": [],
+  "estrujados": [],
+  "importesPartidos": [],
+  "menuPlegado": 0
+ },
+ {
+  "ruta": "/admin/solicitudes-dashboard-admin.xhtml",
+  "ancho": 1280,
+  "pagina": 0,
+  "conBarra": [],
+  "cortados": [],
+  "fuera": [],
+  "tapados": [],
+  "estrujados": [],
+  "importesPartidos": [],
+  "menuPlegado": 0
+ },
+ {
+  "ruta": "/admin/cancelaciones-dashboard-admin.xhtml",
+  "ancho": 1280,
+  "pagina": 0,
+  "conBarra": [],
+  "cortados": [],
+  "fuera": [],
+  "tapados": [],
+  "estrujados": [],
+  "importesPartidos": [],
+  "menuPlegado": 0
+ },
+ {
+  "ruta": "/admin/instalaciones-dashboard-admin.xhtml",
+  "ancho": 1280,
+  "pagina": 0,
+  "conBarra": [
+   {
+    "elemento": "div.adm-table-wrap",
+    "sobra": 54,
+    "veces": 1
+   }
+  ],
+  "cortados": [],
+  "fuera": [],
+  "tapados": [],
+  "estrujados": [],
+  "importesPartidos": [],
+  "menuPlegado": 0
+ },
+ {
+  "ruta": "/admin/valoraciones-dashboard-admin.xhtml",
+  "ancho": 1280,
+  "pagina": 0,
+  "conBarra": [],
+  "cortados": [],
+  "fuera": [],
+  "tapados": [],
+  "estrujados": [],
+  "importesPartidos": [],
+  "menuPlegado": 0
+ },
+ {
+  "ruta": "/admin/reportes-dashboard-admin.xhtml",
+  "ancho": 1280,
+  "pagina": 0,
+  "conBarra": [],
+  "cortados": [],
+  "fuera": [],
+  "tapados": [],
+  "estrujados": [],
+  "importesPartidos": [],
+  "menuPlegado": 0
+ }
+]
