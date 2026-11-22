@@ -784,6 +784,21 @@
   color: var(--so-ink-3);
 }
 
+/* renovación: botón dentro de la tarjeta y aviso de comprobante en revisión */
+.so-mem-btn {
+  align-self: center;
+  margin-top: 12px;
+}
+
+.so-mem .so-mem-callout.so-mem-review {
+  background: var(--so-soft);
+  color: var(--so-ink-2);
+}
+
+#renovar {
+  scroll-margin-top: 24px;
+}
+
 /* próxima reserva */
 .so-next {
   position: relative;

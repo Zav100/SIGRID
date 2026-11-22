@@ -121,6 +121,16 @@ public class SocioBean {
         return getPorValorar().size();
     }
 
+    /** Si ya mandó el comprobante de su renovación y el administrador todavía no lo resolvió. */
+    public boolean isRenovacionEnRevision() {
+        return servicio.renovacionEnRevision(getSocio().getIdSocio()) != null;
+    }
+
+    /** Si hoy puede pedir la renovación (vencida o a 7 días o menos del vencimiento, sin otro pedido en revisión). */
+    public boolean isPuedeRenovar() {
+        return servicio.puedeRenovar(getSocio().getIdSocio(), ahora.toLocalDate());
+    }
+
     public long getCantidadPorPagar() {
         return getReservas().stream().filter(MiReserva::isPuedeSubirComprobante).count();
     }

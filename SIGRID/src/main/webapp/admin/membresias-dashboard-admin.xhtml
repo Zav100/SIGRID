@@ -312,6 +312,11 @@
                                             <td class="adm-col-actions">
                                                 <div class="adm-actions">
                                                     <ui:fragment rendered="#{m.conComprobante}">
+                                                        <a class="adm-act" href="#{request.contextPath}/admin/comprobante?suscripcion=#{m.idSuscripcion}"
+                                                           target="_blank" rel="noopener" title="Abrir el comprobante en otra pestaña"
+                                                           aria-label="Ver el comprobante de #{m.socio}">
+                                                            <span class="icon" aria-hidden="true">receipt_long</span>Ver
+                                                        </a>
                                                         <h:commandLink styleClass="adm-act adm-act-ok"
                                                                        action="#{adminMembresiasBean.aceptar(m.idSuscripcion)}"
                                                                        title="Aceptar el comprobante"
