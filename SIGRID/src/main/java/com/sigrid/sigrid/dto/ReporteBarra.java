@@ -10,12 +10,12 @@ public class ReporteBarra implements Serializable {
     private final boolean mostrarEtiqueta; // no se rotulan todas, para que el eje no se amontone
     private final BigDecimal reservas;
     private final BigDecimal membresias;
-    private final int altoReservas;    // porcentaje del alto del gráfico
-    private final int altoMembresias;
+    private final double altoReservas;    // porcentaje del alto del gráfico (con un decimal)
+    private final double altoMembresias;
     private final String titulo;       // texto al pasar el mouse
 
     public ReporteBarra(String etiqueta, boolean mostrarEtiqueta, BigDecimal reservas, BigDecimal membresias,
-            int altoReservas, int altoMembresias, String titulo) {
+            double altoReservas, double altoMembresias, String titulo) {
         this.etiqueta = etiqueta;
         this.mostrarEtiqueta = mostrarEtiqueta;
         this.reservas = reservas;
@@ -41,11 +41,11 @@ public class ReporteBarra implements Serializable {
         return membresias;
     }
 
-    public int getAltoReservas() {
+    public double getAltoReservas() {
         return altoReservas;
     }
 
-    public int getAltoMembresias() {
+    public double getAltoMembresias() {
         return altoMembresias;
     }
 

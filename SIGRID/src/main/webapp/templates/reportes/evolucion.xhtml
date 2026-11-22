@@ -1,21 +1,40 @@
 <?xml version='1.0' encoding='UTF-8' ?>
-<!-- Barras apiladas de ingresos (reservas y membresías). Parámetros: barras (List<ReporteBarra>), maximo (texto) -->
+<!-- Barras apiladas de ingresos (reservas y membresías). Parámetros: barras (List<ReporteBarra>), maximo (texto), sinDatos (boolean),
+     escala (List<String>: montos de las 4 líneas de la grilla, de abajo hacia arriba) -->
 <ui:composition xmlns="http://www.w3.org/1999/xhtml"
                 xmlns:ui="jakarta.faces.facelets">
     <div class="rep-legend">
         <span><i class="rep-swatch rep-sw-r"></i>Reservas</span>
         <span><i class="rep-swatch rep-sw-m"></i>Membresías</span>
-        <span class="rep-legend-max">Barra más alta: #{maximo}</span>
+        <ui:fragment rendered="#{not sinDatos}">
+            <span class="rep-legend-max">Barra más alta: #{maximo}</span>
+        </ui:fragment>
     </div>
-    <ul class="rep-bars" role="img" aria-label="Ingresos por reservas y membresías a lo largo del período">
-        <ui:repeat var="b" value="#{barras}">
-            <li class="rep-bar" title="#{b.titulo}">
-                <span class="rep-bar-stack">
-                    <span class="rep-seg rep-seg-r" style="height: #{b.altoReservas}%"></span>
-                    <span class="rep-seg rep-seg-m" style="height: #{b.altoMembresias}%"></span>
-                </span>
-                <span class="rep-bar-label">#{b.mostrarEtiqueta ? b.etiqueta : ''}</span>
-            </li>
-        </ui:repeat>
-    </ul>
+    <div class="rep-chart">
+        <ui:fragment rendered="#{not sinDatos}">
+            <ol class="rep-axis" aria-hidden="true">
+                <ui:repeat var="m" value="#{escala}" varStatus="st">
+                    <li style="bottom: #{(st.index + 1) * 25}%">#{m}</li>
+                </ui:repeat>
+            </ol>
+        </ui:fragment>
+        <ul class="rep-bars" role="img" aria-label="Ingresos por reservas y membresías a lo largo del período">
+            <ui:repeat var="b" value="#{barras}">
+                <li class="rep-bar" title="#{b.titulo}">
+                    <span class="rep-bar-stack">
+                        <span class="rep-seg rep-seg-r" style="height: #{b.altoReservas}%"></span>
+                        <span class="rep-seg rep-seg-m" style="height: #{b.altoMembresias}%"></span>
+                    </span>
+                    <span class="rep-bar-label">#{b.mostrarEtiqueta ? b.etiqueta : ''}</span>
+                </li>
+            </ui:repeat>
+        </ul>
+        <ui:fragment rendered="#{sinDatos}">
+            <p class="rep-chart-vacio">
+                <span class="icon" aria-hidden="true">bar_chart</span>
+                <strong>Sin ingresos en este período</strong>
+                <span>Cuando se validen pagos de reservas o membresías, van a aparecer acá. Probá con un período más largo.</span>
+            </p>
+        </ui:fragment>
+    </div>
 </ui:composition>

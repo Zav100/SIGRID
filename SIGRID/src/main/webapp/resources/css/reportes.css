@@ -1,16 +1,17 @@
 /* =====================================================================
    SIGRID · Estilos de los reportes del administrador (prefijo .rep-)
    Se carga DESPUÉS de admin.css, socios.css, membresias.css, reservas.css y valoraciones.css.
-   Colores: neutros para los datos, verde / ámbar / rojo solo para bueno / atención / malo;
-   el bordó (acento) es la segunda parte apilada de las barras (membresías).
-   Contraste (WCAG 2.1 AA): las dos series se distinguen entre sí y del fondo con al menos 3:1; la parte de
-   membresías lleva además una línea clara que la separa de la de reservas, para que no dependa solo del color.
+   Colores: verde / ámbar / rojo solo para bueno / atención / malo. Las dos series de dinero son
+   reservas = azul y membresías = bordó original (--maroon-700). Sobre #FEFDFB: reservas 3,31:1,
+   membresías 11,36:1 y entre ellas 3,43:1 (CP-48 pide 3:1 en los tres); ΔE 35 a la vista normal y
+   30 para daltonismo (deutan), así que se distinguen sin rayas. Entre las dos partes de una barra
+   queda un hueco de 2px del color de la tarjeta (CP-49).
    ===================================================================== */
 
 :root {
-  --rep-reservas: #8F857E;
-  --rep-membresias: var(--maroon-800);
-  --rep-rayas: repeating-linear-gradient(135deg, transparent 0 3px, rgba(254, 253, 251, .28) 3px 5px);
+  --rep-reservas: #4A8FDB;
+  --rep-membresias: var(--maroon-700);
+  --rep-alto: 340px; /* alto del gráfico de barras */
 }
 
 .rep-cabecera {
@@ -115,6 +116,12 @@
   list-style: none;
 }
 
+/* en el Resumen las alertas van en fila, de 2 a 4 por renglón según el ancho */
+.rep-alertas.rep-alertas-grilla {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+}
+
 .rep-alerta {
   display: flex;
   align-items: flex-start;
@@ -171,24 +178,91 @@
 
 .rep-swatch {
   display: inline-block;
-  width: 12px;
-  height: 12px;
-  border-radius: 4px;
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
 }
 
 .rep-sw-r { background-color: var(--rep-reservas); }
-.rep-sw-m { background-color: var(--rep-membresias); background-image: var(--rep-rayas); }
+.rep-sw-m { background-color: var(--rep-membresias); }
+
+/* el eje de montos va a la izquierda; cada monto queda centrado sobre su línea de la grilla */
+.rep-chart {
+  position: relative;
+  padding-left: 72px;
+}
+
+.rep-chart:has(.rep-chart-vacio) {
+  padding-left: 0;
+}
+
+.rep-axis {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 64px;
+  height: var(--rep-alto);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.rep-axis li {
+  position: absolute;
+  right: 0;
+  transform: translateY(50%);
+  font-size: .7rem;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  color: var(--adm-ink-3);
+}
+
+.rep-chart:has(.rep-chart-vacio) .rep-bars {
+  background: none;
+}
+
+.rep-chart-vacio {
+  position: absolute;
+  inset: 0 0 1px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  margin: 0;
+  padding: 0 24px;
+  text-align: center;
+  font-size: .84rem;
+  color: var(--adm-ink-3);
+}
+
+.rep-chart-vacio .icon {
+  margin-bottom: 4px;
+  font-size: 28px;
+  color: var(--adm-ink-3);
+  opacity: .7;
+}
+
+.rep-chart-vacio strong {
+  font-size: .95rem;
+  font-weight: 600;
+  color: var(--adm-ink-2);
+}
+
+.rep-chart-vacio span:last-child {
+  max-width: 340px;
+}
 
 .rep-bars {
   display: flex;
   align-items: flex-end;
   gap: 4px;
-  height: 250px;
+  height: var(--rep-alto);
   margin: 0;
-  padding: 8px 0 0;
+  padding: 0;
   list-style: none;
   border-bottom: 1px solid var(--adm-line);
-  background: repeating-linear-gradient(to top, transparent 0, transparent calc(25% - 1px), var(--adm-soft) calc(25% - 1px), var(--adm-soft) 25%);
+  background: repeating-linear-gradient(to top, transparent 0, transparent calc(25% - 1px), var(--adm-line) calc(25% - 1px), var(--adm-line) 25%);
 }
 
 .rep-bar {
@@ -216,11 +290,20 @@
 }
 
 .rep-seg-r { background-color: var(--rep-reservas); border-radius: 0 0 2px 2px; }
-.rep-seg-m { background-color: var(--rep-membresias); background-image: var(--rep-rayas); border-radius: 4px 4px 0 0; box-shadow: 0 2px 0 var(--adm-card); }
+.rep-seg-m { background-color: var(--rep-membresias); border-radius: 4px 4px 0 0; box-shadow: 0 2px 0 var(--adm-card); }
 .rep-seg-r:last-child { border-radius: 4px 4px 2px 2px; }
 
-.rep-bar:hover .rep-seg {
-  opacity: .8;
+/* al pasar el mouse se apagan las demás barras, así la elegida queda al frente */
+.rep-seg {
+  transition: opacity .15s ease;
+}
+
+.rep-bars:hover .rep-bar:not(:hover) .rep-seg {
+  opacity: .35;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rep-seg { transition: none; }
 }
 
 .rep-bar-label {
@@ -293,7 +376,7 @@
 }
 
 .rep-m1 { display: block; height: 100%; background: var(--rep-reservas); }
-.rep-m2 { display: block; height: 100%; background-color: var(--rep-membresias); background-image: var(--rep-rayas); }
+.rep-m2 { display: block; height: 100%; background-color: var(--rep-membresias); box-shadow: -2px 0 0 var(--adm-card); }
 .rep-t-ok .rep-m1 { background: var(--adm-ok-dot); }
 .rep-t-warn .rep-m1 { background: var(--adm-warn-dot); }
 .rep-t-off .rep-m1 { background: var(--adm-off-dot); }
