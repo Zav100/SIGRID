@@ -389,7 +389,7 @@ public class ReportesServicio implements Serializable {
             BigDecimal[] cubo = cubos.get(inicio(g, i.fecha));
             cubo[i.reserva ? 0 : 1] = cubo[i.reserva ? 0 : 1].add(i.monto);
         }
-        BigDecimal maximo = cubos.values().stream().map(c -> c[0].add(c[1])).max(BigDecimal::compareTo).orElse(BigDecimal.ZERO);
+        BigDecimal tope = escala(cubos.values().stream().map(c -> c[0].add(c[1])).max(BigDecimal::compareTo).orElse(BigDecimal.ZERO));
         int paso = (int) Math.ceil(cubos.size() / 10.0);
         List<ReporteBarra> barras = new ArrayList<>();
         int n = 0;
@@ -398,10 +398,33 @@ public class ReportesServicio implements Serializable {
             BigDecimal[] c = e.getValue();
             String titulo = ("SEMANA".equals(g) ? "Semana del " : "") + etiqueta + ": " + monto(c[0].add(c[1]))
                     + " (reservas " + monto(c[0]) + ", membresías " + monto(c[1]) + ")";
-            barras.add(new ReporteBarra(etiqueta, n++ % paso == 0, c[0], c[1], porcentaje(c[0], maximo),
-                    porcentaje(c[1], maximo), titulo));
+            barras.add(new ReporteBarra(etiqueta, n++ % paso == 0, c[0], c[1], alto(c[0], tope), alto(c[1], tope), titulo));
         }
         return barras;
+    }
+
+    /**
+     * El tope redondo del eje del gráfico de evolución: el menor 4 × (1, 2, 2,5 o 5 × 10^k) que alcanza a la barra más
+     * alta, para que las cuatro líneas de la grilla marquen montos redondos (ej. 357.700 → 400.000). 0 si no hay ingresos.
+     */
+    public static BigDecimal escala(BigDecimal maximo) {
+        if (maximo.signum() <= 0) {
+            return BigDecimal.ZERO;
+        }
+        BigDecimal linea = maximo.divide(BigDecimal.valueOf(4), 2, RoundingMode.CEILING);
+        BigDecimal potencia = BigDecimal.TEN.pow(linea.toBigInteger().toString().length() - 1);
+        for (String factor : new String[]{"1", "2", "2.5", "5", "10"}) {
+            BigDecimal candidata = potencia.multiply(new BigDecimal(factor));
+            if (candidata.compareTo(linea) >= 0) {
+                return candidata.multiply(BigDecimal.valueOf(4)).stripTrailingZeros();
+            }
+        }
+        return potencia.multiply(BigDecimal.valueOf(40)); // no se llega: 10 × potencia siempre alcanza
+    }
+
+    /** Qué porcentaje del alto del gráfico ocupa un monto, con un decimal (para que las partes chicas no se deformen). */
+    private static double alto(BigDecimal parte, BigDecimal tope) {
+        return tope.signum() == 0 ? 0 : parte.multiply(BigDecimal.valueOf(100)).divide(tope, 1, RoundingMode.HALF_UP).doubleValue();
     }
 
     private static LocalDate inicio(String g, LocalDate f) {

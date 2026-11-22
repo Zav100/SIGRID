@@ -116,7 +116,7 @@
                           p:data-abrir="#{adminMembresiasBean.abrir}">
 
                 <!-- Cuota mensual vigente de cada tipo de socio; se cambia desde acá (un precio nuevo con su fecha de vigencia) -->
-                <section class="adm-card" aria-labelledby="tTarifas">
+                <section class="adm-card mem-cuota-card" aria-labelledby="tTarifas">
                     <header class="adm-card-head">
                         <h2 class="adm-card-title" id="tTarifas">Cuota mensual vigente</h2>
                     </header>
@@ -159,7 +159,7 @@
                         </details>
                         <details class="adm-accion" data-panel="cuotas-historial">
                             <summary><span class="icon" aria-hidden="true">schedule</span>Cuotas anteriores</summary>
-                            <ul class="adm-historial">
+                            <ul class="adm-historial adm-scroll adm-scroll-sm" tabindex="0" aria-label="Cuotas anteriores">
                                 <ui:repeat var="h" value="#{adminMembresiasBean.historialCuotas}">
                                     <li>
                                         <strong>#{h.cuando}<ui:fragment rendered="#{h.programado}"><span class="adm-chip adm-chip-warn">Programada</span></ui:fragment></strong>
@@ -171,40 +171,46 @@
                     </div>
                 </section>
 
-                <!-- Vigentes que vencen esta semana: son las próximas en congelar el carnet -->
-                <section class="adm-card" aria-labelledby="tPorVencer">
-                    <header class="adm-card-head">
-                        <h2 class="adm-card-title" id="tPorVencer">
-                            Vencen esta semana
-                            <span class="adm-count">#{adminMembresiasBean.porVencer.size()}</span>
-                        </h2>
-                    </header>
-
-                    <ui:fragment rendered="#{empty adminMembresiasBean.porVencer}">
-                        <div class="adm-empty">
-                            <span class="icon" aria-hidden="true">task_alt</span>
-                            <p>Ninguna membresía vence en los próximos #{adminMembresiasBean.diasPorVencer} días.</p>
-                        </div>
-                    </ui:fragment>
-
-                    <ul class="adm-list">
-                        <ui:repeat var="m" value="#{adminMembresiasBean.porVencer}">
-                            <li class="adm-item">
-                                <span class="adm-avatar" aria-hidden="true">#{m.iniciales}</span>
-                                <span class="adm-item-main">
-                                    <span class="adm-cell-main">#{m.socio}</span>
-                                    <span class="adm-cell-sub">#{m.tipo}</span>
-                                </span>
-                                <span class="adm-item-when">
-                                    <span class="adm-cell-main mem-pronto">#{m.nota}</span>
-                                    <span class="adm-cell-sub">#{m.vence}</span>
-                                </span>
-                            </li>
-                        </ui:repeat>
-                    </ul>
-                </section>
             </h:panelGroup>
         </div>
+
+        <!-- Vigentes que vencen esta semana, a todo el ancho (en la columna lateral estiraba la fila y dejaba un hueco) -->
+        <h:panelGroup id="porVencer" layout="block">
+            <section class="adm-card mem-vencen-card" aria-labelledby="tPorVencer">
+                <header class="adm-card-head">
+                    <h2 class="adm-card-title" id="tPorVencer">
+                        Vencen esta semana
+                        <span class="adm-count">#{adminMembresiasBean.porVencer.size()}</span>
+                    </h2>
+                </header>
+
+                <ui:fragment rendered="#{empty adminMembresiasBean.porVencer}">
+                    <div class="adm-empty">
+                        <span class="icon" aria-hidden="true">task_alt</span>
+                        <p>Ninguna membresía vence en los próximos #{adminMembresiasBean.diasPorVencer} días.</p>
+                    </div>
+                </ui:fragment>
+
+                <!-- los socios en columnas; con muchos, la lista tiene alto fijo y se desplaza adentro -->
+                <ul class="adm-list mem-vencen #{adminMembresiasBean.porVencer.size() gt 6 ? 'is-scroll' : ''}"
+                    tabindex="#{adminMembresiasBean.porVencer.size() gt 6 ? '0' : '-1'}"
+                    aria-label="Membresías que vencen en los próximos #{adminMembresiasBean.diasPorVencer} días">
+                    <ui:repeat var="m" value="#{adminMembresiasBean.porVencer}">
+                        <li class="adm-item">
+                            <span class="adm-avatar" aria-hidden="true">#{m.iniciales}</span>
+                            <span class="adm-item-main">
+                                <span class="adm-cell-main">#{m.socio}</span>
+                                <span class="adm-cell-sub">#{m.tipo}</span>
+                            </span>
+                            <span class="adm-item-when">
+                                <span class="adm-cell-main mem-pronto">#{m.nota}</span>
+                                <span class="adm-cell-sub">#{m.vence}</span>
+                            </span>
+                        </li>
+                    </ui:repeat>
+                </ul>
+            </section>
+        </h:panelGroup>
 
         <!-- Membresías: una fila por renovación. Las pendientes con comprobante van primero y se resuelven acá. -->
         <section class="adm-card mem-list" aria-labelledby="tMembresias">
@@ -274,7 +280,7 @@
 
                 <ui:fragment rendered="#{not empty adminMembresiasBean.filtradas}">
                     <h:form id="filas">
-                        <div class="adm-table-wrap">
+                        <div class="adm-table-wrap adm-scroll" tabindex="0" role="region" aria-label="Historial de membresías">
                             <table class="adm-table">
                                 <thead>
                                     <tr>
@@ -312,11 +318,16 @@
                                             <td class="adm-col-actions">
                                                 <div class="adm-actions">
                                                     <ui:fragment rendered="#{m.conComprobante}">
+                                                        <a class="adm-act" href="#{request.contextPath}/admin/comprobante?suscripcion=#{m.idSuscripcion}"
+                                                           target="_blank" rel="noopener" title="Abrir el comprobante en otra pestaña"
+                                                           aria-label="Ver el comprobante de #{m.socio}">
+                                                            <span class="icon" aria-hidden="true">receipt_long</span>Ver
+                                                        </a>
                                                         <h:commandLink styleClass="adm-act adm-act-ok"
                                                                        action="#{adminMembresiasBean.aceptar(m.idSuscripcion)}"
                                                                        title="Aceptar el comprobante"
                                                                        p:aria-label="Aceptar la membresía de #{m.socio}">
-                                                            <f:ajax execute="@this" render=":lista :resumen :lateral :admNav"/>
+                                                            <f:ajax execute="@this" render=":lista :resumen :lateral :porVencer :admNav"/>
                                                             <span class="icon" aria-hidden="true">check</span>Aceptar
                                                         </h:commandLink>
                                                         <h:commandLink styleClass="adm-act adm-act-off"
@@ -324,7 +335,7 @@
                                                                        title="Denegar el comprobante"
                                                                        p:aria-label="Denegar la membresía de #{m.socio}"
                                                                        onclick="return confirm('¿Denegar este comprobante? La solicitud queda cancelada.')">
-                                                            <f:ajax execute="@this" render=":lista :resumen :lateral :admNav"/>
+                                                            <f:ajax execute="@this" render=":lista :resumen :lateral :porVencer :admNav"/>
                                                             <span class="icon" aria-hidden="true">close</span>Denegar
                                                         </h:commandLink>
                                                     </ui:fragment>
@@ -334,7 +345,7 @@
                                                                        title="Cancelar la membresía"
                                                                        p:aria-label="Cancelar la membresía de #{m.socio}"
                                                                        onclick="return confirm('¿Cancelar esta membresía? El socio queda inactivo y su carnet se congela.')">
-                                                            <f:ajax execute="@this" render=":lista :resumen :lateral :admNav"/>
+                                                            <f:ajax execute="@this" render=":lista :resumen :lateral :porVencer :admNav"/>
                                                             <span class="icon" aria-hidden="true">block</span>Cancelar
                                                         </h:commandLink>
                                                     </ui:fragment>

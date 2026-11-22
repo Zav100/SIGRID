@@ -36,8 +36,8 @@
  SET NAMES utf8mb4;
  SET SQL_SAFE_UPDATES = 0;
 -- DROP DATABASE IF EXISTS sigrid;
- CREATE DATABASE sigrid;
- USE sigrid;
+CREATE DATABASE sigrid;
+USE sigrid;
 
 
 -- =====================================================================
@@ -550,22 +550,22 @@ SELECT c.id_categoria_socio, d.precio, '2026-01-01'
         SELECT 'No Docente UNSE', 4000.00 UNION ALL
         SELECT 'Externo',         8000.00) d ON d.nombre = c.nombre_categoria;
 
--- Renovaciones anteriores de los socios activos (una por mes hacia atrás): vencidas, y una cancelada
+-- Renovaciones anteriores de los socios activos: una por mes hacia atrás durante casi un año (son socios de hace
+-- tiempo, así sus reservas del último año caen dentro de una membresía). Vencidas, y una cancelada.
 INSERT INTO suscripcion_socio (id_socio, estado, fecha_inicio, fecha_vencimiento)
-SELECT s.id_socio, IF(d.email = 'nicolas.ledesma@demo.sigrid', 'CANCELADA', 'VENCIDA'),
+SELECT s.id_socio, IF(d.email = 'nicolas.ledesma@demo.sigrid' AND d.k = 1, 'CANCELADA', 'VENCIDA'),
        @hoy + INTERVAL d.dias DAY - INTERVAL (30 * (d.k + 1)) DAY,
        @hoy + INTERVAL d.dias DAY - INTERVAL (30 * d.k) DAY
-  FROM (SELECT 'matias.rojas@demo.sigrid' AS email, 2 AS dias, 1 AS k UNION ALL
-        SELECT 'matias.rojas@demo.sigrid',    2, 2 UNION ALL
-        SELECT 'matias.rojas@demo.sigrid',    2, 3 UNION ALL
-        SELECT 'lucia.torres@demo.sigrid',    4, 1 UNION ALL
-        SELECT 'lucia.torres@demo.sigrid',    4, 2 UNION ALL
-        SELECT 'facundo.diaz@demo.sigrid',    6, 1 UNION ALL
-        SELECT 'camila.ruiz@demo.sigrid',    28, 1 UNION ALL
-        SELECT 'bruno.lopez@demo.sigrid',    29, 1 UNION ALL
-        SELECT 'sofia.herrera@demo.sigrid',  26, 1 UNION ALL
-        SELECT 'tomas.acuna@demo.sigrid',    30, 1 UNION ALL
-        SELECT 'nicolas.ledesma@demo.sigrid', 27, 1) d
+  FROM (SELECT o.email, o.dias, ks.k
+          FROM (SELECT 'matias.rojas@demo.sigrid' AS email, 2 AS dias UNION ALL
+                SELECT 'lucia.torres@demo.sigrid',    4  UNION ALL
+                SELECT 'facundo.diaz@demo.sigrid',    6  UNION ALL
+                SELECT 'camila.ruiz@demo.sigrid',     28 UNION ALL
+                SELECT 'bruno.lopez@demo.sigrid',     29 UNION ALL
+                SELECT 'sofia.herrera@demo.sigrid',   26 UNION ALL
+                SELECT 'tomas.acuna@demo.sigrid',     30 UNION ALL
+                SELECT 'nicolas.ledesma@demo.sigrid', 27) o
+          JOIN (WITH RECURSIVE meses(k) AS (SELECT 1 UNION ALL SELECT k + 1 FROM meses WHERE k < 11) SELECT k FROM meses) ks) d
   JOIN usuario u ON u.email = d.email
   JOIN socio s ON s.id_usuario = u.id_usuario;
 
@@ -909,58 +909,108 @@ SELECT r.id_reserva, v.puntaje, v.comentario, TIMESTAMP(r.fecha_turno, t.hora_fi
 DROP TEMPORARY TABLE tmp_valoracion;
 
 -- ---------------------------------------------------------------------
--- Historia para los reportes (NO idempotente, correrlo una sola vez; necesita todo lo anterior): reservas realizadas
--- hace 2 a 6 meses (con su pago) y dos socios cuya membresía venció sin renovar, para que los gráficos de ingresos,
--- la ocupación y la tasa de renovación tengan con qué comparar. También hace más realista cuánto tardó el
--- administrador en validar cada comprobante (1 a 7 horas).
+-- Más socios para los reportes (NO idempotente, correrlo una sola vez): 100 socios que se fueron asociando a lo
+-- largo del último año (uno cada 3 o 4 días) y renuevan la membresía mes a mes; uno de cada siete dejó de renovar
+-- después de 2 a 4 cuotas. Así los ingresos por membresías crecen mes a mes y se ven en todas las barras de los
+-- gráficos. Correo nombre.apellido@demo.sigrid (sin tildes) y contraseña Admin123!, como los demás de prueba.
 -- ---------------------------------------------------------------------
-DROP TEMPORARY TABLE IF EXISTS tmp_historia;
-CREATE TEMPORARY TABLE tmp_historia AS
-WITH RECURSIVE seq(n) AS (SELECT 1 UNION ALL SELECT n + 1 FROM seq WHERE n < 48)
+DROP TEMPORARY TABLE IF EXISTS tmp_relleno;
+CREATE TEMPORARY TABLE tmp_relleno AS
+WITH RECURSIVE seq(n) AS (SELECT 1 UNION ALL SELECT n + 1 FROM seq WHERE n < 100)
 SELECT n,
-       ELT(1 + n MOD 8, 'matias.rojas@demo.sigrid', 'lucia.torres@demo.sigrid', 'facundo.diaz@demo.sigrid', 'camila.ruiz@demo.sigrid',
-                        'bruno.lopez@demo.sigrid', 'sofia.herrera@demo.sigrid', 'tomas.acuna@demo.sigrid', 'nicolas.ledesma@demo.sigrid') AS email,
-       ELT(1 + n MOD 8, 'Cancha de Fútbol 11', 'Cancha de Fútbol 11', 'Cancha de Beach Vóley', 'Salón SUM',
-                        'Quincho 1', 'Cancha de Beach Vóley', 'Cancha de Fútbol 11', 'Quincho 2') AS instalacion,
-       ELT(1 + n MOD 8, '18:00:00', '20:00:00', '19:00:00', '18:00:00', '12:00:00', '17:00:00', '19:00:00', '18:00:00') AS hora,
-       -(50 + n * 3) AS dia
+       ELT(1 + n MOD 20, 'Juan', 'Pedro', 'Ana', 'Diego', 'Laura', 'Paula', 'Gonzalo', 'Florencia', 'Santiago', 'Carla', 'Federico', 'Julieta', 'Ramiro', 'Micaela', 'Emiliano', 'Leandro', 'Daniela', 'Marcos', 'Carolina', 'Ignacio') AS nombre,
+       ELT(1 + (n DIV 20 + 3 * n) MOD 20, 'Sosa', 'Ibarra', 'Luna', 'Cabrera', 'Ponce', 'Villalba', 'Correa', 'Molina', 'Figueroa', 'Castro', 'Romero', 'Quiroga', 'Ferreyra', 'Bustos', 'Salvatierra', 'Coria', 'Vega', 'Rivas', 'Toledo', 'Carrizo') AS apellido,
+       ELT(1 + n MOD 10, 'Alumno UNSE', 'Alumno UNSE', 'Alumno UNSE', 'Alumno UNSE', 'Docente UNSE', 'Docente UNSE',
+                         'No Docente UNSE', 'No Docente UNSE', 'Externo', 'Externo') AS categoria,
+       20 + (n * 97) MOD 340 AS alta,               -- hace cuántos días se asoció
+       IF(n MOD 7 = 0, 2 + n MOD 3, 99) AS cuotas   -- cuántas cuotas pagó (99 = sigue renovando)
   FROM seq;
+ALTER TABLE tmp_relleno ADD COLUMN email VARCHAR(255);
+UPDATE tmp_relleno SET email = LOWER(CONCAT(nombre, '.', apellido, '@demo.sigrid'));
 
-INSERT INTO reserva (id_socio, id_turno, fecha_turno, id_tarifa, estado, fecha_reserva, fecha_confirmacion, id_admin_confirmador)
-SELECT s.id_socio, t.id_turno, @hoy + INTERVAL h.dia DAY, ta.id_tarifa, 'CONFIRMADA',
-       TIMESTAMP(@hoy + INTERVAL h.dia DAY) - INTERVAL 3 DAY,
-       TIMESTAMP(@hoy + INTERVAL h.dia DAY) - INTERVAL 3 DAY + INTERVAL 2 HOUR,
-       (SELECT id_usuario FROM usuario WHERE email = 'admin@sigrid.com')
-  FROM tmp_historia h
-  JOIN usuario u ON u.email = h.email
-  JOIN socio s ON s.id_usuario = u.id_usuario
-  JOIN instalacion i ON i.nombre = h.instalacion
-  JOIN turno t ON t.id_instalacion = i.id_instalacion AND t.hora_inicio = h.hora
-  JOIN tarifa_alquiler ta ON ta.id_instalacion = i.id_instalacion AND ta.id_categoria_socio = s.id_categoria_socio;
-DROP TEMPORARY TABLE tmp_historia;
+INSERT INTO usuario (id_rol, nombre, apellido, email, password_hash)
+SELECT r.id_rol, x.nombre, x.apellido, x.email,
+       '120000:oYLPLGj3glpFkviMWoNcyw==:HqlNgIyuNtfwqirTmWx7xcDntn0EmC+qGFd10+z/dHw='
+  FROM tmp_relleno x JOIN rol r ON r.nombre_rol = 'SOCIO';
 
--- Reservas realizadas de los últimos 44 días con demanda distinta según la hora (más a la tarde-noche) y el día
--- (más los fines de semana), para que el mapa de calor de ocupación tenga contraste. Se reparte a los socios por turno.
-INSERT INTO reserva (id_socio, id_turno, fecha_turno, id_tarifa, estado, fecha_reserva, fecha_confirmacion, id_admin_confirmador)
-SELECT s.id_socio, t.id_turno, @hoy - INTERVAL q.k DAY, ta.id_tarifa, 'CONFIRMADA',
-       TIMESTAMP(@hoy - INTERVAL q.k DAY) - INTERVAL 3 DAY,
-       TIMESTAMP(@hoy - INTERVAL q.k DAY) - INTERVAL 3 DAY + INTERVAL 2 HOUR,
-       (SELECT id_usuario FROM usuario WHERE email = 'admin@sigrid.com')
-  FROM (WITH RECURSIVE dias(k) AS (SELECT 1 UNION ALL SELECT k + 1 FROM dias WHERE k < 44) SELECT k FROM dias) q
+INSERT INTO socio (id_usuario, id_categoria_socio, dni, fecha_nacimiento, telefono, legajo, estado)
+SELECT u.id_usuario, c.id_categoria_socio, CAST(45000000 + x.n * 1013 AS CHAR),
+       IF(x.categoria = 'Alumno UNSE', DATE('1998-01-01') + INTERVAL ((x.n * 37) MOD 2500) DAY,
+                                       DATE('1965-01-01') + INTERVAL ((x.n * 191) MOD 12000) DAY),
+       CONCAT('3856', LPAD((x.n * 7919) MOD 1000000, 6, '0')),
+       CASE x.categoria WHEN 'Alumno UNSE' THEN CONCAT('A-', 3000 + x.n) WHEN 'Docente UNSE' THEN CONCAT('D-', 1000 + x.n)
+                        WHEN 'No Docente UNSE' THEN CONCAT('N-', 1000 + x.n) END,
+       'ACTIVO'
+  FROM tmp_relleno x
+  JOIN usuario u ON u.email = x.email
+  JOIN categoria_socio c ON c.nombre_categoria = x.categoria;
+
+-- Sus membresías de 30 días, una detrás de otra desde el alta (la que cubre hoy queda VIGENTE)
+INSERT INTO suscripcion_socio (id_socio, estado, fecha_inicio, fecha_vencimiento)
+SELECT s.id_socio,
+       IF(@hoy - INTERVAL x.alta DAY + INTERVAL (30 * (m.i + 1)) DAY < @hoy, 'VENCIDA', 'VIGENTE'),
+       @hoy - INTERVAL x.alta DAY + INTERVAL (30 * m.i) DAY,
+       @hoy - INTERVAL x.alta DAY + INTERVAL (30 * (m.i + 1)) DAY
+  FROM tmp_relleno x
+  JOIN (WITH RECURSIVE meses(i) AS (SELECT 0 UNION ALL SELECT i + 1 FROM meses WHERE i < 12) SELECT i FROM meses) m
+    ON m.i < x.cuotas AND 30 * m.i <= x.alta
+  JOIN usuario u ON u.email = x.email
+  JOIN socio s ON s.id_usuario = u.id_usuario;
+
+-- Los que dejaron de renovar quedan NO_ACTIVO, con el carnet congelado
+UPDATE socio s
+  JOIN usuario u ON u.id_usuario = s.id_usuario
+  JOIN tmp_relleno x ON x.email = u.email
+   SET s.estado = 'NO_ACTIVO'
+ WHERE NOT EXISTS (SELECT 1 FROM suscripcion_socio v WHERE v.id_socio = s.id_socio AND v.estado = 'VIGENTE');
+
+INSERT INTO carnet_digital (id_socio, tipo_carnet, estado)
+SELECT s.id_socio, IF(c.nombre_categoria = 'Alumno UNSE', 'ESTUDIANTIL', 'GENERAL'), IF(s.estado = 'ACTIVO', 'ACTIVO', 'INACTIVO')
+  FROM socio s
+  JOIN categoria_socio c ON c.id_categoria_socio = s.id_categoria_socio
+  JOIN usuario u ON u.id_usuario = s.id_usuario
+  JOIN tmp_relleno x ON x.email = u.email;
+DROP TEMPORARY TABLE tmp_relleno;
+
+-- ---------------------------------------------------------------------
+-- Historia para los reportes (NO idempotente, correrlo una sola vez; necesita todo lo anterior): reservas realizadas
+-- del último año con demanda distinta según la hora (más a la tarde-noche), el día (más los fines de semana) y la
+-- época (la demanda crece hacia hoy: hace un año era la mitad). Así los gráficos de ingresos, la ocupación, el mapa
+-- de calor y la comparación con el período anterior tienen contenido en cualquier período, hasta 12 meses. Cada
+-- turno se le asigna a un socio que tenía la membresía vigente ese día. También hace más realista cuánto tardó el
+-- administrador en validar cada comprobante (1 a 7 horas, al final del bloque).
+-- ---------------------------------------------------------------------
+DROP TEMPORARY TABLE IF EXISTS tmp_turno_hist;
+CREATE TEMPORARY TABLE tmp_turno_hist AS
+SELECT q.k, t.id_turno, t.id_instalacion
+  FROM (WITH RECURSIVE dias(k) AS (SELECT 1 UNION ALL SELECT k + 1 FROM dias WHERE k < 365) SELECT k FROM dias) q
   JOIN instalacion i ON i.tipo_acceso = 'ARANCELADO' AND i.nombre <> 'Cancha de Rugby'
   JOIN turno t ON t.id_instalacion = i.id_instalacion
-  JOIN usuario u ON u.email = ELT(1 + (q.k + t.id_turno) MOD 8, 'matias.rojas@demo.sigrid', 'lucia.torres@demo.sigrid',
-                                  'facundo.diaz@demo.sigrid', 'camila.ruiz@demo.sigrid', 'bruno.lopez@demo.sigrid',
-                                  'sofia.herrera@demo.sigrid', 'tomas.acuna@demo.sigrid', 'nicolas.ledesma@demo.sigrid')
-  JOIN socio s ON s.id_usuario = u.id_usuario
-  JOIN tarifa_alquiler ta ON ta.id_instalacion = i.id_instalacion AND ta.id_categoria_socio = s.id_categoria_socio
  WHERE (q.k * 37 + t.id_turno * 17) MOD 100 <
        (CASE HOUR(t.hora_inicio) WHEN 20 THEN 45 WHEN 19 THEN 40 WHEN 18 THEN 35 WHEN 17 THEN 25 WHEN 16 THEN 12
                                  WHEN 12 THEN 18 WHEN 10 THEN 8 ELSE 6 END
-        + IF(DAYOFWEEK(@hoy - INTERVAL q.k DAY) IN (1, 7), 15, 0))
+        + IF(DAYOFWEEK(@hoy - INTERVAL q.k DAY) IN (1, 7), 15, 0)) * (1 - q.k / 730)
    AND NOT EXISTS (SELECT 1 FROM reserva x
                     WHERE x.id_turno = t.id_turno AND x.fecha_turno = @hoy - INTERVAL q.k DAY
                       AND x.estado IN ('PENDIENTE_PAGO', 'CONFIRMADA'));
+
+INSERT INTO reserva (id_socio, id_turno, fecha_turno, id_tarifa, estado, fecha_reserva, fecha_confirmacion, id_admin_confirmador)
+SELECT c.id_socio, c.id_turno, @hoy - INTERVAL c.k DAY, ta.id_tarifa, 'CONFIRMADA',
+       TIMESTAMP(@hoy - INTERVAL c.k DAY) - INTERVAL 3 DAY,
+       TIMESTAMP(@hoy - INTERVAL c.k DAY) - INTERVAL 3 DAY + INTERVAL 2 HOUR,
+       (SELECT id_usuario FROM usuario WHERE email = 'admin@sigrid.com')
+  FROM (SELECT h.k, h.id_turno, h.id_instalacion, s.id_socio, s.id_categoria_socio,
+               ROW_NUMBER() OVER (PARTITION BY h.k, h.id_turno ORDER BY s.id_socio) AS pos,
+               COUNT(*) OVER (PARTITION BY h.k, h.id_turno) AS cant
+          FROM tmp_turno_hist h
+          JOIN suscripcion_socio m ON m.estado IN ('VIGENTE', 'VENCIDA')
+                                  AND m.fecha_inicio <= @hoy - INTERVAL h.k DAY
+                                  AND m.fecha_vencimiento > @hoy - INTERVAL h.k DAY
+          JOIN socio s ON s.id_socio = m.id_socio
+          JOIN usuario u ON u.id_usuario = s.id_usuario AND u.email LIKE '%@demo.sigrid') c
+  JOIN tarifa_alquiler ta ON ta.id_instalacion = c.id_instalacion AND ta.id_categoria_socio = c.id_categoria_socio
+ WHERE c.pos = 1 + (c.k * 7 + c.id_turno * 13) MOD c.cant;
+DROP TEMPORARY TABLE tmp_turno_hist;
 
 SET @base = (SELECT COALESCE(MAX(id_pago), 0) FROM pago);
 SET @n = 0;

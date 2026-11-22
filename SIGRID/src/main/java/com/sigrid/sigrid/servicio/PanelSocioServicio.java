@@ -340,6 +340,25 @@ public class PanelSocioServicio implements Serializable {
                     + ". Renovala a tiempo para seguir reservando y no perder tu carnet.", "warn", null, 1));
         }
 
+        SuscripcionSocio enRevision = renovacionEnRevision(socio.getIdSocio());
+        if (enRevision != null) {
+            avisos.add(new Aviso("pending_actions", "Estamos revisando el pago de tu membresía",
+                    "Recibimos tu comprobante de " + DashboardServicio.monto(enRevision.getIdPago().getMonto())
+                    + ". Cuando el administrador lo valide, tu membresía se renueva por un mes.", "muted",
+                    hace(enRevision.getIdPago().getFechaPago(), ahora), 2));
+        } else {
+            List<SuscripcionSocio> historial = suscripcionDAO.listarPorSocio(socio.getIdSocio());
+            SuscripcionSocio ultima = historial.isEmpty() ? null : historial.get(0);
+            Pago pagoUltima = ultima == null ? null : ultima.getIdPago();
+            if (pagoUltima != null && pagoUltima.getEstado() == Pago.Estado.RECHAZADO && pagoUltima.getFechaValidacion() != null
+                    && !pagoUltima.getFechaValidacion().toLocalDate().isBefore(hoy.minusDays(DIAS_RECIENTE))) {
+                avisos.add(new Aviso("receipt_long", "No pudimos validar el pago de tu membresía",
+                        (pagoUltima.getMotivoRechazo() != null ? "Motivo: " + pagoUltima.getMotivoRechazo() + ". " : "")
+                        + "Revisá la transferencia y volvé a enviar el comprobante desde Inicio.", "off",
+                        hace(pagoUltima.getFechaValidacion(), ahora), 1));
+            }
+        }
+
         for (Reserva r : sinValorar(socio.getIdSocio(), ahora)) {
             avisos.add(new Aviso("star", "Valoración pendiente", "¿Cómo estuvo tu turno? " + resumen(r, hoy)
                     + ". Valorala para poder hacer nuevas reservas.", "warn", null, 1));
@@ -647,6 +666,75 @@ public class PanelSocioServicio implements Serializable {
         if (r.getIdPago() != null) {
             throw new ReglaReservaException("Esa reserva ya tiene un comprobante cargado.");
         }
+        r.setIdPago(pagoConComprobante(r.getIdSocio().getIdUsuario(), r.getIdTarifa().getPrecio(), datos, operacion, ahora,
+                "reserva-" + idReserva));
+    }
+
+    // ---------- renovación de la membresía ----------
+
+    /**
+     * Pide la renovación de la membresía con el comprobante de la transferencia de la cuota de su tipo de socio: crea la
+     * suscripción PENDIENTE_PAGO con su pago PENDIENTE_VALIDACION, que le llega al administrador en Membresías para
+     * aceptarla (MembresiasServicio.aceptar: un mes desde hoy, o desde que termina la vigente) o denegarla.
+     * Se puede pedir con la membresía vencida o desde DIAS_POR_VENCER días antes de que venza, y de a un pedido por vez.
+     * @throws ReglaReservaException si no puede renovar todavía o el archivo no sirve.
+     */
+    @Transactional
+    public void renovarMembresia(Integer idSocio, byte[] datos, LocalDateTime operacion, LocalDateTime ahora) {
+        Socio socio = idSocio == null ? null : socioDAO.buscarPorId(idSocio);
+        if (socio == null || socio.isBajaLogica()) {
+            throw new ReglaReservaException("Tu cuenta de socio no está activa: acercate a la administración.");
+        }
+        if (renovacionEnRevision(idSocio) != null) {
+            throw new ReglaReservaException("Ya enviaste el comprobante de tu renovación: el administrador lo está revisando.");
+        }
+        LocalDate hoy = ahora.toLocalDate();
+        LocalDate vence = venceLaVigente(idSocio, hoy);
+        if (vence != null && ChronoUnit.DAYS.between(hoy, vence) > CambiosReservaServicio.DIAS_POR_VENCER) {
+            throw new ReglaReservaException("Tu membresía está vigente hasta el " + vence.format(FECHA) + ". Podés renovarla desde "
+                    + CambiosReservaServicio.DIAS_POR_VENCER + " días antes de que venza.");
+        }
+        TarifaMembresia cuota = tarifaMembresiaDAO.buscarVigente(socio.getIdCategoriaSocio().getIdCategoriaSocio(), hoy);
+        if (cuota == null) {
+            throw new ReglaReservaException("Todavía no hay una cuota cargada para tu tipo de socio: consultá en la administración.");
+        }
+        SuscripcionSocio s = new SuscripcionSocio();
+        s.setIdSocio(socio);
+        s.setFechaSolicitud(ahora);
+        s.setIdPago(pagoConComprobante(socio.getIdUsuario(), cuota.getPrecio(), datos, operacion, ahora, "membresia-" + idSocio));
+        suscripcionDAO.crear(s);
+    }
+
+    /** Su pedido de renovación con comprobante que el administrador todavía no resolvió; null si no tiene. */
+    public SuscripcionSocio renovacionEnRevision(Integer idSocio) {
+        for (SuscripcionSocio s : suscripcionDAO.listarPorSocio(idSocio)) {
+            if (s.getEstado() == SuscripcionSocio.Estado.PENDIENTE_PAGO && s.getIdPago() != null
+                    && s.getIdPago().getEstado() == Pago.Estado.PENDIENTE_VALIDACION) {
+                return s;
+            }
+        }
+        return null;
+    }
+
+    /** Si puede pedir la renovación hoy: vencida o a DIAS_POR_VENCER días o menos del vencimiento, y sin otro pedido. */
+    public boolean puedeRenovar(Integer idSocio, LocalDate hoy) {
+        LocalDate vence = venceLaVigente(idSocio, hoy);
+        return (vence == null || ChronoUnit.DAYS.between(hoy, vence) <= CambiosReservaServicio.DIAS_POR_VENCER)
+                && renovacionEnRevision(idSocio) == null;
+    }
+
+    /** El vencimiento de su membresía vigente que termina más tarde; null si no tiene ninguna vigente. */
+    private LocalDate venceLaVigente(Integer idSocio, LocalDate hoy) {
+        List<SuscripcionSocio> vigentes = suscripcionDAO.listarVigentesDelSocio(idSocio, hoy);
+        return vigentes.isEmpty() ? null : vigentes.get(0).getFechaVencimiento();
+    }
+
+    /**
+     * Valida el comprobante de una transferencia, crea su pago PENDIENTE_VALIDACION y guarda el archivo (lo comparten la
+     * reserva y la renovación de la membresía). El archivo se llama prefijo + parte del hash.
+     */
+    private Pago pagoConComprobante(Usuario usuario, BigDecimal monto, byte[] datos, LocalDateTime operacion,
+            LocalDateTime ahora, String prefijo) {
         if (datos == null || datos.length == 0) {
             throw new ReglaReservaException("Elegí el archivo del comprobante.");
         }
@@ -671,10 +759,10 @@ public class PanelSocioServicio implements Serializable {
             throw new ReglaReservaException("Ese comprobante ya fue usado en otra operación.");
         }
 
-        String archivo = "reserva-" + idReserva + "-" + hash.substring(0, 12) + "." + extension;
+        String archivo = prefijo + "-" + hash.substring(0, 12) + "." + extension;
         Pago pago = new Pago();
-        pago.setIdUsuario(r.getIdSocio().getIdUsuario());
-        pago.setMonto(r.getIdTarifa().getPrecio());
+        pago.setIdUsuario(usuario);
+        pago.setMonto(monto);
         pago.setFechaPago(ahora);
         pagoDAO.crear(pago);
         ComprobantePago comprobante = new ComprobantePago();
@@ -688,13 +776,13 @@ public class PanelSocioServicio implements Serializable {
         } catch (PersistenceException e) {
             throw new ReglaReservaException("Ese comprobante ya fue usado en otra operación.");
         }
-        r.setIdPago(pago);
         try {
             // ponytail: si el commit falla después queda el archivo suelto (el nombre lleva el hash, reintentar lo pisa)
             ComprobanteArchivos.guardar(archivo, datos);
         } catch (IOException e) {
             throw new ReglaReservaException("No pudimos guardar el archivo. Probá de nuevo en un momento.");
         }
+        return pago;
     }
 
     /**

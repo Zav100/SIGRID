@@ -1260,6 +1260,50 @@
   }
 }
 
+/* ============ LISTAS Y TABLAS QUE CRECEN CON LOS DATOS ============
+   Reservas, socios, membresías, pagos, pedidos, historiales...: la card tiene un alto máximo y lo que se va agregando
+   se ve haciendo scroll adentro (la página no se estira). En las tablas el encabezado queda fijo arriba. Se puede
+   recorrer con el teclado (tabindex="0" en el contenedor) y al imprimir sale todo. Alto: --adm-scroll-alto. */
+.adm-scroll {
+  max-height: min(var(--adm-scroll-alto, 540px), 75vh);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  scrollbar-color: var(--adm-line) transparent;
+}
+
+.adm-scroll-sm {
+  --adm-scroll-alto: 340px;
+}
+
+/* grillas de tarjetas (solicitudes, pedidos): que no se corten la sombra ni el borde de cada tarjeta */
+.sol-grid.adm-scroll {
+  --adm-scroll-alto: 680px;
+  padding: 2px 6px 2px 2px;
+}
+
+.adm-scroll:focus-visible {
+  outline: 2px solid var(--adm-accent);
+  outline-offset: 2px;
+  border-radius: 8px;
+}
+
+.adm-scroll .adm-table thead th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  padding-top: 4px;
+  background: var(--adm-card);
+  box-shadow: inset 0 -1px 0 var(--adm-line);
+}
+
+@media print {
+  .adm-scroll {
+    max-height: none;
+    overflow: visible;
+  }
+}
+
 /* ============ RESPONSIVE ============ */
 @media (max-width: 1240px) {
   .adm-layout {

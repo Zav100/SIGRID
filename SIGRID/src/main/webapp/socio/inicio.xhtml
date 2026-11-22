@@ -3,6 +3,7 @@
                 xmlns:h="jakarta.faces.html"
                 xmlns:f="jakarta.faces.core"
                 xmlns:ui="jakarta.faces.facelets"
+                xmlns:p="jakarta.faces.passthrough"
                 template="/templates/socio.xhtml">
 
     <ui:define name="titulo">
@@ -14,6 +15,11 @@
 
             <!-- ============ COLUMNA PRINCIPAL ============ -->
             <div class="so-col">
+
+                <!-- resultado de la última acción (renovación de la membresía) -->
+                <h:messages globalOnly="true" layout="list" styleClass="so-flashes"
+                            infoClass="so-flash so-flash-ok" warnClass="so-flash so-flash-warn"
+                            errorClass="so-flash so-flash-off"/>
 
                 <!-- Valoración pendiente -->
                 <ui:fragment rendered="#{socioBean.cantidadPorValorar gt 0}">
@@ -84,7 +90,7 @@
                                 <span style="width: #{socioBean.perfil.progreso}%"></span>
                             </div>
                             <p class="so-mem-foot">Vence el #{socioBean.perfil.vence}</p>
-                            <ui:fragment rendered="#{socioBean.perfil.diasRestantes le 7}">
+                            <ui:fragment rendered="#{socioBean.perfil.diasRestantes le 7 and not socioBean.renovacionEnRevision}">
                                 <p class="so-mem-callout"><span class="icon" aria-hidden="true">hourglass_top</span>Renovala a tiempo para no perder tu carnet ni tus reservas.</p>
                             </ui:fragment>
                         </ui:fragment>
@@ -101,10 +107,63 @@
                                 <ui:fragment rendered="#{socioBean.perfil.vence eq null}">Todavía no tenés una membresía vigente.</ui:fragment>
                                 <ui:fragment rendered="#{socioBean.perfil.vence ne null}">Venció el #{socioBean.perfil.vence}</ui:fragment>
                             </p>
-                            <p class="so-mem-callout"><span class="icon" aria-hidden="true">info</span>Renovala para volver a reservar y descongelar tu carnet.</p>
+                            <ui:fragment rendered="#{not socioBean.renovacionEnRevision}">
+                                <p class="so-mem-callout"><span class="icon" aria-hidden="true">info</span>Renovala para volver a reservar y descongelar tu carnet.</p>
+                            </ui:fragment>
+                        </ui:fragment>
+
+                        <ui:fragment rendered="#{socioBean.renovacionEnRevision}">
+                            <p class="so-mem-callout so-mem-review"><span class="icon" aria-hidden="true">pending_actions</span>Recibimos tu comprobante de renovación: el administrador lo está revisando.</p>
+                        </ui:fragment>
+                        <ui:fragment rendered="#{socioBean.puedeRenovar}">
+                            <a href="#renovar" class="so-btn so-btn-sm so-mem-btn">
+                                <span class="icon" aria-hidden="true">card_membership</span>Renovar membresía
+                            </a>
                         </ui:fragment>
                     </article>
                 </div>
+
+                <!-- Renovación: comprobante de la cuota; el pedido le llega al administrador en Membresías -->
+                <ui:fragment rendered="#{socioBean.puedeRenovar and socioBean.cuota ne null and not empty socioBean.cuota.precio}">
+                    <section class="so-card so-pay" id="renovar" aria-labelledby="tRenovar">
+                        <header class="so-card-head">
+                            <h2 id="tRenovar"><span class="icon" aria-hidden="true">receipt_long</span>Renová tu membresía</h2>
+                            <span class="so-chip so-chip-warn">Un mes más</span>
+                        </header>
+
+                        <div class="so-pay-grid">
+                            <div class="so-pay-info">
+                                <div class="so-pay-res">
+                                    <span class="so-ico"><span class="icon" aria-hidden="true">card_membership</span></span>
+                                    <div>
+                                        <p class="so-pay-res-main">Cuota mensual · #{socioBean.perfil.categoria}</p>
+                                        <p class="so-pay-res-sub">#{socioBean.perfil.vigente ? 'Empieza cuando termine la actual' : 'Rige desde que se valide el pago'}</p>
+                                    </div>
+                                    <p class="so-pay-monto">#{socioBean.cuota.precio}</p>
+                                </div>
+                                <ol class="so-steps">
+                                    <li>Transferí <strong>#{socioBean.cuota.precio}</strong> a la cuenta del Polideportivo UNSE.</li>
+                                    <li>Subí acá la captura o el PDF del comprobante y la fecha y hora de la transferencia.</li>
+                                    <li>El administrador coteja el pago y renueva tu membresía: tu carnet vuelve a estar activo y podés reservar.</li>
+                                </ol>
+                            </div>
+
+                            <h:form id="renovacion" enctype="multipart/form-data" styleClass="so-form">
+                                <div class="so-field">
+                                    <h:outputLabel for="archivo" value="Comprobante (JPG, PNG o PDF, hasta 5 MB)"/>
+                                    <h:inputFile id="archivo" value="#{socioMembresiaBean.archivo}" styleClass="so-file"
+                                                 p:accept=".jpg,.jpeg,.png,.pdf,image/jpeg,image/png,application/pdf" p:required="required"/>
+                                </div>
+                                <div class="so-field">
+                                    <h:outputLabel for="operacion" value="Fecha y hora de la transferencia"/>
+                                    <h:inputText id="operacion" value="#{socioMembresiaBean.fechaOperacion}" styleClass="so-input"
+                                                 p:type="datetime-local" p:max="#{socioMembresiaBean.ahoraInput}" p:required="required"/>
+                                </div>
+                                <h:commandButton value="Enviar comprobante" action="#{socioMembresiaBean.renovar}" styleClass="so-btn so-btn-block"/>
+                            </h:form>
+                        </div>
+                    </section>
+                </ui:fragment>
 
                 <!-- Próxima reserva -->
                 <ui:fragment rendered="#{socioBean.proxima ne null}">

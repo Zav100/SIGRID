@@ -140,7 +140,7 @@
                         </div>
                     </ui:fragment>
 
-                    <ul class="cal-res-list">
+                    <ul class="cal-res-list adm-scroll adm-scroll-sm" tabindex="0" aria-label="Reservas del día elegido">
                         <ui:repeat var="r" value="#{adminCalendarioBean.delDia}">
                             <li class="cal-res js-buscable is-#{r.estadoClase}">
                                 <span class="adm-item-icon"><span class="icon" aria-hidden="true">#{r.icono}</span></span>
@@ -179,7 +179,7 @@
                         </div>
                     </ui:fragment>
 
-                    <h:form id="histForm" styleClass="cal-hist" rendered="#{adminCalendarioBean.totalHistorial gt 0}">
+                    <h:form id="histForm" styleClass="cal-hist adm-scroll" rendered="#{adminCalendarioBean.totalHistorial gt 0}">
                         <ui:fragment rendered="#{not empty adminCalendarioBean.proximas}">
                             <p class="cal-hist-title">Próximas</p>
                             <ui:repeat var="r" value="#{adminCalendarioBean.proximas}">

@@ -784,6 +784,21 @@
   color: var(--so-ink-3);
 }
 
+/* renovación: botón dentro de la tarjeta y aviso de comprobante en revisión */
+.so-mem-btn {
+  align-self: center;
+  margin-top: 12px;
+}
+
+.so-mem .so-mem-callout.so-mem-review {
+  background: var(--so-soft);
+  color: var(--so-ink-2);
+}
+
+#renovar {
+  scroll-margin-top: 24px;
+}
+
 /* próxima reserva */
 .so-next {
   position: relative;
@@ -2156,4 +2171,32 @@ a.so-slot:hover {
 .so-blocked-warn {
   border-color: #E9D48A;
   background: #FFFDF3;
+}
+
+/* ============ LISTAS QUE CRECEN (mis reservas, avisos) ============
+   Alto máximo y scroll adentro: lo que se va agregando se ve deslizando la lista, sin estirar la página. Nunca más
+   alta que tres cuartos de la pantalla (en el celular). Al imprimir sale todo. */
+.so-scroll {
+  max-height: min(var(--so-scroll-alto, 560px), 75vh);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  scrollbar-color: var(--so-line) transparent;
+}
+
+.so-scroll-lg {
+  --so-scroll-alto: 760px;
+  padding: 2px 6px 2px 2px; /* que no se corten la sombra y el borde de las tarjetas */
+}
+
+.so-scroll:focus-visible {
+  outline: 2px solid var(--so-accent);
+  outline-offset: 2px;
+}
+
+@media print {
+  .so-scroll {
+    max-height: none;
+    overflow: visible;
+  }
 }

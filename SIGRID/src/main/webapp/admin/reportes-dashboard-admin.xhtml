@@ -89,31 +89,32 @@
                     <ui:param name="kpis" value="#{adminReportesBean.resumen}"/>
                 </ui:include>
 
-                <div class="rep-duo">
-                    <section class="adm-card" aria-labelledby="tAlertas">
-                        <header class="adm-card-head">
-                            <h2 class="adm-card-title" id="tAlertas">Para mirar hoy</h2>
-                        </header>
-                        <ul class="rep-alertas">
-                            <ui:repeat var="a" value="#{adminReportesBean.alertas}">
-                                <li class="rep-alerta rep-alerta-#{a.clase}">
-                                    <span class="rep-alerta-icon"><span class="icon" aria-hidden="true">#{a.icono}</span></span>
-                                    <span>#{a.texto}</span>
-                                </li>
-                            </ui:repeat>
-                        </ul>
-                    </section>
+                <!-- Alertas en una fila de tarjetas y el gráfico a todo el ancho, para que se lea cada parte de las barras -->
+                <section class="adm-card rep-block" aria-labelledby="tAlertas">
+                    <header class="adm-card-head">
+                        <h2 class="adm-card-title" id="tAlertas">Para mirar hoy</h2>
+                    </header>
+                    <ul class="rep-alertas rep-alertas-grilla">
+                        <ui:repeat var="a" value="#{adminReportesBean.alertas}">
+                            <li class="rep-alerta rep-alerta-#{a.clase}">
+                                <span class="rep-alerta-icon"><span class="icon" aria-hidden="true">#{a.icono}</span></span>
+                                <span>#{a.texto}</span>
+                            </li>
+                        </ui:repeat>
+                    </ul>
+                </section>
 
-                    <section class="adm-card" aria-labelledby="tEvolucionResumen">
-                        <header class="adm-card-head">
-                            <h2 class="adm-card-title" id="tEvolucionResumen">Ingresos del período</h2>
-                        </header>
-                        <ui:include src="/templates/reportes/evolucion.xhtml">
-                            <ui:param name="barras" value="#{adminReportesBean.evolucion}"/>
-                            <ui:param name="maximo" value="#{adminReportesBean.maximoEvolucion}"/>
-                        </ui:include>
-                    </section>
-                </div>
+                <section class="adm-card rep-block" aria-labelledby="tEvolucionResumen">
+                    <header class="adm-card-head">
+                        <h2 class="adm-card-title" id="tEvolucionResumen">Ingresos del período</h2>
+                    </header>
+                    <ui:include src="/templates/reportes/evolucion.xhtml">
+                        <ui:param name="barras" value="#{adminReportesBean.evolucion}"/>
+                        <ui:param name="maximo" value="#{adminReportesBean.maximoEvolucion}"/>
+                        <ui:param name="sinDatos" value="#{adminReportesBean.evolucionVacia}"/>
+                        <ui:param name="escala" value="#{adminReportesBean.escalaEvolucion}"/>
+                    </ui:include>
+                </section>
             </ui:fragment>
 
             <!-- ============ 2. INGRESOS ============ -->
@@ -139,6 +140,8 @@
                     <ui:include src="/templates/reportes/evolucion.xhtml">
                         <ui:param name="barras" value="#{adminReportesBean.evolucion}"/>
                         <ui:param name="maximo" value="#{adminReportesBean.maximoEvolucion}"/>
+                        <ui:param name="sinDatos" value="#{adminReportesBean.evolucionVacia}"/>
+                            <ui:param name="escala" value="#{adminReportesBean.escalaEvolucion}"/>
                     </ui:include>
                 </section>
 

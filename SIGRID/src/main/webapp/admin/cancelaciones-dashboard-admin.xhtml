@@ -141,7 +141,7 @@
                         <h:form id="formPedidos">
                             <!-- motivo del rechazo: lo carga el prompt del botón "Rechazar" -->
                             <h:inputHidden id="motivo" value="#{adminCambiosBean.motivo}"/>
-                            <div class="sol-grid">
+                            <div class="sol-grid adm-scroll">
                                 <ui:repeat var="c" value="#{adminCambiosBean.pedidos}">
                                     <article class="sol-card">
                                         <header class="sol-head">
@@ -227,7 +227,7 @@
                         </div>
                     </ui:fragment>
                     <ui:fragment rendered="#{not empty adminCambiosBean.vigentes}">
-                        <div class="adm-table-wrap">
+                        <div class="adm-table-wrap adm-scroll adm-scroll-sm" tabindex="0" role="region" aria-label="Créditos vigentes">
                             <table class="adm-table">
                                 <thead>
                                     <tr>
@@ -274,7 +274,7 @@
                         </div>
                     </ui:fragment>
                     <ui:fragment rendered="#{not empty adminCambiosBean.reprogramadas}">
-                        <div class="adm-table-wrap">
+                        <div class="adm-table-wrap adm-scroll adm-scroll-sm" tabindex="0" role="region" aria-label="Reservas reprogramadas">
                             <table class="adm-table">
                                 <thead>
                                     <tr>
@@ -321,7 +321,7 @@
                         </div>
                     </ui:fragment>
                     <ui:fragment rendered="#{not empty adminCambiosBean.vencidos}">
-                        <div class="adm-table-wrap">
+                        <div class="adm-table-wrap adm-scroll adm-scroll-sm" tabindex="0" role="region" aria-label="Créditos vencidos">
                             <table class="adm-table">
                                 <thead>
                                     <tr>
@@ -371,7 +371,7 @@
                         <h:form id="formPredio">
                             <!-- motivo de la cancelación: lo carga el prompt del botón -->
                             <h:inputHidden id="motivo" value="#{adminCambiosBean.motivo}"/>
-                            <div class="adm-table-wrap">
+                            <div class="adm-table-wrap adm-scroll" tabindex="0" role="region" aria-label="Reservas que se pueden cancelar">
                                 <table class="adm-table">
                                     <thead>
                                         <tr>

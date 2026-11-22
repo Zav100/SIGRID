@@ -14,6 +14,7 @@ import jakarta.inject.Named;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -50,6 +51,8 @@ public class AdminReportesBean implements Serializable {
     private List<ReporteKpi> balance;
     private List<ReporteBarra> evolucion;
     private String maximoEvolucion;
+    private boolean evolucionVacia;
+    private List<String> escalaEvolucion; // montos de las líneas de la grilla, de abajo hacia arriba
     private List<ReporteItem> porInstalacion;
     private List<ReporteItem> porCategoria;
     private List<ReporteKpi> dinero;
@@ -96,6 +99,12 @@ public class AdminReportesBean implements Serializable {
         BigDecimal maximo = evolucion.stream().map(b -> b.getReservas().add(b.getMembresias()))
                 .max(BigDecimal::compareTo).orElse(BigDecimal.ZERO);
         maximoEvolucion = DashboardServicio.monto(maximo);
+        evolucionVacia = maximo.signum() == 0;
+        BigDecimal tope = ReportesServicio.escala(maximo);
+        escalaEvolucion = new ArrayList<>();
+        for (int i = 1; i <= 4; i++) { // de abajo hacia arriba: 1/4, 2/4, 3/4 y el tope
+            escalaEvolucion.add(DashboardServicio.monto(tope.multiply(BigDecimal.valueOf(i)).divide(BigDecimal.valueOf(4))));
+        }
         porInstalacion = servicio.ingresosPorInstalacion(datos, rango);
         porCategoria = servicio.ingresosPorCategoria(datos, rango);
         dinero = servicio.dineroEnJuego(datos, rango);
@@ -212,6 +221,14 @@ public class AdminReportesBean implements Serializable {
 
     public String getMaximoEvolucion() {
         return maximoEvolucion;
+    }
+
+    public boolean isEvolucionVacia() {
+        return evolucionVacia;
+    }
+
+    public List<String> getEscalaEvolucion() {
+        return escalaEvolucion;
     }
 
     public List<ReporteItem> getPorInstalacion() {

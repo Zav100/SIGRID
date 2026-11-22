@@ -26,7 +26,7 @@
         </ui:fragment>
 
         <ui:fragment rendered="#{not empty socioBean.avisos}">
-            <section class="so-card so-avisos">
+            <section class="so-card so-avisos so-scroll" tabindex="0" aria-label="Tus avisos">
                 <ui:repeat var="a" value="#{socioBean.avisos}">
                     <div class="so-aviso so-aviso-#{a.clase}">
                         <span class="so-aviso-ico"><span class="icon" aria-hidden="true">#{a.icono}</span></span>
