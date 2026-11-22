@@ -242,7 +242,7 @@
                             <ui:fragment rendered="#{empty adminInstalacionesBean.ficha.proximas}">
                                 <p class="ins-vacio">No hay reservas por delante.</p>
                             </ui:fragment>
-                            <ul class="adm-list">
+                            <ul class="adm-list adm-scroll adm-scroll-sm" tabindex="0" aria-label="Próximas reservas de la instalación">
                                 <ui:repeat var="fila" value="#{adminInstalacionesBean.ficha.proximas}">
                                     <li class="adm-item">
                                         <span class="adm-item-main">
@@ -411,7 +411,7 @@
                                     <ui:fragment rendered="#{empty adminInstalacionesBean.historialPrecios}">
                                         <p class="ins-vacio adm-historial-vacio">Todavía no hay precios cargados.</p>
                                     </ui:fragment>
-                                    <ul class="adm-historial">
+                                    <ul class="adm-historial adm-scroll adm-scroll-sm" tabindex="0" aria-label="Precios anteriores">
                                         <ui:repeat var="h" value="#{adminInstalacionesBean.historialPrecios}">
                                             <li>
                                                 <strong>#{h.cuando}<ui:fragment rendered="#{h.programado}"><span class="adm-chip adm-chip-warn">Programado</span></ui:fragment></strong>

@@ -119,7 +119,7 @@
                     <h:form id="filas">
                         <!-- motivo de la denegación: lo carga el prompt del botón "Denegar" -->
                         <h:inputHidden id="motivo" value="#{adminSolicitudesBean.motivo}"/>
-                        <div class="sol-grid">
+                        <div class="sol-grid adm-scroll">
                             <ui:repeat var="s" value="#{adminSolicitudesBean.filtradas}">
                                 <article class="sol-card #{s.vencida ? 'is-vencida' : s.urgente ? 'is-urgente' : ''}">
                                     <header class="sol-head">

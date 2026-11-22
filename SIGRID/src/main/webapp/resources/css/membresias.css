@@ -405,6 +405,31 @@
   margin-bottom: 20px;
 }
 
+/* Con las dos columnas lado a lado, la card de la cuota mensual llega hasta el final de "Ingresos del mes por tipo de
+   socio": la columna lateral se estira y el alto que sobra se reparte entre las filas de precios (los botones quedan
+   abajo, alineados con la otra card). */
+@media (min-width: 1241px) {
+  .mem-top {
+    align-items: stretch;
+  }
+
+  .mem-cuota-card {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+  }
+
+  .mem-cuota-card .mem-tarifas {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+  }
+
+  .mem-cuota-card .mem-tarifas li {
+    flex: 1;
+  }
+}
+
 /* ============ INGRESOS POR TIPO DE SOCIO ============ */
 .mem-mix {
   --mix-0: var(--maroon-700);
@@ -497,5 +522,53 @@
 @media (max-width: 720px) {
   .mem-mix-legend {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+/* "Vencen esta semana": tarjeta a todo el ancho, entre el resumen y el historial, con los socios repartidos en
+   columnas (de 1 a 4 según el ancho). Con muchos, la lista tiene un alto de unas 3 filas y se desplaza adentro, con un
+   fundido abajo que avisa que hay más. Así no estira ninguna columna ni deja huecos. */
+.mem-vencen-card {
+  margin-bottom: 20px;
+}
+
+.mem-vencen {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  column-gap: 32px;
+}
+
+.mem-vencen .adm-item,
+.mem-vencen .adm-item:first-child,
+.mem-vencen .adm-item:last-child {
+  padding: 10px 0;
+  border-bottom: 1px solid var(--adm-line);
+}
+
+.mem-vencen.is-scroll {
+  max-height: 232px;
+  margin-right: -8px;
+  padding-right: 8px;
+  padding-bottom: 24px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  scrollbar-color: var(--adm-line) transparent;
+  -webkit-mask-image: linear-gradient(to bottom, #000 calc(100% - 24px), transparent);
+  mask-image: linear-gradient(to bottom, #000 calc(100% - 24px), transparent);
+}
+
+.mem-vencen.is-scroll:focus-visible {
+  outline: 2px solid var(--adm-accent);
+  outline-offset: 4px;
+  border-radius: 8px;
+}
+
+@media print {
+  .mem-vencen.is-scroll {
+    max-height: none;
+    overflow: visible;
+    -webkit-mask-image: none;
+    mask-image: none;
   }
 }

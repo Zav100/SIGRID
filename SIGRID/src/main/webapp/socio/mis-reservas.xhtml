@@ -231,7 +231,7 @@
             <h:form id="filas">
                 <!-- motivo de la cancelación: lo carga el prompt del botón -->
                 <h:inputHidden id="motivo" value="#{socioReservasBean.motivo}"/>
-                <div class="so-list">
+                <div class="so-list so-scroll so-scroll-lg" tabindex="0" role="region" aria-label="Tus reservas">
                     <ui:repeat var="r" value="#{socioReservasBean.visibles}">
                         <article class="so-res so-res-#{r.estadoClase}">
                             <span class="so-ico so-ico-lg"><span class="icon" aria-hidden="true">#{r.icono}</span></span>
